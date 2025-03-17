@@ -1,0 +1,7 @@
+*~
+*.dot
+*.gcda
+*.gcno
+*.o
+*.out
+install/*
