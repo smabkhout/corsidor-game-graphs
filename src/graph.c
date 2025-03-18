@@ -75,6 +75,16 @@ struct graph_t* createGraph(unsigned int n, enum graph_type_t type) {
 }
 
 
+void initialize(struct graph_t * graph , unsigned int n ){
+
+  struct graph_t* graph = createGraph(n  ,TRIANGULAR) ; 
+  graph->num_objectives = 1 ; 
+  graph->objectives[0] = n/2  ; 
+  graph->start[0] = 0 ; 
+  graph->start[0] = n ; 
+
+
+}
 
 
 void testGraph(struct graph_t* graph) {
@@ -114,7 +124,7 @@ void testGraph(struct graph_t* graph) {
 
 int main() {
   unsigned int n = 10;  // Number of vertices in the graph
-  struct graph_t* graph = createGraph(n, CYCLIC);
+  struct graph_t* graph = createGraph(n, TRIANGULAR);
 
   if (graph) {
     testGraph(graph);  // Test and display the graph edges
