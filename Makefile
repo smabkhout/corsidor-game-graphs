@@ -8,6 +8,15 @@ all: build
 
 build: server client
 
+%.o: src/%.c
+	$(CC) $< $(CFLAGS) -c
+
+libPlayer1.so: player1.o 
+	gcc -shared -fPIC $^ -o $@
+
+libPlayer2.so: player2.o 
+	gcc -shared -fPIC $^ -o $@
+
 server:
 
 client:
