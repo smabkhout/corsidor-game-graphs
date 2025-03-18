@@ -13,6 +13,7 @@ struct player_t player
     struct move_t (*play)(const struct move_t previous_move);
     void (*finalize)();
     void *library;
+    vertex_t pos_actuel;
 };
 
 void assert_dlsym(){
