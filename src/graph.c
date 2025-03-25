@@ -66,7 +66,7 @@ struct graph_t* createGraph(unsigned int n, enum graph_type_t type) {
 
 void initialize(struct graph_t *graph, unsigned int n) {
     // Créer un graphe de type TRIANGULAR avec n sommets
-    *graph = *createGraph(n, TRIANGULAR);
+    *graph = *createGraph(n, HOLEY);
 
     // Initialiser les objectifs et les positions des joueurs
     graph->num_objectives = 1;
@@ -115,49 +115,15 @@ void free_graph(struct graph_t *graph) {
 }
 
 
-void testGraph(struct graph_t* graph) {
-  if (!graph) {
-    printf("Graph is NULL.\n");
-    return;
-  }
 
-  printf("Graph type: ");
-  switch (graph->type) {
-    case TRIANGULAR:
-      printf("TRIANGULAR\n");
-      break;
-    case CYCLIC:
-      printf("CYCLIC\n");
-      break;
-    case HOLEY:
-      printf("HOLEY\n");
-      break;
-    default:
-      printf("Unknown type\n");
-      break;
-  }
-
-  printf("Number of vertices: %u\n", graph->num_vertices);
-  printf("Number of edges: %u\n", graph->num_edges);
-
-  // Iterate through the compressed sparse matrix (CSR)
-  printf("Edges in the graph:\n");
-  for (unsigned int i = 0; i < graph->t->size1; i++) {
-    for (unsigned int k = graph->t->p[i]; k < graph->t->p[i + 1]; k++) {
-      unsigned int j = graph->t->i[k];
-      printf("Edge: %u -> %u\n", i, j);  // Print each edge from vertex i to j
-    }
-  }
-}
 
 int main() {
   unsigned int n = 10;  // Number of vertices in the graph
-  struct graph_t* graph = createGraph(n, TRIANGULAR);
+  struct graph_t* graph = createGraph(n, HOLEY);
   initialize(graph , n ) ; 
 
   if (graph) {
-    testGraph(graph); 
-    print_graph(graph) ;  // Test and display the graph edges
+    print_graph(graph) ; 
   }
 
   return 0;
