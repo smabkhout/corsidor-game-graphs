@@ -4,86 +4,114 @@
 #include "graph.h"
 
 
-
+#include "graph.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 struct graph_t* createGraph(unsigned int n, enum graph_type_t type) {
-  
-  struct graph_t* graph = malloc(sizeof(struct graph_t));
-  if (!graph) {
-    fprintf(stderr, "Failed to allocate memory for graph\n");
-    return NULL;
-  }
-
-  graph->type = type;
-  graph->num_vertices = n;
-  
-  // Initialize the sparse matrix for adjacency
-  gsl_spmatrix_uint* mat = gsl_spmatrix_uint_alloc(n, n);
-
-  // Based on the graph type, we will add edges differently
-  switch (type) {
-    case TRIANGULAR:
-      // Add edges for a triangular grid, each vertex connects to neighbors in 8 directions
-      for (unsigned int i = 0; i < n; i++) {
-        for (unsigned int d = FIRST_DIR; d <= LAST_DIR; d++) {
-          // Assuming we have some logic here to determine the valid neighbors
-          unsigned int j = i + d;  // For simplicity, just add some offset here
-          if (j < n && j != i) {
-            gsl_spmatrix_uint_set(mat, i, j, 1);  // Add edge i -> j
-          }
-        }
-      }
-      break;
-
-    case CYCLIC:
-      // Add edges for a cyclic graph (first connects to last)
-      for (unsigned int i = 0; i < n; i++) {
-        unsigned int j = (i + 1) % n;  // Wrap around to create the cycle
-        gsl_spmatrix_uint_set(mat, i, j, 1);
-        gsl_spmatrix_uint_set(mat, j, i, 1);  // As the cyclic graph is undirected
-      }
-      break;
-
-    case HOLEY:
-      // Add edges for a holey graph, for simplicity we add edges in 4 cardinal directions
-      for (unsigned int i = 0; i < n; i++) {
-        unsigned int j;
-        for (unsigned int d = FIRST_DIR; d <= LAST_DIR; d++) {
-          // Adjust this according to how you want to model the "holey" structure
-          j = i + d; // Simple offset for demonstration
-          if (j < n && j != i) {
-            gsl_spmatrix_uint_set(mat, i, j, 1);
-          }
-        }
-      }
-      break;
-  }
-
-  // Compress the matrix into CSR format for efficient traversal
-  gsl_spmatrix_uint* csr = gsl_spmatrix_uint_compress(mat, GSL_SPMATRIX_CSR);
-
-  // Now we can iterate over the edges in CSR format
-  for (unsigned int i = 0; i < csr->size1; i++) {
-    for (unsigned int k = csr->p[i]; k < csr->p[i+1]; k++) {
-      unsigned int j = csr->i[k];
-      // Do something with the edge from i to j
+    struct graph_t* graph = (struct graph_t*)malloc(sizeof(struct graph_t));
+    if (!graph) {
+        perror("Failed to allocate memory for graph");
+        exit(1);
     }
-  }
-  graph->t = csr;
-  
-  return graph;
+
+    graph->num_vertices = n;
+    graph->num_edges = 0;
+    graph->type = type;
+    graph->t = gsl_spmatrix_uint_alloc(n, n);
+
+    // Initialisation de la matrice d'adjacence
+    for (unsigned int i = 0; i < n; i++) {
+        for (unsigned int j = 0; j < n; j++) {
+            gsl_spmatrix_uint_set(graph->t, i, j, 0); // Pas d'arêtes par défaut
+        }
+    }
+
+    // Construction des arêtes en fonction du type de graphe
+    if (type == TRIANGULAR) {
+        // Graphe triangulaire
+        for (unsigned int i = 0; i < n - 1; i++) {
+            for (unsigned int j = i + 1; j < n; j++) {
+                gsl_spmatrix_uint_set(graph->t, i, j, 1);  // Ajouter une arête entre i et j
+                gsl_spmatrix_uint_set(graph->t, j, i, 1);  // Graphe non orienté
+                graph->num_edges++;
+            }
+        }
+    } else if (type == CYCLIC) {
+        // Graphe cyclique (cercle)
+        for (unsigned int i = 0; i < n - 1; i++) {
+            gsl_spmatrix_uint_set(graph->t, i, i + 1, 1);
+            gsl_spmatrix_uint_set(graph->t, i + 1, i, 1);
+        }
+        // Relier le dernier sommet au premier pour former un cycle
+        gsl_spmatrix_uint_set(graph->t, n - 1, 0, 1);
+        gsl_spmatrix_uint_set(graph->t, 0, n - 1, 1);
+        graph->num_edges = n;
+    } else if (type == HOLEY) {
+        // Graphe avec des trous (pas d'arêtes entre certains sommets)
+        for (unsigned int i = 0; i < n - 1; i++) {
+            for (unsigned int j = i + 1; j < n; j++) {
+                if (rand() % 2 == 0) {  // Par exemple, on ajoute une arête aléatoirement
+                    gsl_spmatrix_uint_set(graph->t, i, j, 1);
+                    gsl_spmatrix_uint_set(graph->t, j, i, 1);
+                    graph->num_edges++;
+                }
+            }
+        }
+    }
+
+    return graph;
 }
 
 
-void initialize(struct graph_t * graph , unsigned int n ){
+void initialize(struct graph_t *graph, unsigned int n) {
+    // Créer un graphe de type TRIANGULAR avec n sommets
+    *graph = *createGraph(n, TRIANGULAR);
 
-  struct graph_t* graph = createGraph(n  ,TRIANGULAR) ; 
-  graph->num_objectives = 1 ; 
-  graph->objectives[0] = n/2  ; 
-  graph->start[0] = 0 ; 
-  graph->start[0] = n ; 
+    // Initialiser les objectifs et les positions des joueurs
+    graph->num_objectives = 1;
+    graph->objectives = (vertex_t*)malloc(sizeof(vertex_t));
+    graph->objectives[0] = n / 2;  // Placer l'objectif au centre du graphe (par exemple)
+
+    // Initialiser les positions de départ des joueurs
+    graph->start[0] = 0;  // Premier joueur au sommet 0
+    graph->start[1] = n - 1;  // Deuxième joueur au dernier sommet
+}
 
 
+void print_graph(struct graph_t *graph) {
+    printf("Graph Type: %d\n", graph->type);
+    printf("Number of vertices: %u\n", graph->num_vertices);
+    printf("Number of edges: %u\n", graph->num_edges);
+    
+    // Affichage de la matrice d'adjacence
+    printf("Adjacency Matrix:\n");
+    for (unsigned int i = 0; i < graph->num_vertices; i++) {
+        for (unsigned int j = 0; j < graph->num_vertices; j++) {
+            printf("%d ", gsl_spmatrix_uint_get(graph->t, i, j));
+        }
+        printf("\n");
+    }
+
+    // Affichage des positions de départ des joueurs
+    printf("Starting positions:\n");
+    for (int i = 0; i < NUM_PLAYERS; i++) {
+        printf("Player %d starts at vertex %u\n", i, graph->start[i]);
+    }
+
+    // Affichage des objectifs
+    printf("Objectives:\n");
+    for (unsigned int i = 0; i < graph->num_objectives; i++) {
+        printf("Objective %u: vertex %u\n", i, graph->objectives[i]);
+    }
+}
+
+void free_graph(struct graph_t *graph) {
+    gsl_spmatrix_uint_free(graph->t);
+    if (graph->objectives) {
+        free(graph->objectives);
+    }
+    free(graph);
 }
 
 
@@ -125,9 +153,11 @@ void testGraph(struct graph_t* graph) {
 int main() {
   unsigned int n = 10;  // Number of vertices in the graph
   struct graph_t* graph = createGraph(n, TRIANGULAR);
+  initialize(graph , n ) ; 
 
   if (graph) {
-    testGraph(graph);  // Test and display the graph edges
+    testGraph(graph); 
+    print_graph(graph) ;  // Test and display the graph edges
   }
 
   return 0;
