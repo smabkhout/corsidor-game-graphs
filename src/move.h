@@ -4,6 +4,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <gsl/gsl_spmatrix.h>
+#include <gsl/gsl_spmatrix_uint.h>
+#include <gsl/gsl_spblas.h>
+
 /* The number of players in the game */
 #define NUM_PLAYERS 2
 
@@ -27,5 +31,6 @@ struct move_t {
   vertex_t m;            // The id of a vertex
   struct edge_t e[2];    // The two edges for the wall
 };
+
 
 #endif // _CORS_MOVE_H_
