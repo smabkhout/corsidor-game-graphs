@@ -5,6 +5,7 @@
 #include "move.h"
 #include "graph.h"
 
+
 struct player_t player
 {
     enum player_color_t player_color;
@@ -64,12 +65,50 @@ void first_step(){
         }
     } 
 }
+struct move_t *make_first_move() {
+
+    struct move_t *first_move = malloc(sizeof(struct move_t));
+    first_move->c = NO_COLOR;
+    first_move->t = NO_TYPE;
+    first_move->m = 0
+    struct edge_t edge[2] = {0, 0};
+    first_move->e = edge;
+    return first_move;
+}
+
 int player_to_start(){
     return rand()%NUM_PLAYERS;
 }
 
 int main(int argc, char *argv[]){
-    struct graph_t graph = initilaize(5) // à compléter.....
+    int opt;
+    int mesh_size = 6;
+    char *graph_type = "T";
+
+    while ((opt = getopt(argc, argv, "m:t:")) != -1) {
+        switch (opt) {
+            case 'm':
+                mesh_size = atoi(optarg);
+                break;
+            case 't':
+                graph_type = optarg;
+                break;
+            default:
+                fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
+                exit(EXIT_FAILURE);
+        }
+    }
+
+    struct graph_t graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
+    struct graph_t graph2 = malloc(sizeof(struct graph_t)); 
+    struct graph_t globalGraph = malloc(sizeof(struct graph_t));
+    initialize(graph1, 8, TRIANGULAR);
+    initialize(graph2, 8, TRIANGULAR);
+    initialize(globalGraph, 8, TRIANGULAR);
+
+    struct move_t *first_move = make_first_move(*game);
+    
+
     if(syntax_test(argc) == -1){
         return EXIT_FAILURE;
     }
@@ -85,6 +124,20 @@ int main(int argc, char *argv[]){
     players[next].initialize(next, &g1);
     players[next].player_name = players[next].get_player_name();
     printf("Second Player:\t%s\n",  players[next].player_name);
+
+    struct board_t *board = board_init();
+
+
+
+    
+
+    printf("----------Starting Game----------\n");
+
+    for (int i = 0; i < NUM_PLAYERS; i++) {
+        players[i].finalize();
+        dlclose(players[i].library);
+    }
+    return 0;
 }
 
 
