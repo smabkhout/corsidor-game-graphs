@@ -16,7 +16,7 @@ struct player_t player
     vertex_t pos_actuel;
 };
 
-struct player_t players[NUM_PLAYERS];
+static struct player_t players[NUM_PLAYERS];
 
 
 void assert_dlsym(){

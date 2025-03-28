@@ -11,38 +11,31 @@ struct move_t create_move(enum player_color_t color, enum move_type_t type, vert
     move.c = color;
     move.t = type;
     move.m = vertex;
-
     if (type == WALL) {
         move.e[0] = edges[0];
         move.e[1] = edges[1];
     }
-
     return move;
 }
+
+
 
 int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
     if (!move || !graph) {
         return 0;  
     }
-
-    
     if (move->t == MOVE) {
-        
         if (move->m >= graph->num_vertices) {
             return 0;  
         }
     } else if (move->t == WALL) {
-
         if (move->e[0].fr >= graph->num_vertices || move->e[0].to >= graph->num_vertices ||
             move->e[1].fr >= graph->num_vertices || move->e[1].to >= graph->num_vertices) {
             return 0;  
         }
     }
-
     return 1;  
 }
-
-
 
 
 
@@ -53,21 +46,15 @@ void apply_move(struct move_t* move, struct graph_t* graph) {
         printf("Invalid move or graph!\n");
         return;
     }
-
-    // Verify if the move is valid
     if (!is_valid_move(move, graph)) {
         printf("Invalid move! Move could not be applied.\n");
         return;
     }
-
     if (move->t == MOVE) {
-        // Process the move (moving the player to a new vertex)
         vertex_t new_pos = move->m;
-        // You can handle additional logic here to update the player's position
-        // For example, you could update the player's position in graph->start
         printf("Player %d moves to vertex %u\n", move->c, new_pos);
-        // Update player's position in the graph (example for player 0)
-        graph->start[move->c] = new_pos;
+        players[move->c]->pos_actuel = new_pos;
+        // !!!! est ce qu on doit pas changer la position de player 
     } 
     else if (move->t == WALL) {
         // Process the wall move (modify the adjacency matrix)
@@ -155,6 +142,9 @@ void test_apply_move() {
         printf("\n");
     }
 }
+
+
+
 
 int main() {
     printf("=== Test create_move ===\n");
