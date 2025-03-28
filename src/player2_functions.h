@@ -1,10 +1,11 @@
 #ifndef _CORS_PLAYER2_FUNCTIONS_H_
 #define _CORS_PLAYER2_FUNCTIONS_H_
 
-int is_wall_ahead(struct player_t* player);
-
-void move_back_wall_ahead(struct player_t *player,struct graph_t * graph);
-
+int is_wall_ahead(struct player_t* player), struct graph_t * graph);
+int can_move(struct graph_t * graph, vertex_t a, vertex_t b);
+int can _place_wall(struct graph_t * graph, struct edge_t e[2]);
+struct move_t* best_move(struct player_t* player, struct graph_t * graph);
+enum move_type_t choose_move_wall(struct player_t* player, struct graph_t * graph);
 void make_wall_otherplayer_nearer(struct player_t*player1 , struct player_t*player2, struct graph_t* graph);
 
 int id_next_position(struct player_t *player);

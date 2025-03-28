@@ -18,7 +18,14 @@ struct move_t create_move(enum player_color_t color, enum move_type_t type, vert
     return move;
 }
 
-
+int is_empty_position(const struct graph_t* graph, vertex_t n ){
+    for ( int i=0; i<NUM_PLAYERS; i++){
+        if (players[i]->pos_actuel== n){
+            return 0;
+        }
+    }
+    return 1;
+}
 
 int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
     if (!move || !graph) {
