@@ -108,11 +108,12 @@ struct graph_t* graph_generate_T(int m) {
     int num_vertices = 3*(m*m) - 3*m + 1;
     int num_edges = 9*(m*m) - 15*m + 6;
     struct graph_t* g = graph_create(num_vertices);
-    printf("%d \n", g->num_edges);
     for (int l = 1-m; l<m; ++l)
     {
         for (int c = 1-m; c<m; ++c)
         {
+            if (!in_hexagon(l, c, m))
+                continue;
             int index = axial_to_index(l, c, m);
             for (int dir = 1; dir<7; ++dir)
             {
@@ -127,8 +128,8 @@ struct graph_t* graph_generate_T(int m) {
             }
         }
     }
-    printf("%d %d\n", num_edges, g->num_edges);
-    //assert(num_edges == g->num_edges);
+    g->num_edges = g->num_edges/2;
+    assert(num_edges == g->num_edges);
     return g;
 }
 
