@@ -1,4 +1,5 @@
 #include "move.h"
+#include "move_functions.h"
 #include "graph.h"
 #include <stdio.h>
 #include <gsl/gsl_spmatrix.h>
@@ -60,7 +61,7 @@ void apply_move(struct move_t* move, struct graph_t* graph) {
     if (move->t == MOVE) {
         vertex_t new_pos = move->m;
         printf("Player %d moves to vertex %u\n", move->c, new_pos);
-        graph->start[move->c] = new_pos;
+        players[move->c]->pos_actuel = new_pos;
         // !!!! est ce qu on doit pas changer la position de player 
     } 
     else if (move->t == WALL) {
