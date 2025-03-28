@@ -19,14 +19,35 @@ struct move_t create_move(enum player_color_t color, enum move_type_t type, vert
     return move;
 }
 
-int is_empty_position(const struct graph_t* graph, vertex_t n ){
-    for ( int i=0; i<NUM_PLAYERS; i++){
-        if (players[i]->pos_actuel== n){
+int can_place_wall(struct graph_t * graph, struct edge_t e[2]){
+  if( graph->t[e[0]->fr][e[0]->to] >0 && graph->t[e[1]->fr][e[1]->to]>0 ){
+    return 1;
+
+  }
+  return 0;
+
+}
+
+
+
+int is_empty_position( vertex_t n , vertex_t pos_other_player){
+        if (pos_other_player == n){
             return 0;
         }
-    }
     return 1;
 }
+
+int can_move(struct graph_t * graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player){
+
+    if(is_empty_position(b, pos_other_player) && graph->t[pos_player][b]>0){
+        return 1;
+    }
+    return 0;
+
+
+}
+
+
 
 int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
     if (!move || !graph) {
