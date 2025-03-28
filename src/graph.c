@@ -64,9 +64,9 @@ struct graph_t* createGraph(unsigned int n, enum graph_type_t type) {
 }
 
 
-void initialize(struct graph_t *graph, unsigned int n) {
+void initialize(struct graph_t *graph, unsigned int n , enum graph_type_t type ) {
     // Créer un graphe de type TRIANGULAR avec n sommets
-    *graph = *createGraph(n, HOLEY);
+    *graph = *createGraph(n, type );
 
     // Initialiser les objectifs et les positions des joueurs
     graph->num_objectives = 1;
@@ -118,9 +118,9 @@ void free_graph(struct graph_t *graph) {
 
 
 int main() {
-  unsigned int n = 10;  // Number of vertices in the graph
-  struct graph_t* graph = createGraph(n, HOLEY);
-  initialize(graph , n ) ; 
+  unsigned int n = 4;  // Number of vertices in the graph
+  struct graph_t* graph = malloc(sizeof(struct graph_t));
+  initialize(graph , n , CYCLIC) ; 
 
   if (graph) {
     print_graph(graph) ; 
