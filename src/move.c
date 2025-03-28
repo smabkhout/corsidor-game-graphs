@@ -44,7 +44,6 @@ int can_move(struct graph_t * graph, vertex_t pos_player, vertex_t b, vertex_t p
     }
     return 0;
 
-
 }
 
 

@@ -6,7 +6,6 @@
 
 struct board_t {
     struct move_t* moves;
-    enum player_color_t cells[BOARD_SIZE][BOARD_SIZE]; 
    // int walls[BOARD_SIZE][BOARD_SIZE];
     int wall_count;
     struct graph_t* graph;
@@ -14,15 +13,11 @@ struct board_t {
 };
 
 
-void board_init() {
+struct board_t* board_init(){
     struct board_t *board=malloc(sizeof(struct board_t));
     board->moves=malloc(sizeof(struct move_t));
-    board->size=BOARD_SIZE;
-    for (int i = 0; i < board->size; i++) {
-        for (int j = 0; j < board->size; j++) {
-            board->cells[i][j] = NO_COLOR; 
-        }
-    }
+    board->size=0;
+    return board;
 }
 
 void display_board(struct board_t *board) {
@@ -38,4 +33,16 @@ void display_board(struct board_t *board) {
         }
         printf("\n");
     }
+}
+
+
+void add_to_board(struct board_t* board, struct move_t move){
+    if (move->t == WALL ){
+        wall_count ++;
+
+    }
+    if ()
+    board->size++;
+    board->moves = realloc(board->moves, size*sizeof(struct board_t board))
+    board->moves[size-1]=move;
 }
