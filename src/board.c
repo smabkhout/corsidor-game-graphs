@@ -26,12 +26,11 @@ struct board_t* board_init(){
 }*/
 
 
-void add_to_board(struct board_t* board, struct move_t move){
+void add_move_to_board(struct board_t* board, struct move_t move){
     if (move->t == WALL ){
         wall_count ++;
 
     }
-    if ()
     board->size++;
     board->moves = realloc(board->moves, size*sizeof(struct board_t board))
     board->moves[size-1]=move;
