@@ -1,23 +1,23 @@
 #include <stdio.h>
 #include <dlfcn.h>
 #include <getopt.h>
+#include <stdlib.h>
 #include "player.h"
 #include "move.h"
 #include "graph.h"
 
 
-struct player_t player
-{
+struct player_t player{
     enum player_color_t player_color;
     char const* (*get_player_name)();
     void (*initialize)(unsigned int, struct graph_t*);
-    struct move_t (*play)(const struct move_t previous_move);
+    struct move_t (*play)(const struct move_t);
     void (*finalize)();
     void *library;
     vertex_t pos_actuel;
 };
 
-static struct player_t players[NUM_PLAYERS];
+struct player_t players[NUM_PLAYERS];
 
 
 void assert_dlsym(){
@@ -28,7 +28,7 @@ void assert_dlsym(){
   }
 }
 
-void load_player(struct player_t player, char *lib){
+void load_player(struct player_t *player, char *lib){
     void *library=dlopen(lib,RTLD_LAZY);
     if(!library){
       fputs(dlerror(),stderr);
@@ -56,7 +56,7 @@ int syntax_test(int argc) {
     return 0;
 }
 
-void first_step(){
+void first_step(int argc, char **argv){
     int j = 0;
     for (int i = 1; i < argc && j < NUM_PLAYERS; i++) {
         if (argv[i][0] != '-' && argv[i][0]   != '1' && argv[i][0] != '2' && argv[i][0] != '0') { 
@@ -70,9 +70,11 @@ struct move_t *make_first_move() {
     struct move_t *first_move = malloc(sizeof(struct move_t));
     first_move->c = NO_COLOR;
     first_move->t = NO_TYPE;
-    first_move->m = 0
-    struct edge_t edge[2] = {0, 0};
-    first_move->e = edge;
+    first_move->m = 0;
+    first_move->e[0].fr = 0;
+    first_move->e[0].to = 0;
+    first_move->e[1].fr = 0;
+    first_move->e[1].to = 0;
     return first_move;
 }
 
@@ -82,7 +84,7 @@ int player_to_start(){
 
 int main(int argc, char *argv[]){
     int opt;
-    int mesh_size = 6;
+   // int mesh_size = 6;
     char *graph_type = "T";
 
     while ((opt = getopt(argc, argv, "m:t:")) != -1) {
@@ -102,11 +104,11 @@ int main(int argc, char *argv[]){
     struct graph_t graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
     struct graph_t graph2 = malloc(sizeof(struct graph_t)); 
     struct graph_t globalGraph = malloc(sizeof(struct graph_t));
-    initialize(graph1, 8, TRIANGULAR);
-    initialize(graph2, 8, TRIANGULAR);
-    initialize(globalGraph, 8, TRIANGULAR);
+    initializeGraph(graph1, 8, TRIANGULAR);
+    initializeGraph(graph2, 8, TRIANGULAR);
+    initializeGraph(globalGraph, 8, TRIANGULAR);
 
-    struct move_t *first_move = make_first_move(*game);
+    struct move_t *first_move = make_first_move();
     
 
     if(syntax_test(argc) == -1){
@@ -115,17 +117,18 @@ int main(int argc, char *argv[]){
     int start_player = player_to_start();
     first_step();
     ///////////////this is the first player
-    players[start_player].initialize(start_player, , &g1);
+    players[start_player].initialize(start_player, , &graph1);
     players[start_player].player_name = players[start_player].get_player_name();
     printf("First player:\t%s\n", players[start_player].player_name);
 
     /////////////////////this is the second player 
     int next = (start_player + 1) % NUM_PLAYERS;
-    players[next].initialize(next, &g1);
+    players[next].initialize(next, &graph2);
     players[next].player_name = players[next].get_player_name();
     printf("Second Player:\t%s\n",  players[next].player_name);
 
     struct board_t *board = board_init();
+    add_move_to_board(board, *first_move)
 
 
 
