@@ -7,7 +7,7 @@
 #include "graph.h"
 
 
-struct player_t player{
+struct player_t{
     enum player_color_t player_color;
     char const* (*get_player_name)();
     void (*initialize)(unsigned int, struct graph_t*);
@@ -101,11 +101,11 @@ int main(int argc, char *argv[]){
         }
     }
 
-    struct graph_t graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
-    struct graph_t graph2 = malloc(sizeof(struct graph_t)); 
-    struct graph_t globalGraph = malloc(sizeof(struct graph_t));
-    initializeGraph(graph1, 8, TRIANGULAR);
-    initializeGraph(graph2, 8, TRIANGULAR);
+    struct graph_t *graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
+    struct graph_t *graph2 = malloc(sizeof(struct graph_t)); 
+    struct graph_t *globalGraph = malloc(sizeof(struct graph_t));
+    initialize_graph(graph1, 8, TRIANGULAR);
+    initialize_graph(graph2, 8, TRIANGULAR);
     initializeGraph(globalGraph, 8, TRIANGULAR);
 
     struct move_t *first_move = make_first_move();
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
     int start_player = player_to_start();
-    first_step();
+    first_step(argc, *argv);
     ///////////////this is the first player
     players[start_player].initialize(start_player, , &graph1);
     players[start_player].player_name = players[start_player].get_player_name();
@@ -128,7 +128,7 @@ int main(int argc, char *argv[]){
     printf("Second Player:\t%s\n",  players[next].player_name);
 
     struct board_t *board = board_init();
-    add_move_to_board(board, *first_move)
+    add_move_to_board(board, *first_move);
 
 
 
