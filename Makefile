@@ -7,6 +7,7 @@ LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 	-L$(GSL_PATH)/lib -L$(GSL_PATH)/lib64 \
 	-Wl,--rpath=${GSL_PATH}/lib
 
+
 all: build
 
 build: server client
@@ -24,6 +25,10 @@ server: server.o graph.o board.o
 	gcc $^ $(LDFLAGS) -o $@
 
 client: libPlayer1.so libPlayer2.so	
+
+alltests:
+	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
+	$(CC) -ftest-coverage $(CFLAGS) alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests
