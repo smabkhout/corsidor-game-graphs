@@ -16,13 +16,13 @@ struct board_t board ;
 
 char const* get_player_name()
 {
-  return "palyer1";
+  return "player1";
 }
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
 
-  printf("Player %d initialized on graph with %u vertices\n", id);
+  printf("Player %d initialized on graph with %u vertices\n", id, graph->num_vertices);
 }
 
 
