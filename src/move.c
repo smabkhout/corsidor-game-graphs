@@ -7,11 +7,14 @@
 #include <gsl/gsl_spblas.h>
 
 //on doit voir comment on peut generer wall sans que graph soit en parametre pour l utiliser dans la fct play
-void generate_wall(struct edge_t e[2] ){
+void generate_wall(struct edge_t e[2]) {
     srand(1);
-    vertex_t a = rand();
-    vertex_t b = rand();
+    e[0].fr = rand(); 
+    e[0].to = rand();
+    e[1].fr = rand();
+    e[1].to = rand();
 }
+
 
 
 

@@ -1,7 +1,7 @@
 #ifndef _CORS_BOARD_H_
 #define _CORS_BOARD_H_
-#include "move.h"
-#include "graph.h"
+#include "graph_functions.h"
+#include "move_functions.h"
 
 
 
@@ -16,5 +16,6 @@ struct board_t {
 struct board_t* board_init();
 //void display_board(struct board_t *board);
 void add_move_to_board(struct board_t* board, struct move_t move);
+void board_free(struct board_t* board);
 
 #endif // _CORS_BOARD_H_

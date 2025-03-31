@@ -1,16 +1,44 @@
+#ifndef MOVE_H
+#define MOVE_H
+
+#include "graph.h"
 #include "move.h"
+#include <stdlib.h>
+#include <stdio.h>
 
+// Fonction pour générer des murs dans le jeu.
+// Cette fonction remplit le tableau d'arêtes 'e' avec des positions aléatoires.
+void generate_wall(struct edge_t e[2]);
 
+// Fonction pour créer un mouvement.
+// Prend en entrée la couleur du joueur, le type de mouvement (déplacement ou mur),
+// la position du mouvement, et les arêtes associées si c'est un mur.
+// Retourne un objet de type 'move_t' représentant le mouvement créé.
+struct move_t create_move(enum player_color_t color, enum move_type_t type, vertex_t vertex, struct edge_t edges[2]);
 
-struct move_t create_move(enum player_color_t color, enum move_type_t type, vertex_t vertex, struct edge_t edges[2]) ; 
-
+// Fonction pour vérifier si un mur peut être placé.
+// Vérifie si les arêtes spécifiées sont valides dans le graphe donné.
+// Retourne 1 si le mur peut être placé, sinon 0.
 int can_place_wall(struct graph_t * graph, struct edge_t e[2]);
 
-int is_empty_position(const struct graph_t* graph, vertex_t n ); 
+// Fonction pour vérifier si une position est vide.
+// Vérifie si la position 'n' n'est pas occupée par un autre joueur à 'pos_other_player'.
+// Retourne 1 si la position est vide, sinon 0.
+int is_empty_position(vertex_t n, vertex_t pos_other_player);
 
+// Fonction pour vérifier si un joueur peut se déplacer.
+// Vérifie si le joueur à 'pos_player' peut se déplacer vers 'b' sans entrer en collision avec un autre joueur.
+// Retourne 1 si le mouvement est possible, sinon 0.
 int can_move(struct graph_t * graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player);
 
-int is_valid_move(const struct move_t* move, const struct graph_t* graph) ; 
+// Fonction pour vérifier si un mouvement est valide.
+// Vérifie si le mouvement donné est valide dans le contexte du graphe.
+// Retourne 1 si le mouvement est valide, sinon 0.
+int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 
-void apply_move(struct move_t* move, struct graph_t* graph) ;
+// Fonction pour appliquer un mouvement sur le graphe.
+// Modifie le graphe en fonction du mouvement donné.
+// Affiche un message si le mouvement est invalide ou si le graphe est nul.
+void apply_move(struct move_t* move, struct graph_t* graph);
 
+#endif // MOVE_H

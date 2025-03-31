@@ -7,6 +7,7 @@ struct board_t* board_init(){
     struct board_t *board=malloc(sizeof(struct board_t));
     board->moves=malloc(sizeof(struct move_t));
     board->size=0;
+    board->wall_count=0;
     return board;
 }
 
@@ -27,11 +28,16 @@ struct board_t* board_init(){
 
 
 void add_move_to_board(struct board_t* board, struct move_t move){
-    /*if (move.t == WALL ){
-        wall_count ++;
+    if (move.t == WALL ){
+        board->wall_count++;
 
-    }*/
+    }
     board->moves=realloc(board->moves,(board->size+1)*sizeof(struct move_t));
-    board->moves[board->size]=move ;
+    board->moves[board->size]=move;
     board->size++;
+}
+
+void board_free(struct board_t* board){
+    free(board->moves);
+    free(board);
 }

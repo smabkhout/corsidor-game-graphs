@@ -1,4 +1,4 @@
-#include "graph.h"
+#include "graph_functions.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>

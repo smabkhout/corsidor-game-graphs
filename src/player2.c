@@ -1,18 +1,11 @@
 
 #include "graph.h"
-#include "graph_functions.h"
-#include "move_functions.h"
 #include "player.h"
-#include "move_functions.h"
-#include "move.h"
 #include "board.h"
 #include <stdlib.h>
 #include <stdio.h>
 
-struct board_t board ; 
-
-
-
+struct board_t *board ; 
 
 char const* get_player_name()
 {
@@ -36,12 +29,12 @@ struct move_t play(const struct move_t previous_move) {
     unsigned int new_pos = previous_move.m;  
 
     while (1) {
-        new_pos = (new_pos + 1) % BOARD_SIZE;  
+        new_pos = (new_pos + 1) % board->size;  
 
         
         move = create_move(previous_move.c, MOVE, new_pos, NULL);
 
-        if (is_valid_move(&move, board.graph)) {
+        if (is_valid_move(&move, board->graph)) {
             printf("Player %d moves to vertex %u\n", move.c, move.m);
             break;  
         }
@@ -52,13 +45,12 @@ struct move_t play(const struct move_t previous_move) {
 
 
 
-void finalize()
-{
-  //
+void finalize(){
+  board_free(board);
 }
 
 
-int main() {
+/*int main() {
     unsigned int n = 4;  // Number of vertices in the graph
     struct graph_t* graph = malloc(sizeof(struct graph_t));
     initialize_graph(graph , n , CYCLIC) ; 
@@ -80,4 +72,4 @@ int main() {
     printf("New move: Player %d moves to vertex %u\n", new_move.c, new_move.m);
 
     return 0;
-}
+}*/

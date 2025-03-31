@@ -20,18 +20,16 @@ libPlayer1.so: player1.o
 libPlayer2.so: player2.o 
 	gcc -shared -fPIC $^ -o $@
 
-server: server.o graph.o board.o graph.o player1.o player2.o graph_functions.h
+server: server.o graph.o board.o graph.o player1.o player2.o 
 	$(CC) -o $@ $^ $(LDFLAGS)
 
-client:
+client: libPlayer1.so libPlayer2.so	
 
-alltests:
 
 test: alltests
 
 install: server client test
-	@cp server install/
-	@cp alltests install/
+	cp server libPlayer1.so libPlayer2.so alltests install
 
 clean:
 	@rm -f *~ src/*~ test/*~

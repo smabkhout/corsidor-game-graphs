@@ -45,7 +45,5 @@ struct graph_t {
   vertex_t* objectives;         // Objectives of the graph
 };
 
-size_t find(void* const s[], size_t size, void* c, );
-void graph_generate_T(int m, struct graph_t *g, int (*in_hexagon)(int l, int c, int m));
 
 #endif // _CORS_GRAPH_H_

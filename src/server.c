@@ -3,9 +3,7 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include "player.h"
-#include "move.h"
 #include "graph.h"
-#include "graph_functions.h"
 #include "board.h"
 
 
@@ -85,23 +83,27 @@ int player_to_start(){
 }
 
 int main(int argc, char *argv[]){
-    /*int opt;
-    int mesh_size = 6;
-    char *graph_type = "T";
+    char *type_graph = NULL;
+    int size_mesh = -1;     
 
+    int opt;
     while ((opt = getopt(argc, argv, "m:t:")) != -1) {
         switch (opt) {
             case 'm':
-                mesh_size = atoi(optarg);
+                size_mesh = atoi(optarg);
                 break;
             case 't':
-                graph_type = optarg;
+                type_graph = optarg;
                 break;
             default:
                 fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
-    }*/
+    }
+
+    // Affichage des paramètres
+    printf("Type de graphe: %s\n", type_graph);
+    printf("Taille de la maille: %d\n", size_mesh);
 
     struct graph_t *graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
     struct graph_t *graph2 = malloc(sizeof(struct graph_t)); 
