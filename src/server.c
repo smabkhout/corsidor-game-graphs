@@ -5,6 +5,8 @@
 #include "player.h"
 #include "move.h"
 #include "graph.h"
+#include "graph_functions.h"
+#include "board.h"
 
 
 struct player_t{
@@ -84,7 +86,7 @@ int player_to_start(){
 
 int main(int argc, char *argv[]){
     int opt;
-   // int mesh_size = 6;
+    int mesh_size = 6;
     char *graph_type = "T";
 
     while ((opt = getopt(argc, argv, "m:t:")) != -1) {
@@ -106,7 +108,7 @@ int main(int argc, char *argv[]){
     struct graph_t *globalGraph = malloc(sizeof(struct graph_t));
     initialize_graph(graph1, 8, TRIANGULAR);
     initialize_graph(graph2, 8, TRIANGULAR);
-    initializeGraph(globalGraph, 8, TRIANGULAR);
+    initialize_graph(globalGraph, 8, TRIANGULAR);
 
     struct move_t *first_move = make_first_move();
     
@@ -115,17 +117,23 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
     int start_player = player_to_start();
-    first_step(argc, *argv);
+    first_step(argc, argv);
     ///////////////this is the first player
-    players[start_player].initialize(start_player, , &graph1);
-    players[start_player].player_name = players[start_player].get_player_name();
-    printf("First player:\t%s\n", players[start_player].player_name);
+    players[start_player].initialize(start_player, graph1);
+    /*players[start_player].player_name = players[start_player].get_player_name();
+    printf("First player:\t%s\n", players[start_player].player_name);*/
+    const char *player_name1 = players[start_player].get_player_name();
+    printf("First player:\t%s\n", player_name1);
+
 
     /////////////////////this is the second player 
     int next = (start_player + 1) % NUM_PLAYERS;
-    players[next].initialize(next, &graph2);
-    players[next].player_name = players[next].get_player_name();
-    printf("Second Player:\t%s\n",  players[next].player_name);
+    players[next].initialize(next, graph2);
+   /* players[next].player_name = players[next].get_player_name();
+    printf("Second Player:\t%s\n",  players[next].player_name);*/
+    const char *player_name2 = players[next].get_player_name();
+    printf("First player:\t%s\n", player_name2);
+
 
     struct board_t *board = board_init();
     add_move_to_board(board, *first_move);
