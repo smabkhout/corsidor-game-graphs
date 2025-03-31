@@ -85,7 +85,7 @@ int player_to_start(){
 }
 
 int main(int argc, char *argv[]){
-    int opt;
+    /*int opt;
     int mesh_size = 6;
     char *graph_type = "T";
 
@@ -101,7 +101,7 @@ int main(int argc, char *argv[]){
                 fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
-    }
+    }*/
 
     struct graph_t *graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
     struct graph_t *graph2 = malloc(sizeof(struct graph_t)); 
