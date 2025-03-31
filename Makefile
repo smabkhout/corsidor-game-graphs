@@ -30,6 +30,8 @@ alltests:
 test: alltests
 
 install: server client test
+	@cp server install/
+	@cp alltests install/
 
 clean:
 	@rm -f *~ src/*~ test/*~
