@@ -32,14 +32,13 @@ struct move_t create_move(enum player_color_t color, enum move_type_t type, vert
     return move;
 }
 
-int can_place_wall(struct graph_t * graph, struct edge_t e[2]){
-  if( graph->t[e[0]->fr][e[0]->to] >0 && graph->t[e[1]->fr][e[1]->to]>0 ){
-    return 1;
-
-  }
-  return 0;
-
+int can_place_wall(struct graph_t *graph, struct edge_t e[2]) {
+    if (gsl_spmatrix_uint_get(graph->t, e[0].fr, e[0].to) > 0 && gsl_spmatrix_uint_get(graph->t, e[1].fr, e[1].to) > 0) {
+        return 1; 
+    }
+    return 0; 
 }
+
 
 
 
@@ -50,14 +49,13 @@ int is_empty_position( vertex_t n , vertex_t pos_other_player){
     return 1;
 }
 
-int can_move(struct graph_t * graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player){
-
-    if(is_empty_position(b, pos_other_player) && graph->t[pos_player][b]>0){
+int can_move(struct graph_t *graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player) {
+    if (is_empty_position(b, pos_other_player) && gsl_spmatrix_uint_get(graph->t, pos_player, b) > 0) {
         return 1;
     }
     return 0;
-
 }
+
 
 
 
@@ -94,7 +92,7 @@ void apply_move(struct move_t* move, struct graph_t* graph) {
     if (move->t == MOVE) {
         vertex_t new_pos = move->m;
         printf("Player %d moves to vertex %u\n", move->c, new_pos);
-        players[move->c]->pos_actuel = new_pos;
+       // players[move->c]->pos_actuel = new_pos; ///La structure player_t et le tableau players doit être seulement utilisé dans server.c seulement!!!!!!!!!!!!!!!!
         // !!!! est ce qu on doit pas changer la position de player 
     } 
     else if (move->t == WALL) {
