@@ -1,20 +1,17 @@
 
-#include <gsl/gsl_spmatrix.h>
 #include "graph.h"
-
+#include "graph_functions.h"
+#include "move_functions.h"
 #include "player.h"
 #include "move_functions.h"
 #include "move.h"
 #include "board.h"
-#include "graph.h"
 #include <stdlib.h>
 #include <stdio.h>
 
+struct board_t board ; 
 
 
-void initialize(unsigned int player_id, struct graph_t* graph){
-  //
-}
 
 
 char const* get_player_name()
@@ -22,6 +19,11 @@ char const* get_player_name()
   return "palyer1";
 }
 
+
+void initialize(unsigned int id, struct graph_t* graph) {
+
+  printf("Player %d initialized on graph with %u vertices\n", id);
+}
 
 
 
@@ -39,7 +41,7 @@ struct move_t play(const struct move_t previous_move) {
         
         move = create_move(previous_move.c, MOVE, new_pos, NULL);
 
-        if (is_valid_move(&move, board->graph)) {
+        if (is_valid_move(&move, board.graph)) {
             printf("Player %d moves to vertex %u\n", move.c, move.m);
             break;  
         }
@@ -52,17 +54,16 @@ struct move_t play(const struct move_t previous_move) {
 
 void finalize()
 {
-
+  //
 }
 
 
 int main() {
     unsigned int n = 4;  // Number of vertices in the graph
     struct graph_t* graph = malloc(sizeof(struct graph_t));
-    initialize(graph , n , CYCLIC) ; 
+    initialize_graph(graph , n , CYCLIC) ; 
 
     
-    // Initialisation de la position initiale (par exemple à la position 0)
     struct move_t previous_move;
     previous_move.c = 1;  // Exemple de couleur de joueur
     previous_move.t = MOVE;

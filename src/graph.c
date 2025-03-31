@@ -3,8 +3,10 @@
 #include <gsl/gsl_spmatrix.h>
 #include "graph.h"
 
+#include "graph_functions.h"
 
-#include "graph.h"
+
+
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -115,8 +117,7 @@ void free_graph(struct graph_t *graph) {
 }
 
 
-
-
+/*
 int main() {
   unsigned int n = 4;  // Number of vertices in the graph
   struct graph_t* graph = malloc(sizeof(struct graph_t));
@@ -128,3 +129,5 @@ int main() {
 
   return 0;
 }
+
+*/
