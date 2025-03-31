@@ -4,18 +4,26 @@
 #include "board.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include<time.h>
 //enum graph_type_t type;
 struct board_t *board ; 
 
 char const* get_player_name()
 {
-  return "player1";
+  srand(time(NULL));
+  char *names[] = {"Dina", "Salah"};
+  return names[rand() % 2];
 }
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
+  if (id > 1 || graph == NULL) {
+    return; 
+  }
+  graph->start[id] = 35;
 
-  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives", id , graph-> num_vertices , graph->num_edges , graph->num_objectives) ; 
+  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph-> num_vertices , graph->num_edges , graph->num_objectives);
+
 }
 
 
@@ -40,7 +48,8 @@ struct move_t play(const struct move_t previous_move) {
         }
     }
 
-    return move; 
+    return move;
+
 }
 
 

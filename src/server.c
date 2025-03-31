@@ -32,7 +32,7 @@ void assert_dlsym(){
 void load_player(struct player_t *player, char *lib){
     void *library=dlopen(lib,RTLD_LAZY);
     if(!library){
-      fputs(dlerror(),stderr);
+      fprintf(stderr, "Error opening library %s: %s\n", lib, dlerror());
       exit(1);
     }
 
@@ -57,15 +57,32 @@ int syntax_test(int argc) {
     return 0;
 }
 
-void first_step(int argc, char **argv){
+/*void first_step(int argc, char **argv){
     int j = 0;
     for (int i = 1; i < argc && j < NUM_PLAYERS; i++) {
-        if (argv[i][0] != '-' && argv[i][0]   != '1' && argv[i][0] != '2' && argv[i][0] != '0') { 
+        if (argv[i][0] != '-' && argv[i][0]   != '1' && argv[i][0] != '2' && argv[i][0] != '0' && argv[i][0] != '5') { 
             load_player(&players[j], argv[i]);
             j++;
         }
     } 
+}*/
+void first_step(int argc, char **argv) {
+    int j = 0;
+    for (int i = optind; i < argc && j < NUM_PLAYERS; i++) {
+        load_player(&players[j], argv[i]);
+        j++;
+    }
 }
+
+const char* move_type_to_string(enum move_type_t type) {
+    switch (type) {
+        case NO_TYPE: return "NO_TYPE";
+        case WALL: return "WALL";
+        case MOVE: return "MOVE";
+        default: return "UNKNOWN_TYPE";
+    }
+}
+
 struct move_t *make_first_move() {
 
     struct move_t *first_move = malloc(sizeof(struct move_t));
@@ -84,8 +101,8 @@ int player_to_start(){
 }
 
 int main(int argc, char *argv[]){
+    int size_mesh = -1;
     char *type_graph = NULL;
-    int size_mesh = -1;     
 
     int opt;
     while ((opt = getopt(argc, argv, "m:t:")) != -1) {
@@ -102,9 +119,15 @@ int main(int argc, char *argv[]){
         }
     }
 
-    // Affichage des paramètres
+    if (argc - optind != NUM_PLAYERS) {
+        fprintf(stderr, "Error: You must provide exactly two player libraries.\n");
+        fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
     printf("Type de graphe: %s\n", type_graph);
     printf("Taille de la maille: %d\n", size_mesh);
+    first_step(argc, argv);
 
     struct graph_t *graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
     struct graph_t *graph2 = malloc(sizeof(struct graph_t)); 
@@ -120,7 +143,7 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
     int start_player = player_to_start();
-    first_step(argc, argv);
+    //first_step(argc, argv);
     ///////////////this is the first player
     players[start_player].initialize(start_player, graph1);
     /*players[start_player].player_name = players[start_player].get_player_name();
@@ -135,7 +158,7 @@ int main(int argc, char *argv[]){
    /* players[next].player_name = players[next].get_player_name();
     printf("Second Player:\t%s\n",  players[next].player_name);*/
     const char *player_name2 = players[next].get_player_name();
-    printf("First player:\t%s\n", player_name2);
+    printf("Second player:\t%s\n", player_name2);
 
 
     struct board_t *board = board_init();
@@ -146,6 +169,12 @@ int main(int argc, char *argv[]){
     
 
     printf("----------Starting Game----------\n");
+    struct move_t current_move = *first_move;
+    printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
+    printf("In the vertex %d \n", current_move.m);
+
+
+
 
     free(graph1) ; 
     free(graph2) ;
