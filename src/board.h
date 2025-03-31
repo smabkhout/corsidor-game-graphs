@@ -5,11 +5,9 @@
 
 
 
-#define BOARD_SIZE 8 
 
 struct board_t {
     struct move_t* moves;
-   // int walls[BOARD_SIZE][BOARD_SIZE];
     int wall_count;
     struct graph_t* graph;
     int size;
