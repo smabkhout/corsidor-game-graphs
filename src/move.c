@@ -1,6 +1,4 @@
-#include "move.h"
 #include "move_functions.h"
-#include "graph.h"
 #include <stdio.h>
 #include <gsl/gsl_spmatrix.h>
 #include <gsl/gsl_spmatrix_uint.h>

@@ -20,7 +20,7 @@ libPlayer1.so: player1.o move.o board.o graph.o
 libPlayer2.so: player2.o move.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
-server: server.o graph.o board.o graph.o
+server: server.o graph.o board.o
 	gcc $^ $(LDFLAGS) -o $@
 
 client: libPlayer1.so libPlayer2.so	

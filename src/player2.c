@@ -4,7 +4,7 @@
 #include "board.h"
 #include <stdlib.h>
 #include <stdio.h>
-
+//enum graph_type_t type;
 struct board_t *board ; 
 
 char const* get_player_name()

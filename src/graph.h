@@ -7,7 +7,6 @@
 #include <gsl/gsl_spblas.h>
 
 #include "move.h"
-#include "graph_functions.h"
 
 /* Possible directions of the graph */
 enum dir_t {

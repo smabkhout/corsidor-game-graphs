@@ -3,9 +3,10 @@
 #include <getopt.h>
 #include <stdlib.h>
 #include "player.h"
-#include "graph.h"
+#include "graph_functions.h"
 #include "board.h"
 
+//enum graph_type_t type;
 
 struct player_t{
     enum player_color_t player_color;

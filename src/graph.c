@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <gsl/gsl_spmatrix.h>
-#include "graph.h"
-
 #include "graph_functions.h"
-
-
-
 #include <stdlib.h>
 #include <stdio.h>
+
+enum graph_type_t type;
 
 struct graph_t* createGraph(unsigned int n, enum graph_type_t type) {
     struct graph_t* graph = (struct graph_t*)malloc(sizeof(struct graph_t));
