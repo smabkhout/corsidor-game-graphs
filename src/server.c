@@ -1,4 +1,4 @@
-#include <stdio.h>
+    #include <stdio.h>
 #include <dlfcn.h>
 #include <getopt.h>
 #include <stdlib.h>
@@ -147,8 +147,12 @@ int main(int argc, char *argv[]){
 
     printf("----------Starting Game----------\n");
 
+    free(graph1) ; 
+    free(graph2) ;
+    free(globalGraph) ; 
     for (int i = 0; i < NUM_PLAYERS; i++) {
-        players[i].finalize();
+        //players[i].finalize();
+
         dlclose(players[i].library);
     }
     return 0;

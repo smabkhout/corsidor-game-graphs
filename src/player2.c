@@ -15,7 +15,7 @@ char const* get_player_name()
 
 void initialize(unsigned int id, struct graph_t* graph) {
 
-  printf("Player %d initialized on graph with %u vertices\n", id, graph->num_vertices);
+  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives", id , graph-> num_vertices , graph->num_edges , graph->num_objectives) ; 
 }
 
 
