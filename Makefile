@@ -14,10 +14,10 @@ build: server client
 %.o: src/%.c
 	$(CC) $< $(CFLAGS) -c
 
-libPlayer1.so: player1.o 
+libPlayer1.so: player1.o move.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
-libPlayer2.so: player2.o 
+libPlayer2.so: player2.o move.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
 server: server.o graph.o board.o graph.o player1.o player2.o 
