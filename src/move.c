@@ -78,12 +78,12 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
         if (move->m >= graph->num_vertices) {
             return 0;  
         }
-    } else if (move->t == WALL) {
+    }/* else if (move->t == WALL) {
         if (move->e[0].fr >= graph->num_vertices || move->e[0].to >= graph->num_vertices ||
             move->e[1].fr >= graph->num_vertices || move->e[1].to >= graph->num_vertices) {
             return 0;  
         }
-    }
+    }*/
     return 1;  
 }
 

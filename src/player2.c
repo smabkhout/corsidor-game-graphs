@@ -32,24 +32,24 @@ struct move_t play(const struct move_t previous_move) {
     struct move_t move;
     
     move.c = previous_move.c; 
-     srand(time(NULL));
-    enum move_type_t mv = rand()%2 + 1;
+    srand(time(NULL));
+    enum move_type_t mv = 2;
     move.t = mv; 
 
     unsigned int new_pos = previous_move.m;
-    struct edge_t e[2] ;
-    generate_wall(e); 
+    //struct edge_t e[2] ;
+    //generate_wall(e); 
 
     while (1) {
-        new_pos = (new_pos + 1) % board->size;  
+        new_pos = (new_pos + 1) % 61 ;  
 
         
         move = create_move(previous_move.c, MOVE, new_pos, NULL);
 
-        if (is_valid_move(&move, board->graph)) {
-            printf("Player %d moves to vertex %u\n", move.c, move.m);
+        //if (is_valid_move(&move, board->graph)) {
+          //  printf("Player %d moves to vertex %u\n", move.c, move.m);
             break;  
-        }
+        //}
     }
 
     return move;
@@ -59,7 +59,7 @@ struct move_t play(const struct move_t previous_move) {
 
 
 void finalize(){
-  board_free(board);
+  //board_free(board);
 }
 
 

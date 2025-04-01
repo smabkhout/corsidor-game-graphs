@@ -160,11 +160,12 @@ int main(int argc, char *argv[]){
 
 
     struct board_t *board = board_init();
+    board->graph = globalGraph ; 
     add_move_to_board(board, *first_move);
 
 
 
-    
+    printf("board_size  : %d  \n" , board->size) ; 
 
     printf("----------Starting Game----------\n");
     struct move_t current_move = *first_move;
@@ -172,7 +173,7 @@ int main(int argc, char *argv[]){
     printf("In the vertex %d \n", current_move.m);
     printf("The board size is %d\n", board->size);
 
-   /* int winner = -1;
+    int winner = -1;
     while (winner == -1) {
         struct move_t move = players[start_player].play(current_move);
         if (move.t == MOVE) {
@@ -180,17 +181,17 @@ int main(int argc, char *argv[]){
             add_move_to_board(board, move);
             current_move = move;
 
-          /*  if (move.m == globalGraph->objectives[0]) {
+            if (move.m == globalGraph->objectives[0]) {
                 winner = start_player;
-            }*/
-       /* } else {
+            }
+       } else {
             printf("Invalid move by player %s\n", players[start_player].get_player_name());
         }
 
         start_player = next;
     }
 
-    printf("Player %s wins!\n", players[winner].get_player_name());*/
+    printf("Player %s wins!\n", players[winner].get_player_name());
 
 
 
