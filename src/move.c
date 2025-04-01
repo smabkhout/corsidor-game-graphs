@@ -81,50 +81,6 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
 }
 
 
-
-
-/* Apply a move and modify the graph accordingly */
-void apply_move(struct move_t* move, struct graph_t* graph) {
-    if (!move || !graph) {
-        printf("Invalid move or graph!\n");
-        return;
-    }
-    if (!is_valid_move(move, graph)) {
-        printf("Invalid move! Move could not be applied.\n");
-        return;
-    }
-    if (move->t == MOVE) {
-        vertex_t new_pos = move->m;
-        printf("Player %d moves to vertex %u\n", move->c, new_pos);
-       // players[move->c]->pos_actuel = new_pos; ///La structure player_t et le tableau players doit être seulement utilisé dans server.c seulement!!!!!!!!!!!!!!!!
-        // !!!! est ce qu on doit pas changer la position de player 
-    } 
-    else if (move->t == WALL) {
-        // Process the wall move (modify the adjacency matrix)
-        vertex_t v1 = move->e[0].fr;
-        vertex_t v2 = move->e[0].to;
-        vertex_t v3 = move->e[1].fr;
-        vertex_t v4 = move->e[1].to;
-
-        // Update adjacency matrix to remove the edges (add the wall)
-        // Set the corresponding entries to 0 (no edge between these vertices)
-        gsl_spmatrix_uint_set(graph->t, v1, v2, 0);  // Remove edge v1 -> v2
-        gsl_spmatrix_uint_set(graph->t, v2, v1, 0);  // Remove edge v2 -> v1 (undirected graph)
-
-        gsl_spmatrix_uint_set(graph->t, v3, v4, 0);  // Remove edge v3 -> v4
-        gsl_spmatrix_uint_set(graph->t, v4, v3, 0);  // Remove edge v4 -> v3 (undirected graph)
-
-        printf("Wall applied between vertices %u and %u, and %u and %u\n", v1, v2, v3, v4);
-    }
-}
-
-
-
-
-
-
-
-
 int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n){
     int min=INT_MAX;
     unsigned int index = graph->num_vertices+1;

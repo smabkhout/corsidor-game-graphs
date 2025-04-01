@@ -12,7 +12,7 @@ all: build
 
 build: server client
 
-%.o: src/%.c
+%.o: src/%.c 
 	$(CC) $< $(CFLAGS) -c
 
 libPlayer1.so: player1.o move.o board.o graph.o
@@ -26,9 +26,10 @@ server: server.o graph.o board.o
 
 client: libPlayer1.so libPlayer2.so	
 
-alltests:
+alltests: graph.o
+	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
 	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
-	$(CC) -ftest-coverage $(CFLAGS) alltests.o $(LDFLAGS) -lgcov -o $@
+	$(CC) -ftest-coverage $(CFLAGS) graph.o graph_test.o  alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests

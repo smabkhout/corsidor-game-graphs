@@ -41,10 +41,6 @@ int can_move(struct graph_t * graph, vertex_t pos_player, vertex_t b, vertex_t p
 // Retourne 1 si le mouvement est valide, sinon 0.
 int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 
-// Fonction pour appliquer un mouvement sur le graphe.
-// Modifie le graphe en fonction du mouvement donné.
-// Affiche un message si le mouvement est invalide ou si le graphe est nul.
-void apply_move(struct move_t* move, struct graph_t* graph);
 
 
 int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n);
