@@ -58,7 +58,7 @@ struct move_t play(const struct move_t previous_move) {
 
 
 
-int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2) {
+int is_connected1(struct graph_t *graph, vertex_t v1, vertex_t v2) {
     if (!graph || v1 >= graph->num_vertices || v2 >= graph->num_vertices) {
         return 0;  // Vérification de validité des indices
     }
@@ -79,7 +79,7 @@ struct move_t play(const struct move_t previous_move) {
 
     // Trouver une position voisine valide
     for (unsigned int i = 0; i < board->graph->num_vertices; i++) {
-        if (is_connected(board->graph, board->graph->start[move.c], i)) {
+        if (is_connected1(board->graph, board->graph->start[move.c], i)) {
             move.m = i;
             board->graph->start[move.c] = 1 ; 
             printf("Player %d moves to vertex %u\n", move.c, move.m);
