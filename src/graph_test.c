@@ -74,9 +74,10 @@ const struct axial_t directions[7] = {
 };
 
 void graph_generate(int m, struct graph_t *g, int (*in_hexagon)(int l, int c, int m)) {
-  if (m < 2)
+  if (m < 2) {
     perror("Failed to create graph; m < 2");
     return;
+  }
   int num_vertices = 3 * (m * m) - 3 * m + 1;
   int num_edges = 9 * (m * m) - 15 * m + 6;
   // struct graph_t* g = graph_create(num_vertices);
