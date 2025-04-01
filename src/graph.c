@@ -42,7 +42,7 @@ int in_hexagon_C(int l, int c, int m) {
          ((-c == m - 1) && (l >= 0 && l < m)) ||
          ((-c == m - 2) && (l >= -1 && l < m)) ||
 
-         (k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2);
+         (((abs(l) <= m - 1) && (abs(c) <= m - 1)) && ((k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2)));
 }
 
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
