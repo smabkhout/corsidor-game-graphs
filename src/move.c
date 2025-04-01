@@ -3,6 +3,7 @@
 #include <gsl/gsl_spmatrix.h>
 #include <gsl/gsl_spmatrix_uint.h>
 #include <gsl/gsl_spblas.h>
+#include <math.h>
 
 
 
@@ -124,8 +125,8 @@ void apply_move(struct move_t* move, struct graph_t* graph) {
 
 
 
-/*int distance_minimal(int d[], int visited[], int n){
-    int min=10000;
+int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n){
+    int min=INT_MAX;
     unsigned int index = graph->num_vertices+1;
     for(unsigned int i=0;i<n;i++){
         if(!visited[i] && d[i]<min){
@@ -141,13 +142,13 @@ void apply_move(struct move_t* move, struct graph_t* graph) {
 void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]){
     int visited[graph->num_vertices];
     for (unsigned int i=0; i<graph->num_vertices; i++){
-        d[i]=INF;
+        d[i]=INT_MAX;
         prev[i]=-1;
         visited[i]=0;
     }
     d[a]=0;
     while(1){
-        int index_min =  distance_minimal(d, visited, graph->num_vertices);
+        unsigned int index_min =  distance_minimal(graph, d, visited, graph->num_vertices);
         if (index_min >graph->num_vertices){
             break;
         }
@@ -166,7 +167,7 @@ void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num
 
     }
     
-}*/
+}
 
 void test_create_move() {
     struct edge_t edges[2] = {{0, 1}, {1, 2}};
