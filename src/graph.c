@@ -38,7 +38,7 @@ int in_hexagon_C(int l, int c, int m) {
 
          ((c == m - 1) && (l <= 0 && l > -m)) ||
          ((c == m - 2) && (l <= 1 && l > -m)) ||
-         
+
          ((-c == m - 1) && (l >= 0 && l < m)) ||
          ((-c == m - 2) && (l >= -1 && l < m)) ||
 
@@ -48,6 +48,9 @@ int in_hexagon_C(int l, int c, int m) {
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m) {
   // à faire ...
+  (void) l;
+  (void) c;
+  (void) m;
   return (abs(l) == m - 1);
 }
 
@@ -160,9 +163,9 @@ void graph_print_matrix(const struct graph_t *g) {
   if (!g)
     return;
   printf("Matrice d'adjacence (%d x %d) :\n", g->num_vertices, g->num_vertices);
-  for (int i = 0; i < g->num_vertices; ++i) {
+  for (unsigned int i = 0; i < g->num_vertices; ++i) {
     printf("[ ");
-    for (int j = 0; j < g->num_vertices; ++j) {
+    for (unsigned int j = 0; j < g->num_vertices; ++j) {
       int dir = gsl_spmatrix_uint_get(g->t, i, j);
       printf("%d ", dir);
     }
