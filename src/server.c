@@ -1,10 +1,11 @@
-    #include <stdio.h>
+#include <stdio.h>
 #include <dlfcn.h>
 #include <getopt.h>
 #include <stdlib.h>
 #include "player.h"
 #include "graph_functions.h"
 #include "board.h"
+#include<time.h>
 
 //enum graph_type_t type;
 
@@ -97,6 +98,7 @@ struct move_t *make_first_move() {
 }
 
 int player_to_start(){
+    srand(time(NULL));
     return rand()%NUM_PLAYERS;
 }
 

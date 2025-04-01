@@ -32,7 +32,7 @@ struct move_t play(const struct move_t previous_move) {
     struct move_t move;
     
     move.c = previous_move.c; 
-    srand(0);
+    srand(time(NULL));
     enum move_type_t mv = rand()%2 + 1;
     move.t = mv; 
 
