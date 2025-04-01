@@ -207,13 +207,13 @@ void graph_free(struct graph_t *g) {
   free(g);
 }
 
-int main() {
-  //   struct graph_t *g1 = createGraph(3, TRIANGULAR);
-  //   graph_print(g1);
-  //   graph_free(g1);
+// int main() {
+//   //   struct graph_t *g1 = createGraph(3, TRIANGULAR);
+//   //   graph_print(g1);
+//   //   graph_free(g1);
 
-  struct graph_t *g2 = createGraph(5, CYCLIC);
-  graph_print(g2);
-  graph_free(g2);
-  return 0;
-}
+//   struct graph_t *g2 = createGraph(5, CYCLIC);
+//   graph_print(g2);
+//   graph_free(g2);
+//   return 0;
+// }
