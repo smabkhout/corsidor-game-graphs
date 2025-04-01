@@ -6,7 +6,7 @@
 
 
 
-struct graph_t* createGraph(unsigned int n, enum graph_type_t type);
+struct graph_t* createGraph(int n, enum graph_type_t type);
 
 
 void initialize_graph(struct graph_t *graph, unsigned int n , enum graph_type_t type ); 

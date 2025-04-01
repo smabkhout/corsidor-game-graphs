@@ -1,130 +1,217 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <gsl/gsl_spmatrix.h>
+#include "graph.h"
 #include "graph_functions.h"
-#include <stdlib.h>
+#include <assert.h>
+#include <math.h>
 #include <stdio.h>
+#include <stdlib.h>
 
-enum graph_type_t type;
+// Coordonnées axiales pour pavage hexagonal : (0, 0) en centre, (0, 1) vecteur
+// déplacement East, (1, 0) vecteur déplacement North East, (1, -1) vecteur
+// déplacement North West,
+struct axial_t {
+  int l; // ligne
+  int c; // colonne
+};
 
-struct graph_t* createGraph(unsigned int n, enum graph_type_t type) {
-    struct graph_t* graph = (struct graph_t*)malloc(sizeof(struct graph_t));
-    if (!graph) {
-        perror("Failed to allocate memory for graph");
-        exit(1);
-    }
-
-    graph->num_vertices = n;
-    graph->num_edges = 0;
-    graph->type = type;
-    graph->t = gsl_spmatrix_uint_alloc(n, n);
-
-    // Initialisation de la matrice d'adjacence
-    for (unsigned int i = 0; i < n; i++) {
-        for (unsigned int j = 0; j < n; j++) {
-            gsl_spmatrix_uint_set(graph->t, i, j, 0); // Pas d'arêtes par défaut
-        }
-    }
-
-    // Construction des arêtes en fonction du type de graphe
-    if (type == TRIANGULAR) {
-        // Graphe triangulaire
-        for (unsigned int i = 0; i < n - 1; i++) {
-            for (unsigned int j = i + 1; j < n; j++) {
-                gsl_spmatrix_uint_set(graph->t, i, j, 1);  // Ajouter une arête entre i et j
-                gsl_spmatrix_uint_set(graph->t, j, i, 1);  // Graphe non orienté
-                graph->num_edges++;
-            }
-        }
-    } else if (type == CYCLIC) {
-        // Graphe cyclique (cercle)
-        for (unsigned int i = 0; i < n - 1; i++) {
-            gsl_spmatrix_uint_set(graph->t, i, i + 1, 1);
-            gsl_spmatrix_uint_set(graph->t, i + 1, i, 1);
-        }
-        // Relier le dernier sommet au premier pour former un cycle
-        gsl_spmatrix_uint_set(graph->t, n - 1, 0, 1);
-        gsl_spmatrix_uint_set(graph->t, 0, n - 1, 1);
-        graph->num_edges = n;
-    } else if (type == HOLEY) {
-        // Graphe avec des trous (pas d'arêtes entre certains sommets)
-        for (unsigned int i = 0; i < n - 1; i++) {
-            for (unsigned int j = i + 1; j < n; j++) {
-                if (rand() % 2 == 0) {  // Par exemple, on ajoute une arête aléatoirement
-                    gsl_spmatrix_uint_set(graph->t, i, j, 1);
-                    gsl_spmatrix_uint_set(graph->t, j, i, 1);
-                    graph->num_edges++;
-                }
-            }
-        }
-    }
-
-    return graph;
+// Conversion coordonnées (l, c) -> index dans le graphe
+int axial_to_index(int l, int c, int m) {
+  int i = m - l - 1; // indice de la ligne dans la matrice equivalente à la
+                     // notation graphe (son image)
+  int j = m + c - 1; // indice de la colonne dans la matrice equivalente à la
+                     // notation graphe (son image)
+  int count = 0;     // nombre d'elements dans la matrice non representes sur le
+                     // graphe (à supprimer de l'indice)
+  if (l > 0)
+    count = m * (m - 1) / 2 - l * (l + 1) / 2;
+  else if (l < 0)
+    count = m * (m - 1) / 2 + abs(l) * (abs(l) + 1) / 2;
+  else
+    count = m * (m - 1) / 2;
+  return j + (2 * m - 1) * i - count;
 }
 
-
-void initialize_graph(struct graph_t *graph, unsigned int n , enum graph_type_t type ) {
-    // Créer un graphe de type TRIANGULAR avec n sommets
-    *graph = *createGraph(n, type );
-
-    // Initialiser les objectifs et les positions des joueurs
-    graph->num_objectives = 1;
-    graph->objectives = (vertex_t*)malloc(sizeof(vertex_t));
-    graph->objectives[0] = n / 2;  // Placer l'objectif au centre du graphe (par exemple)
-
-    // Initialiser les positions de départ des joueurs
-    graph->start[0] = 0;  // Premier joueur au sommet 0
-    graph->start[1] = n - 1;  // Deuxième joueur au dernier sommet
+// Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
+int in_hexagon_T(int l, int c, int m) {
+  return (abs(l) <= m - 1) && (abs(c) <= m - 1) && (abs(l + c) <= m - 1);
 }
 
+// Vérifie si (l, c) est bien dans l'hexagone de type cyclique
+int in_hexagon_C(int l, int c, int m) {
+  return ((abs(l) == m - 1) || (abs(l) == m - 2) || (abs(c) == m - 1) ||
+         (abs(c) == m - 2)) && ((abs(l + c) == m - 1) || (abs(l + c) == m - 2));
+}
 
-void print_graph(struct graph_t *graph) {
-    printf("Graph Type: %d\n", graph->type);
-    printf("Number of vertices: %u\n", graph->num_vertices);
-    printf("Number of edges: %u\n", graph->num_edges);
-    
-    // Affichage de la matrice d'adjacence
-    printf("Adjacency Matrix:\n");
-    for (unsigned int i = 0; i < graph->num_vertices; i++) {
-        for (unsigned int j = 0; j < graph->num_vertices; j++) {
-            printf("%d ", gsl_spmatrix_uint_get(graph->t, i, j));
+// Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
+int in_hexagon_H(int l, int c, int m) {
+  // à faire ...
+  return (abs(l) == m - 1);
+}
+
+// Vecteurs de directions (en coord. axiales)
+const struct axial_t directions[7] = {
+    {0, 0},  // No edge
+    {1, -1}, // NW
+    {1, 0},  // NE
+    {0, 1},  // E
+    {-1, 1}, // SE
+    {-1, 0}, // SW
+    {0, -1}  // W
+};
+
+void graph_generate(int m, struct graph_t *g,
+                    int (*in_hexagon)(int l, int c, int m)) {
+  if (m < 2) {
+    perror("Failed to create graph; m < 2");
+    return;
+  }
+  int num_vertices = 3 * (m * m) - 3 * m + 1;
+  int num_edges = 9 * (m * m) - 15 * m + 6;
+  // struct graph_t* g = graph_create(num_vertices);
+  for (int l = 1 - m; l < m; ++l) {
+    for (int c = 1 - m; c < m; ++c) {
+      if (!in_hexagon(l, c, m))
+        continue;
+      ++g->num_vertices;
+      int index = axial_to_index(l, c, m);
+      for (int dir = 1; dir < 7; ++dir) {
+        int l_voisin = l + directions[dir].l;
+        int c_voisin = c + directions[dir].c;
+        int index_voisin = axial_to_index(l_voisin, c_voisin, m);
+        if (in_hexagon(l_voisin, c_voisin, m)) {
+          gsl_spmatrix_uint_set(g->t, index, index_voisin, dir);
+          ++g->num_edges;
         }
-        printf("\n");
+      }
     }
-
-    // Affichage des positions de départ des joueurs
-    printf("Starting positions:\n");
-    for (int i = 0; i < NUM_PLAYERS; i++) {
-        printf("Player %d starts at vertex %u\n", i, graph->start[i]);
-    }
-
-    // Affichage des objectifs
-    printf("Objectives:\n");
-    for (unsigned int i = 0; i < graph->num_objectives; i++) {
-        printf("Objective %u: vertex %u\n", i, graph->objectives[i]);
-    }
+  }
+  g->num_edges = g->num_edges / 2;
+  assert(num_edges == g->num_edges);
+  assert(num_vertices == g->num_vertices);
 }
 
-void free_graph(struct graph_t *graph) {
-    gsl_spmatrix_uint_free(graph->t);
-    if (graph->objectives) {
-        free(graph->objectives);
-    }
-    free(graph);
-}
+// Cree un graphe de type "enum graph_type_t type" et de la variable m "int m"
+struct graph_t *createGraph(int m, enum graph_type_t type) {
+  struct graph_t *graph = (struct graph_t *)malloc(sizeof(struct graph_t));
+  if (!graph) {
+    perror("Failed to allocate memory for graph");
+    return NULL;
+  }
+  unsigned int n = 0;
+  // Calcul du nombre de sommets à partir du nombre m
+  if (type == TRIANGULAR) {
+    if (m < 2)
+      return NULL;
+    n = 3 * (m * m) - 3 * m + 1;
+  } else if (type == CYCLIC) {
+    if (m < 3)
+      return NULL;
+    n = 14 * m - 18;
+  } else if (type == HOLEY) {
+    if ((m < 6) || (m % 3 != 0))
+      return NULL;
+    n = 2 * (m * m) * (1 / 3) + 18 * m - 48;
+  }
+  // graph->num_vertices = n; // elle est calculée lors de la fct
+  // generate_graph()
+  graph->num_edges = 0;
+  graph->type = type;
+  graph->t = gsl_spmatrix_uint_alloc(n, n);
 
-
-/*
-int main() {
-  unsigned int n = 4;  // Number of vertices in the graph
-  struct graph_t* graph = malloc(sizeof(struct graph_t));
-  initialize_graph(graph , n , CYCLIC) ; 
-
-  if (graph) {
-    print_graph(graph) ; 
+  // Construction des arêtes en fonction du type de graphe
+  if (type == TRIANGULAR) {
+    graph_generate(m, graph, in_hexagon_T);
+  } else if (type == CYCLIC) {
+    graph_generate(m, graph, in_hexagon_C);
+  } else if (type == HOLEY) {
+    graph_generate(m, graph, in_hexagon_H);
   }
 
-  return 0;
+  // Initialiser les objectifs et les positions des joueurs
+  graph->num_objectives = 1;
+  graph->objectives = (vertex_t *)malloc(sizeof(vertex_t));
+  graph->objectives[0] =
+      n / 2; // Placer l'objectif au centre du graphe (par exemple)
+
+  // Initialiser les positions de départ des joueurs
+  graph->start[0] =
+      0; // Premier joueur au sommet 0 //à changer au coordonnees axiales
+  graph->start[1] =
+      n -
+      1; // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
+
+  return graph;
+}
+/*
+// Ajout d'une arête i -> j avec direction
+void graph_add_edge(struct graph_t *g, int i, int j, int direction) {
+  if (!g || i < 0 || j < 0 || i >= g->num_vertices || j >= g->num_vertices)
+    return;
+  if (direction < NW || direction > W)
+    return;
+
+  // On suppose que les arêtes sont symétriques dans le pavage
+  gsl_spmatrix_uint_set(g->t, i, j, direction);
+  gsl_spmatrix_uint_set(g->t, j, i,
+                        opposite_dir(direction)); // direction opposée
+  g->num_edges++;
+}*/
+
+// Affichage formaté de la matrice d'adjacence
+void graph_print_matrix(const struct graph_t *g) {
+  if (!g)
+    return;
+  printf("Matrice d'adjacence (%d x %d) :\n", g->num_vertices, g->num_vertices);
+  for (int i = 0; i < g->num_vertices; ++i) {
+    printf("[ ");
+    for (int j = 0; j < g->num_vertices; ++j) {
+      int dir = gsl_spmatrix_uint_get(g->t, i, j);
+      printf("%d ", dir);
+    }
+    printf("]\n");
+  }
 }
 
-*/
+// Affichage pour debug
+void graph_print(struct graph_t *graph) {
+  if (!graph)
+    return;
+  printf("Graph Type: %d\n", graph->type);
+  printf("Number of vertices: %u\n", graph->num_vertices);
+  printf("Number of edges: %u\n", graph->num_edges);
+
+  // Affichage de la matrice d'adjacence
+  graph_print_matrix(graph);
+
+  // Affichage des positions de départ des joueurs
+  printf("Starting positions:\n");
+  for (int i = 0; i < NUM_PLAYERS; i++) {
+    printf("Player %d starts at vertex %u\n", i, graph->start[i]);
+  } // à modifier selon les coordonnees axiales
+
+  // Affichage des objectifs
+  printf("Objectives:\n");
+  for (unsigned int i = 0; i < graph->num_objectives; i++) {
+    printf("Objective %u: vertex %u\n", i, graph->objectives[i]);
+  }
+}
+
+// Libération du graphe
+void graph_free(struct graph_t *g) {
+  if (!g)
+    return;
+  gsl_spmatrix_uint_free(g->t);
+  if (g->objectives)
+    free(g->objectives);
+  free(g);
+}
+
+int main() {
+//   struct graph_t *g1 = createGraph(3, TRIANGULAR);
+//   graph_print(g1);
+//   graph_free(g1);
+
+  struct graph_t *g2 = createGraph(5, CYCLIC);
+  graph_print(g2);
+  graph_free(g2);
+  return 0;
+}
