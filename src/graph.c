@@ -23,12 +23,18 @@ int axial_to_index(int l, int c, int m) {
 }
 
 // Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
-int in_hexagon_T(int l, int c, int m) {
+int in_hexagon_T(int l, int c, int m, int l_origin, int c_origin) {
+  (void)l_origin;
+  (void)c_origin;
   return (abs(l) <= m - 1) && (abs(c) <= m - 1) && (abs(l + c) <= m - 1);
 }
 
 // Vérifie si (l, c) est bien dans l'hexagone de type cyclique
-int in_hexagon_C(int l, int c, int m) {
+int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin) {
+  l = l - l_origin;
+  c = c - c_origin;
+  if (!((abs(l) <= m - 1) && (abs(c) <= m - 1) && (abs(l + c) <= m - 1)))
+    return 0;
   int k = l + c;
   return ((l == m - 1) && (c <= 0 && c > -m)) ||
          ((l == m - 2) && (c <= 1 && c > -m)) ||
@@ -42,16 +48,23 @@ int in_hexagon_C(int l, int c, int m) {
          ((-c == m - 1) && (l >= 0 && l < m)) ||
          ((-c == m - 2) && (l >= -1 && l < m)) ||
 
-         (((abs(l) <= m - 1) && (abs(c) <= m - 1)) && ((k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2)));
+         (((abs(l) <= m - 1) && (abs(c) <= m - 1)) &&
+          ((k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2)));
 }
 
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
-int in_hexagon_H(int l, int c, int m) {
+int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin) {
   // à faire ...
-  (void) l;
-  (void) c;
-  (void) m;
-  return (abs(l) == m - 1);
+  int m_prime = m / 3; // m du sous hexagone (il y en a 7)
+  l = l - l_origin;
+  c = c - c_origin;
+  return (in_hexagon_C(l, c, m_prime + 1, 0, 0)) ||
+         (in_hexagon_C(l, c, m_prime + 1, 0, 2 * m_prime - 1)) ||
+         (in_hexagon_C(l, c, m_prime + 1, 2 * m_prime - 1, 0)) ||
+         (in_hexagon_C(l, c, m_prime + 1, -2 * m_prime + 1, 0)) ||
+         (in_hexagon_C(l, c, m_prime + 1, 0, -2 * m_prime + 1)) ||
+         (in_hexagon_C(l, c, m_prime + 1, -2 * m_prime + 1, 2 * m_prime - 1)) ||
+         (in_hexagon_C(l, c, m_prime + 1, 2 * m_prime - 1, -2 * m_prime + 1));
 }
 
 // Vecteurs de directions (en coord. axiales)
@@ -66,7 +79,8 @@ const struct axial_t directions[7] = {
 };
 
 void graph_generate(int m, struct graph_t *g,
-                    int (*in_hexagon)(int l, int c, int m)) {
+                    int (*in_hexagon)(int l, int c, int m, int l_origin,
+                                      int c_origin)) {
   if (m < 2) {
     perror("Failed to create graph; m < 2");
     return;
@@ -74,7 +88,7 @@ void graph_generate(int m, struct graph_t *g,
   // struct graph_t* g = graph_create(num_vertices);
   for (int l = 1 - m; l < m; ++l) {
     for (int c = 1 - m; c < m; ++c) {
-      if (!in_hexagon(l, c, m))
+      if (!in_hexagon(l, c, m, 0, 0))
         continue;
       ++g->num_vertices;
       int index = axial_to_index(l, c, m);
@@ -82,7 +96,7 @@ void graph_generate(int m, struct graph_t *g,
         int l_voisin = l + directions[dir].l;
         int c_voisin = c + directions[dir].c;
         int index_voisin = axial_to_index(l_voisin, c_voisin, m);
-        if (in_hexagon(l_voisin, c_voisin, m)) {
+        if (in_hexagon(l_voisin, c_voisin, m, 0, 0)) {
           gsl_spmatrix_uint_set(g->t, index, index_voisin, dir);
           ++g->num_edges;
         }
@@ -90,7 +104,6 @@ void graph_generate(int m, struct graph_t *g,
     }
   }
   g->num_edges = g->num_edges / 2;
-  printf("%d %d\n", g->num_vertices, g->num_edges);
 }
 
 // Cree un graphe de type "enum graph_type_t type" et de la variable m "int m"
@@ -115,7 +128,6 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
       return NULL;
     n = 2 * (m * m) * (1 / 3) + 18 * m - 48;
   }
-  // graph->num_vertices = n; // elle est calculée lors de la fct
   graph->num_edges = 0;
   graph->type = type;
 
@@ -129,6 +141,7 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   }
 
   // Initialiser les objectifs et les positions des joueurs
+  // à modifier
   graph->num_objectives = 1;
   graph->objectives = (vertex_t *)malloc(sizeof(vertex_t));
   graph->objectives[0] =
@@ -143,20 +156,6 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
 
   return graph;
 }
-/*
-// Ajout d'une arête i -> j avec direction
-void graph_add_edge(struct graph_t *g, int i, int j, int direction) {
-  if (!g || i < 0 || j < 0 || i >= g->num_vertices || j >= g->num_vertices)
-    return;
-  if (direction < NW || direction > W)
-    return;
-
-  // On suppose que les arêtes sont symétriques dans le pavage
-  gsl_spmatrix_uint_set(g->t, i, j, direction);
-  gsl_spmatrix_uint_set(g->t, j, i,
-                        opposite_dir(direction)); // direction opposée
-  g->num_edges++;
-}*/
 
 // Affichage formaté de la matrice d'adjacence
 void graph_print_matrix(const struct graph_t *g) {
@@ -206,14 +205,3 @@ void graph_free(struct graph_t *g) {
     free(g->objectives);
   free(g);
 }
-
-// int main() {
-//   //   struct graph_t *g1 = createGraph(3, TRIANGULAR);
-//   //   graph_print(g1);
-//   //   graph_free(g1);
-
-//   struct graph_t *g2 = createGraph(5, CYCLIC);
-//   graph_print(g2);
-//   graph_free(g2);
-//   return 0;
-// }
