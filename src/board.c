@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "board.h"
-
+#include "graph_functions.h"
 
 struct board_t* board_init(){
     struct board_t *board=malloc(sizeof(struct board_t));
@@ -40,4 +40,13 @@ void add_move_to_board(struct board_t* board, struct move_t move){
 void board_free(struct board_t* board){
     free(board->moves);
     free(board);
+}
+
+
+//on doit voir comment on peut generer wall sans que graph soit en parametre pour l utiliser dans la fct play
+void generate_wall(struct edge_t e[2], struct board_t *board) {
+    e[0].fr = axial_to_index(1, 0, 5) ;
+    e[0].to=  axial_to_index(0,1,5);
+    e[1].to = axial_to_index(0,1,5);
+    e[1].fr = axial_to_index(0,-1,5);
 }
