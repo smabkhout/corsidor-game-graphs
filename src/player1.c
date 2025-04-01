@@ -26,38 +26,36 @@ void initialize(unsigned int id, struct graph_t* graph) {
   printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph-> num_vertices , graph->num_edges , graph->num_objectives);
 }
 
-/*
+struct move_t play(const struct move_t previous_move);
 
-struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
-    
-    move.c = previous_move.c; 
-    srand(time(NULL));
-    enum move_type_t mv = rand()%2 + 1;
-    move.t = mv; 
 
-    unsigned int new_pos = previous_move.m;
-    struct edge_t e[2] ;
-    generate_wall(e);  
 
-    while (1) {
-        new_pos = (new_pos + 1) % board->size;  
 
-        
-        move = create_move(previous_move.c, mv, new_pos, e);
 
-        if (is_valid_move(&move, board->graph)) {
-            printf("Player %d moves to vertex %u\n", move.c, move.m);
-            break;  
-        }
-    }
 
-    return move; 
-}
-*/
 
-struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+   /* struct move_t move;
     
     move.c = (previous_move.c+1)%2 ; 
     srand(time(NULL));
@@ -80,7 +78,7 @@ struct move_t play(const struct move_t previous_move) {
         //}
     }
 
-    return move;
+    return move;*/
 
 }
 
