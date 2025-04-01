@@ -132,12 +132,9 @@ int main(int argc, char *argv[]){
     printf("Taille de la maille: %d\n", size_mesh);
     first_step(argc, argv);
 
-    struct graph_t *graph1 = malloc(sizeof(struct graph_t)); 
-    struct graph_t *graph2 = malloc(sizeof(struct graph_t)); 
-    struct graph_t *globalGraph = malloc(sizeof(struct graph_t));
-    initialize_graph(graph1, 8, TRIANGULAR);
-    initialize_graph(graph2, 8, TRIANGULAR);
-    initialize_graph(globalGraph, 8, TRIANGULAR);
+    struct graph_t *graph1 = createGraph(7, TRIANGULAR); 
+    struct graph_t *graph2 = createGraph(7, TRIANGULAR); 
+    struct graph_t *globalGraph = createGraph(7, TRIANGULAR); 
 
     struct move_t *first_move = make_first_move();
     

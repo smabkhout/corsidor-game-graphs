@@ -4,14 +4,6 @@
 #include <gsl/gsl_spmatrix_uint.h>
 #include <gsl/gsl_spblas.h>
 
-//on doit voir comment on peut generer wall sans que graph soit en parametre pour l utiliser dans la fct play
-void generate_wall(struct edge_t e[2]) {
-    srand(1);
-    e[0].fr = rand(); 
-    e[0].to = rand();
-    e[1].fr = rand();
-    e[1].to = rand();
-}
 
 
 
@@ -78,12 +70,12 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
         if (move->m >= graph->num_vertices) {
             return 0;  
         }
-    }/* else if (move->t == WALL) {
+    } else if (move->t == WALL) {
         if (move->e[0].fr >= graph->num_vertices || move->e[0].to >= graph->num_vertices ||
             move->e[1].fr >= graph->num_vertices || move->e[1].to >= graph->num_vertices) {
             return 0;  
         }
-    }*/
+    }
     return 1;  
 }
 
@@ -246,7 +238,7 @@ void test_apply_move() {
 
 
 
-int main() {
+/*int main() {
     printf("=== Test create_move ===\n");
     test_create_move();
 
@@ -258,3 +250,4 @@ int main() {
 
     return 0;
 }
+*/

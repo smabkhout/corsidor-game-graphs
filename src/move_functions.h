@@ -6,9 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-// Fonction pour générer des murs dans le jeu.
-// Cette fonction remplit le tableau d'arêtes 'e' avec des positions aléatoires.
-void generate_wall(struct edge_t e[2]);
+
 
 // Fonction pour créer un mouvement.
 // Prend en entrée la couleur du joueur, le type de mouvement (déplacement ou mur),
