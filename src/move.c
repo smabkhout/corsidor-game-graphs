@@ -47,12 +47,25 @@ int is_empty_position( vertex_t n , vertex_t pos_other_player){
     return 1;
 }
 
+
+int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2){
+    if(!graph){
+        return 0;
+    }
+    if (gsl_spmatrix_uint_get(graph->t, v1, v2)>0){
+        return 1;
+    }
+    return 0;
+
+}
+
 int can_move(struct graph_t *graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player) {
     if (is_empty_position(b, pos_other_player) && gsl_spmatrix_uint_get(graph->t, pos_player, b) > 0) {
         return 1;
     }
     return 0;
 }
+
 
 
 
@@ -112,6 +125,56 @@ void apply_move(struct move_t* move, struct graph_t* graph) {
     }
 }
 
+
+
+
+
+
+
+
+/*int distance_minimal(int d[], int visited[], int n){
+    int min=10000;
+    unsigned int index = graph->num_vertices+1;
+    for(unsigned int i=0;i<n;i++){
+        if(!visited[i] && d[i]<min){
+            min = d[i];
+            index = i;
+        }
+
+    }
+    return index;
+}
+
+
+void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]){
+    int visited[graph->num_vertices];
+    for (unsigned int i=0; i<graph->num_vertices; i++){
+        d[i]=INF;
+        prev[i]=-1;
+        visited[i]=0;
+    }
+    d[a]=0;
+    while(1){
+        int index_min =  distance_minimal(d, visited, graph->num_vertices);
+        if (index_min >graph->num_vertices){
+            break;
+        }
+        visited[index_min] = 1; 
+        for (unsigned int j=0;j<graph->num_vertices; j++){
+            int poids=gsl_spmatrix_uint_get(graph->t, index_min, j);
+            if(poids >0 && d[index_min]+ poids < d[j] && !visited[j]){
+                d[j]=d[index_min]+poids;
+                prev[j]=index_min;
+            }
+
+        }
+        if(index_min == b){
+            break;
+        }
+
+    }
+    
+}*/
 
 void test_create_move() {
     struct edge_t edges[2] = {{0, 1}, {1, 2}};

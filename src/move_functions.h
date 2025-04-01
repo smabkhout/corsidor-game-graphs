@@ -26,6 +26,13 @@ int can_place_wall(struct graph_t * graph, struct edge_t e[2]);
 // Retourne 1 si la position est vide, sinon 0.
 int is_empty_position(vertex_t n, vertex_t pos_other_player);
 
+
+
+ //Vérifie si deux sommets d'un graphe sont connectés.
+ //Cette fonction consulte la matrice d'adjacence du graphe pour déterminer s'il existe une arête entre les sommets `v1` et `v2`.
+ //return 1 si les sommets sont connectés, 0 sinon.
+int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2);
+
 // Fonction pour vérifier si un joueur peut se déplacer.
 // Vérifie si le joueur à 'pos_player' peut se déplacer vers 'b' sans entrer en collision avec un autre joueur.
 // Retourne 1 si le mouvement est possible, sinon 0.
