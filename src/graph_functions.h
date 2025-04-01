@@ -20,16 +20,16 @@ struct axial_t {
 int axial_to_index(int l, int c, int m);
 
 // Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
-int in_hexagon_T(int l, int c, int m);
+int in_hexagon_T(int l, int c, int m, int l_origin, int c_origin);
 
 // Vérifie si (l, c) est bien dans l'hexagone de type cyclique
-int in_hexagon_C(int l, int c, int m);
+int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin);
 
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
-int in_hexagon_H(int l, int c, int m);
+int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin);
 
 void graph_generate(int m, struct graph_t *g,
-                    int (*in_hexagon)(int l, int c, int m));
+                    int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin));
 
 // Cree un graphe de type "enum graph_type_t type" et de la variable m "int m"
 struct graph_t *createGraph(int m, enum graph_type_t type);
