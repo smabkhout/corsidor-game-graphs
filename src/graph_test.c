@@ -75,7 +75,8 @@ const struct axial_t directions[7] = {
 
 void graph_generate(int m, struct graph_t *g, int (*in_hexagon)(int l, int c, int m)) {
   if (m < 2)
-    return NULL;
+    perror("Failed to create graph; m < 2");
+    return;
   int num_vertices = 3 * (m * m) - 3 * m + 1;
   int num_edges = 9 * (m * m) - 15 * m + 6;
   // struct graph_t* g = graph_create(num_vertices);
@@ -106,19 +107,20 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     perror("Failed to allocate memory for graph");
     return NULL;
   }
+  unsigned int n = 0;
   // Calcul du nombre de sommets à partir du nombre m
   if (type == TRIANGULAR) {
     if (m < 2)
       return NULL;
-    unsigned int n = 3 * (m * m) - 3 * m + 1;
+     n = 3 * (m * m) - 3 * m + 1;
   } else if (type == CYCLIC) {
     if (m < 3)
       return NULL;
-    unsigned int n = 14 * m - 18;
+    n = 14 * m - 18;
   } else if (type == HOLEY) {
     if ((m < 6) || (m % 3 != 0))
       return NULL;
-    unsigned int n = 2 * (m * m) * (1 / 3) + 18 * m - 48;
+    n = 2 * (m * m) * (1 / 3) + 18 * m - 48;
   }
   graph->num_vertices = n;
   graph->num_edges = 0;
@@ -127,11 +129,11 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
 
   // Construction des arêtes en fonction du type de graphe
   if (type == TRIANGULAR) {
-    graph_generate(m, g, in_hexagon_T);
+    graph_generate(m, graph, in_hexagon_T);
   } else if (type == CYCLIC) {
-    graph_generate(m, g, in_hexagon_C);
+    graph_generate(m, graph, in_hexagon_C);
   } else if (type == HOLEY) {
-    graph_generate(m, g, in_hexagon_H);
+    graph_generate(m, graph, in_hexagon_H);
   }
 
   return graph;
