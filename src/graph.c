@@ -1,17 +1,9 @@
-#include "graph.h"
 #include "graph_functions.h"
-#include <assert.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
 
 // Coordonnées axiales pour pavage hexagonal : (0, 0) en centre, (0, 1) vecteur
 // déplacement East, (1, 0) vecteur déplacement North East, (1, -1) vecteur
 // déplacement North West,
-struct axial_t {
-  int l; // ligne
-  int c; // colonne
-};
+// struct axial_t;
 
 // Conversion coordonnées (l, c) -> index dans le graphe
 int axial_to_index(int l, int c, int m) {
@@ -37,8 +29,20 @@ int in_hexagon_T(int l, int c, int m) {
 
 // Vérifie si (l, c) est bien dans l'hexagone de type cyclique
 int in_hexagon_C(int l, int c, int m) {
-  return ((abs(l) == m - 1) || (abs(l) == m - 2) || (abs(c) == m - 1) ||
-         (abs(c) == m - 2)) && ((abs(l + c) == m - 1) || (abs(l + c) == m - 2));
+  int k = l + c;
+  return ((l == m - 1) && (c <= 0 && c > -m)) ||
+         ((l == m - 2) && (c <= 1 && c > -m)) ||
+
+         ((-l == m - 1) && (c >= 0 && c < m)) ||
+         ((-l == m - 2) && (c >= -1 && c < m)) ||
+
+         ((c == m - 1) && (l <= 0 && l > -m)) ||
+         ((c == m - 2) && (l <= 1 && l > -m)) ||
+         
+         ((-c == m - 1) && (l >= 0 && l < m)) ||
+         ((-c == m - 2) && (l >= -1 && l < m)) ||
+
+         (k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2);
 }
 
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
@@ -64,8 +68,6 @@ void graph_generate(int m, struct graph_t *g,
     perror("Failed to create graph; m < 2");
     return;
   }
-  int num_vertices = 3 * (m * m) - 3 * m + 1;
-  int num_edges = 9 * (m * m) - 15 * m + 6;
   // struct graph_t* g = graph_create(num_vertices);
   for (int l = 1 - m; l < m; ++l) {
     for (int c = 1 - m; c < m; ++c) {
@@ -85,8 +87,7 @@ void graph_generate(int m, struct graph_t *g,
     }
   }
   g->num_edges = g->num_edges / 2;
-  assert(num_edges == g->num_edges);
-  assert(num_vertices == g->num_vertices);
+  printf("%d %d\n", g->num_vertices, g->num_edges);
 }
 
 // Cree un graphe de type "enum graph_type_t type" et de la variable m "int m"
@@ -96,12 +97,12 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     perror("Failed to allocate memory for graph");
     return NULL;
   }
-  unsigned int n = 0;
+  unsigned int n = 3 * (m * m) - 3 * m + 1;
+  graph->t = gsl_spmatrix_uint_alloc(n, n);
   // Calcul du nombre de sommets à partir du nombre m
   if (type == TRIANGULAR) {
     if (m < 2)
       return NULL;
-    n = 3 * (m * m) - 3 * m + 1;
   } else if (type == CYCLIC) {
     if (m < 3)
       return NULL;
@@ -112,10 +113,8 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     n = 2 * (m * m) * (1 / 3) + 18 * m - 48;
   }
   // graph->num_vertices = n; // elle est calculée lors de la fct
-  // generate_graph()
   graph->num_edges = 0;
   graph->type = type;
-  graph->t = gsl_spmatrix_uint_alloc(n, n);
 
   // Construction des arêtes en fonction du type de graphe
   if (type == TRIANGULAR) {
@@ -206,9 +205,9 @@ void graph_free(struct graph_t *g) {
 }
 
 int main() {
-//   struct graph_t *g1 = createGraph(3, TRIANGULAR);
-//   graph_print(g1);
-//   graph_free(g1);
+  //   struct graph_t *g1 = createGraph(3, TRIANGULAR);
+  //   graph_print(g1);
+  //   graph_free(g1);
 
   struct graph_t *g2 = createGraph(5, CYCLIC);
   graph_print(g2);

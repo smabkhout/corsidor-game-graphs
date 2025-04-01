@@ -1,18 +1,44 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <gsl/gsl_spmatrix.h>
+#include <assert.h>
+#include <math.h>
 #include "graph.h"
 
 
+// Coordonnées axiales pour pavage hexagonal : (0, 0) en centre, (0, 1) vecteur
+// déplacement East, (1, 0) vecteur déplacement North East, (1, -1) vecteur
+// déplacement North West,
+struct axial_t {
+  int l; // ligne
+  int c; // colonne
+};
 
+// Conversion coordonnées (l, c) -> index dans le graphe
+int axial_to_index(int l, int c, int m);
 
-struct graph_t* createGraph(int n, enum graph_type_t type);
+// Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
+int in_hexagon_T(int l, int c, int m);
 
+// Vérifie si (l, c) est bien dans l'hexagone de type cyclique
+int in_hexagon_C(int l, int c, int m);
 
-void initialize_graph(struct graph_t *graph, unsigned int n , enum graph_type_t type ); 
+// Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
+int in_hexagon_H(int l, int c, int m);
 
-void print_graph(struct graph_t *graph);
-size_t find(void* const s[], size_t size, void* c);
-void graph_generate_T(int m, struct graph_t *g, int (*in_hexagon)(int l, int c, int m));
+void graph_generate(int m, struct graph_t *g,
+                    int (*in_hexagon)(int l, int c, int m));
 
-void free_graph(struct graph_t *graph) ; 
+// Cree un graphe de type "enum graph_type_t type" et de la variable m "int m"
+struct graph_t *createGraph(int m, enum graph_type_t type);
+
+// Affichage formaté de la matrice d'adjacence
+void graph_print_matrix(const struct graph_t *g);
+
+// Affichage pour debug
+void graph_print(struct graph_t *graph);
+
+// Libération du graphe
+void graph_free(struct graph_t *g);
