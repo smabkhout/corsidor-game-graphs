@@ -5,7 +5,6 @@
 #include "player.h"
 #include "graph_functions.h"
 #include "board.h"
-#include<time.h>
 
 //enum graph_type_t type;
 
@@ -98,7 +97,6 @@ struct move_t *make_first_move() {
 }
 
 int player_to_start(){
-    srand(time(NULL));
     return rand()%NUM_PLAYERS;
 }
 
@@ -107,7 +105,7 @@ int main(int argc, char *argv[]){
     char *type_graph = NULL;
 
     int opt;
-    while ((opt = getopt(argc, argv, "m:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "m:t:M:")) != -1) {
         switch (opt) {
             case 'm':
                 size_mesh = atoi(optarg);
@@ -115,6 +113,9 @@ int main(int argc, char *argv[]){
             case 't':
                 type_graph = optarg;
                 break;
+          /*  case 'M': 
+                printf("Option -M détectée avec la valeur %s\n", optarg);
+                break;*/
             default:
                 fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
@@ -131,7 +132,7 @@ int main(int argc, char *argv[]){
     printf("Taille de la maille: %d\n", size_mesh);
     first_step(argc, argv);
 
-    struct graph_t *graph1 = malloc(sizeof(struct graph_t)); // à compléter.....................!!!!!!
+    struct graph_t *graph1 = malloc(sizeof(struct graph_t)); 
     struct graph_t *graph2 = malloc(sizeof(struct graph_t)); 
     struct graph_t *globalGraph = malloc(sizeof(struct graph_t));
     initialize_graph(graph1, 8, TRIANGULAR);
@@ -145,11 +146,8 @@ int main(int argc, char *argv[]){
         return EXIT_FAILURE;
     }
     int start_player = player_to_start();
-    //first_step(argc, argv);
     ///////////////this is the first player
     players[start_player].initialize(start_player, graph1);
-    /*players[start_player].player_name = players[start_player].get_player_name();
-    printf("First player:\t%s\n", players[start_player].player_name);*/
     const char *player_name1 = players[start_player].get_player_name();
     printf("First player:\t%s\n", player_name1);
 
@@ -157,8 +155,6 @@ int main(int argc, char *argv[]){
     /////////////////////this is the second player 
     int next = (start_player + 1) % NUM_PLAYERS;
     players[next].initialize(next, graph2);
-   /* players[next].player_name = players[next].get_player_name();
-    printf("Second Player:\t%s\n",  players[next].player_name);*/
     const char *player_name2 = players[next].get_player_name();
     printf("Second player:\t%s\n", player_name2);
 
@@ -174,6 +170,27 @@ int main(int argc, char *argv[]){
     struct move_t current_move = *first_move;
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
+    printf("The board size is %d\n", board->size);
+
+   /* int winner = -1;
+    while (winner == -1) {
+        struct move_t move = players[start_player].play(current_move);
+        if (move.t == MOVE) {
+            printf("Player %s moved to vertex %d\n", players[start_player].get_player_name(), move.m);
+            add_move_to_board(board, move);
+            current_move = move;
+
+          /*  if (move.m == globalGraph->objectives[0]) {
+                winner = start_player;
+            }*/
+       /* } else {
+            printf("Invalid move by player %s\n", players[start_player].get_player_name());
+        }
+
+        start_player = next;
+    }
+
+    printf("Player %s wins!\n", players[winner].get_player_name());*/
 
 
 
@@ -181,6 +198,7 @@ int main(int argc, char *argv[]){
     free(graph1) ; 
     free(graph2) ;
     free(globalGraph) ; 
+    board_free(board);
     for (int i = 0; i < NUM_PLAYERS; i++) {
         //players[i].finalize();
 
