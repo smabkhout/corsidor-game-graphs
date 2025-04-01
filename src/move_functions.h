@@ -46,4 +46,7 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 // Affiche un message si le mouvement est invalide ou si le graphe est nul.
 void apply_move(struct move_t* move, struct graph_t* graph);
 
+
+int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n);
+void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]);
 #endif // MOVE_H
