@@ -10,7 +10,7 @@ struct board_t {
     struct move_t* moves;
     int wall_count;
     struct graph_t* graph;
-    int size;
+    int size_moves;
 };
 
 struct board_t* board_init();

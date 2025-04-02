@@ -15,8 +15,10 @@ void test_graph_print(){
     struct graph_t *g1 = createGraph(5, TRIANGULAR);
     struct graph_t *g2 = createGraph(5, CYCLIC);
     graph_print(g1);
+    graph_print_matrix(g1);
     graph_free(g1);
     graph_print(g2);
+    graph_print_matrix(g2);
     graph_free(g2);
 }
 

@@ -2,7 +2,14 @@
 #include "graph_test.h"
 
 int main(){
-    void test_create_Graph();
-    void test_graph_print();
+    test_create_Graph();
+    test_graph_print();
+
+    test_create_move();
+    test_is_empty_position();
+    test_is_connected();
+    test_is_valid_move() ;
+    test_dijkstra();
+    
     return 0;
 }
