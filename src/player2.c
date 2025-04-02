@@ -5,8 +5,15 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include<time.h>
+#include <string.h>
+#include <gsl/gsl_spmatrix.h>
+
 //enum graph_type_t type;
-struct board_t *board ; 
+static struct graph_t *graph2= NULL ; 
+
+
+
+
 
 char const* get_player_name()
 {
@@ -16,13 +23,42 @@ char const* get_player_name()
 }
 
 
-void initialize(unsigned int id, struct graph_t* graph) {
-  if (id > 1 || graph == NULL) {
-    return; 
-  }
-  graph->start[id] = 35;
+void copy_graph(struct graph_t* dest, const struct graph_t* src) {
+    // Copier les champs simples
+    dest->type = src->type;
+    dest->num_vertices = src->num_vertices;
+    dest->num_edges = src->num_edges;
+    dest->num_objectives = src->num_objectives;
+    
+    memcpy(dest->start, src->start, sizeof(vertex_t) * NUM_PLAYERS); // Copier start[]
 
-  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph-> num_vertices , graph->num_edges , graph->num_objectives);
+    // Copier la matrice creuse (sparse matrix)
+    dest->t = gsl_spmatrix_uint_alloc(src->num_vertices, src->num_vertices);
+    if (!dest->t) {
+        fprintf(stderr, "Erreur allocation mémoire pour t\n");
+        exit(1);
+    }
+    gsl_spmatrix_uint_memcpy(dest->t, src->t);  // Copie de la matrice creuse
+
+    // Copier les objectifs (tableau dynamique)
+    dest->objectives = malloc(src->num_objectives * sizeof(vertex_t));
+    if (!dest->objectives) {
+        fprintf(stderr, "Erreur allocation mémoire pour objectives\n");
+        exit(1);
+    }
+    memcpy(dest->objectives, src->objectives, src->num_objectives * sizeof(vertex_t));  // Copie du tableau
+}
+
+
+void initialize(unsigned int id, struct graph_t* graph) {
+  graph2= malloc(sizeof(struct graph_t)) ; 
+  if (!graph2){
+    puts("erreur dans l'allocation du graph pour player2 ") ; 
+  }
+
+  copy_graph(graph2 , graph) ; 
+
+  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph2-> num_vertices , graph2->num_edges , graph2->num_objectives);
 
 }
 
@@ -78,24 +114,29 @@ struct move_t play(const struct move_t previous_move) {
     move.t = MOVE;
 
     // Trouver une position voisine valide
-    for (unsigned int i = 0; i < board->graph->num_vertices; i++) {
-        if (is_connected1(board->graph, board->graph->start[move.c], i)) {
+    for (unsigned int i = 0; i < graph2->num_vertices; i++) {
+        if (is_connected1(graph2, graph2->start[move.c], i)) {
             move.m = i;
-            board->graph->start[move.c] = 1 ; 
+            graph2->start[move.c] = 1 ; 
             printf("Player %d moves to vertex %u\n", move.c, move.m);
             return move;
         }
     }
 
     // Si aucun mouvement valide, on reste sur place
-    move.m = board->graph->start[move.c]  ;
+    move.m = graph2->start[move.c]  ;
     return move;
 }
 
 
 
-void finalize(){
-  //board_free(board);
+void finalize() {
+    if (graph2) {  // Vérifier si le graphe existe avant de libérer
+        gsl_spmatrix_uint_free(graph2->t);  // Libérer la matrice
+        free(graph2->objectives);  // Libérer le tableau d'objectifs
+        free(graph2);  // Libérer la structure du graphe
+        graph2 = NULL;  // Éviter tout accès à une mémoire libérée
+    }
 }
 
 

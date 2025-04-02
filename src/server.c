@@ -132,8 +132,8 @@ int main(int argc, char *argv[]){
     printf("Taille de la maille: %d\n", size_mesh);
     first_step(argc, argv);
 
-    struct graph_t *graph1 = createGraph(7, TRIANGULAR); 
-    struct graph_t *graph2 = createGraph(7, TRIANGULAR); 
+    //struct graph_t *graph1 = createGraph(7, TRIANGULAR); 
+    //struct graph_t *graph2 = createGraph(7, TRIANGULAR); 
     struct graph_t *globalGraph = createGraph(7, TRIANGULAR); 
 
     struct move_t *first_move = make_first_move();
@@ -144,14 +144,14 @@ int main(int argc, char *argv[]){
     }
     int start_player = player_to_start();
     ///////////////this is the first player
-    players[start_player].initialize(start_player, graph1);
+    players[start_player].initialize(start_player, globalGraph);
     const char *player_name1 = players[start_player].get_player_name();
     printf("First player:\t%s\n", player_name1);
 
 
     /////////////////////this is the second player 
     int next = (start_player + 1) % NUM_PLAYERS;
-    players[next].initialize(next, graph2);
+    players[next].initialize(next, globalGraph);
     const char *player_name2 = players[next].get_player_name();
     printf("Second player:\t%s\n", player_name2);
 
@@ -171,12 +171,14 @@ int main(int argc, char *argv[]){
     printf("The board size is %d\n", board->size);
 
     int winner = -1;
-    while (winner == -1) {
+    int i = 0 ; 
+    while (/*winner == -1*/i<10) {
         struct move_t move = players[start_player].play(current_move);
         if (move.t == MOVE) {
             printf("Player %s moved to vertex %d\n", players[start_player].get_player_name(), move.m);
             add_move_to_board(board, move);
             current_move = move;
+            i++ ; 
 
             if (move.m == globalGraph->objectives[0]) {
                 winner = start_player;
@@ -186,19 +188,18 @@ int main(int argc, char *argv[]){
         }
 
         start_player = next;
+        i++ ; 
     }
-
+    winner = 0 ; 
     printf("Player %s wins!\n", players[winner].get_player_name());
 
 
 
 
-    free(graph1) ; 
-    free(graph2) ;
-    free(globalGraph) ; 
+    //free(globalGraph) ; 
     board_free(board);
     for (int i = 0; i < NUM_PLAYERS; i++) {
-        //players[i].finalize();
+        players[i].finalize();
 
         dlclose(players[i].library);
     }
