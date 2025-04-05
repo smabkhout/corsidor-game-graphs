@@ -204,4 +204,101 @@ void graph_free(struct graph_t *g) {
   if (g->objectives)
     free(g->objectives);
   free(g);
+  g = NULL;
+}
+/*
+void visualize_graph(struct graph_t *g, unsigned int m) {
+  switch (g->type) {
+  case TRIANGULAR:
+    int size = m;
+    int i, j, k;
+
+    // Partie supérieure de la grille
+    for (i = 0; i < size; i++) {
+        // Espaces pour l'alignement
+        for (k = 0; k < size - i - 1; k++) {
+            printf("  ");
+        }
+        // Impression des hexagones
+        for (j = 0; j < size + i; j++) {
+            printf(" / \\");
+        }
+        printf("\n");
+
+        // Espaces pour l'alignement
+        for (k = 0; k < size - i - 1; k++) {
+            printf("  ");
+        }
+        // Impression des hexagones
+        for (j = 0; j < size + i; j++) {
+            printf(" \\_/");
+        }
+        printf("\n");
+    }
+
+    // Partie inférieure de la grille
+    for (i = size - 2; i >= 0; i--) {
+        // Espaces pour l'alignement
+        for (k = 0; k < size - i - 1; k++) {
+            printf("  ");
+        }
+        // Impression des hexagones
+        for (j = 0; j < size + i; j++) {
+            printf(" / \\");
+        }
+        printf("\n");
+
+        // Espaces pour l'alignement
+        for (k = 0; k < size - i - 1; k++) {
+            printf("  ");
+        }
+        // Impression des hexagones
+        for (j = 0; j < size + i; j++) {
+            printf(" \\_/");
+        }
+        printf("\n");
+    }
+}
+    // code block
+    break;
+  case CYCLIC:
+    // code block
+    break;
+  case HOLEY:
+    // code block
+    break;
+  default:
+    break;
+}
+}
+*/
+
+void print_hex_grid(int m) {
+  for (int l = m - 1; l > -1; l--) {
+    for (int k = 0; k < l; k++) {
+      printf("  ");
+    }
+    for (int c = -m + 1; c < m; c++) {
+      if (in_hexagon_T(l, c, m, 0, 0)) {
+        int index = axial_to_index(l, c, m);
+        printf("%d    ", index);
+      }
+    }
+    printf("\n");
+  }
+  for (int l = -1; l > -m; l--) {
+    for (int c = -m + 1; c < m; c++) {
+      if (in_hexagon_T(l, c, m, 0, 0)) {
+        int index = axial_to_index(l, c, m);
+        printf("%d    ", index);
+      } else {
+        printf("    ");
+      }
+    }
+    printf("\n");
+  }
+}
+int main() {
+  print_hex_grid(5);
+  return 0;
 }
