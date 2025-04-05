@@ -162,13 +162,13 @@ int main(int argc, char *argv[]){
 
 
 
-    printf("board_size  : %d  \n" , board->size) ; 
+    printf("board_size  : %d  \n" , board->size_moves) ; 
 
     printf("----------Starting Game----------\n");
     struct move_t current_move = *first_move;
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
-    printf("The board size is %d\n", board->size);
+    printf("The board size is %d\n", board->size_moves);
 
     int winner = -1;
     int i = 0 ; 
