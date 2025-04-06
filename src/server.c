@@ -169,10 +169,10 @@ int main(int argc, char *argv[]){
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
     printf("The number of moves played so far is: %d\n", board->size_moves);
-
+    /*
     int winner = -1;
     int i = 0 ; 
-    while (/*winner == -1*/i<10) {
+    while (i<10) {
         struct move_t move = players[start_player].play(current_move);
         if (move.t == MOVE) {
             printf("Player %s moved to vertex %d\n", players[start_player].get_player_name(), move.m);
@@ -189,10 +189,45 @@ int main(int argc, char *argv[]){
 
         start_player = next;
         i++ ; 
-    }
-    winner = 0 ; 
-    printf("Player %s wins!\n", players[winner].get_player_name());
+    }*/
 
+   //new vertion to simulate the game including the needed fonction from move 
+    int current_player = start_player;
+    int other_player = (start_player + 1) % NUM_PLAYERS;
+    int winner = -1;
+
+    while (winner == -1) {
+        struct move_t move = players[current_player].play(current_move);
+
+        printf("Player %s plays: %s\n", players[current_player].get_player_name(), move_type_to_string(move.t));
+
+        // Vérification du coup
+        if (!is_valid_move(&move , board->graph)) {
+            printf("Invalid move by %s! %s wins by default.\n",
+                players[current_player].get_player_name(),
+                players[other_player].get_player_name());
+            winner = other_player;
+            break;
+        }
+
+        // Appliquer le coup
+        add_move_to_board(board, move);
+        current_move = move;
+
+        // Vérification de victoire
+        if (has_won(board, current_player)) {
+            winner = current_player;
+            break;
+        }
+
+        // Changement de joueur
+        int tmp = current_player;
+        current_player = other_player;
+        other_player = tmp;
+    }
+
+    printf("Player %s wins!\n", players[winner].get_player_name());
+    
 
 
 
