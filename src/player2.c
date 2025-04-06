@@ -8,6 +8,9 @@
 #include <string.h>
 #include <gsl/gsl_spmatrix.h>
 
+
+#define INF 1000000000
+
 //enum graph_type_t type;
 static struct graph_t *graph2= NULL ; 
 
@@ -128,6 +131,20 @@ struct move_t play(const struct move_t previous_move) {
     return move;
 }
 
+
+int  minmax(struct move_t current ,int depth) {
+    if (depth==0) return -INF ; 
+    int max = -INF ; 
+    int sizeOFpossiblePosition = 0 ;
+    struct move_t maxEVal ; 
+    struct move_t possibleMOVES[10] ; 
+    while (1){
+    int  eval = minmax(possibleMOVES[sizeOFpossiblePosition] , depth-1)  ;
+    max = max>eval ? max:eval ;
+
+    }
+    return max  ; 
+}
 
 
 void finalize() {
