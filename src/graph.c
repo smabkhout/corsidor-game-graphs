@@ -298,7 +298,6 @@ void print_hex_grid(int m) {
     printf("\n");
   }
 }
-int main() {
-  print_hex_grid(5);
-  return 0;
-}
+
+
+
