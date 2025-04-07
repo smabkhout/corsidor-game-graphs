@@ -228,7 +228,7 @@ int main(int argc, char *argv[]){
 
     printf("Player %s wins!\n", players[winner].get_player_name());
     */
-
+    winner = 0 ; 
     printf("Player %s wins!\n", players[winner].get_player_name());
 
     //free(globalGraph) ; 
