@@ -23,44 +23,13 @@ struct move_t create_move(enum player_color_t color, enum move_type_t type, vert
     return move;
 }
 
-int can_place_wall(struct graph_t *graph, struct edge_t e[2]) {
-    if (gsl_spmatrix_uint_get(graph->t, e[0].fr, e[0].to) > 0 && gsl_spmatrix_uint_get(graph->t, e[1].fr, e[1].to) > 0) {
-        return 1; 
-    }
-    return 0; 
-}
 
-
-
-
-int is_empty_position( vertex_t n , vertex_t pos_other_player){
+int is_empty_vertice( vertex_t n , vertex_t pos_other_player){
         if (pos_other_player == n){
             return 0;
         }
     return 1;
 }
-
-
-int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2){
-    if(!graph){
-        return 0;
-    }
-    if (gsl_spmatrix_uint_get(graph->t, v1, v2)>0){
-        return 1;
-    }
-    return 0;
-
-}
-
-int can_move(struct graph_t *graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player) {
-    if (is_empty_position(b, pos_other_player) && gsl_spmatrix_uint_get(graph->t, pos_player, b) > 0) {
-        return 1;
-    }
-    return 0;
-}
-
-
-
 
 
 int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
@@ -79,6 +48,47 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
     }
     return 1;  
 }
+
+int can_move(struct graph_t *graph, vertex_t pos_player, vertex_t b, vertex_t pos_other_player) {
+    if (!(is_empty_vertice(b, pos_other_player)) || !(gsl_spmatrix_uint_get(graph->t, pos_player, b) > 0)) {
+        return 0;
+    }
+    struct move_t move=create_move(NO_COLOR, MOVE, b, NULL);
+    if (!is_valid_move(&move, graph)){
+        return 0;
+    }
+    return 1;
+}
+
+int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2){
+    if(!graph){
+        return 0;
+    }
+    if (gsl_spmatrix_uint_get(graph->t, v1, v2)>0){
+        return 1;
+    }
+    return 0;
+
+}
+
+int can_place_wall(struct graph_t *graph, struct edge_t e[2]) {
+    if(e[0].fr!=e[1].fr && e[0].to!=e[1].fr && e[0].fr!=e[1].to && e[0].to!=e[1].to ){
+        return 0;
+    }
+    if(!is_connected(graph, e[0].fr, e[0].to)||!is_connected(graph, e[1].fr, e[1].to) ){
+        return 0;
+    }
+    struct move_t move = create_move(NO_COLOR, WALL, 0, e);
+    if(!is_valid_move(&move, graph)){
+        return 0;
+    }
+    return 1;
+}
+
+
+
+
+
 
 
 int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n){
@@ -125,44 +135,8 @@ void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num
     
 }
 
-void test_create_move() {
-    struct edge_t edges[2] = {{0, 1}, {1, 2}};
-    struct move_t move = create_move(BLACK, WALL, 0, edges);
 
-    printf("Created Move:\n");
-    printf("Player Color: %d\n", move.c);
-    printf("Move Type: %d\n", move.t);
-    printf("Vertex: %u\n", move.m);
-    printf("Edge 1: (%u -> %u)\n", move.e[0].fr, move.e[0].to);
-    printf("Edge 2: (%u -> %u)\n", move.e[1].fr, move.e[1].to);
-}
-
-/*void test_is_valid_move() {
-    struct graph_t graph;
-    graph.num_vertices = 4;  // Simple graph with 4 vertices
-
-    // Create a valid move (player moves to vertex 2)
-    struct move_t move1 = create_move(BLACK, MOVE, 2, NULL);
-    int valid1 = is_valid_move(&move1, &graph);
-    printf("Move 1 is valid: %d\n", valid1);  // Expect 1 (valid)
-
-    // Create an invalid move (player moves to vertex 5, which is out of bounds)
-    struct move_t move2 = create_move(WHITE, MOVE, 5, NULL);
-    int valid2 = is_valid_move(&move2, &graph);
-    printf("Move 2 is valid: %d\n", valid2);  // Expect 0 (invalid)
-
-    // Create a valid wall move (remove edge between vertices 1 and 2)
-    struct edge_t edges[2] = {{1, 2}, {2, 1}};
-    struct move_t move3 = create_move(BLACK, WALL, 0, edges);
-    int valid3 = is_valid_move(&move3, &graph);
-    printf("Move 3 is valid: %d\n", valid3);  // Expect 1 (valid)
-
-    // Create an invalid wall move (edge between vertices 5 and 6, out of bounds)
-    struct edge_t edges_invalid[2] = {{5, 6}, {6, 5}};
-    struct move_t move4 = create_move(WHITE, WALL, 0, edges_invalid);
-    int valid4 = is_valid_move(&move4, &graph);
-    printf("Move 4 is valid: %d\n", valid4);  // Expect 0 (invalid)
-}
+/*
 
 void test_apply_move() {
     struct graph_t graph;
