@@ -169,7 +169,7 @@ int main(int argc, char *argv[]){
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
     printf("The number of moves played so far is: %d\n", board->size_moves);
-    /*
+    
     int winner = -1;
     int i = 0 ; 
     while (i<10) {
@@ -189,8 +189,8 @@ int main(int argc, char *argv[]){
 
         start_player = next;
         i++ ; 
-    }*/
-
+    }
+    /*
    //new vertion to simulate the game including the needed fonction from move 
     int current_player = start_player;
     int other_player = (start_player + 1) % NUM_PLAYERS;
@@ -227,9 +227,9 @@ int main(int argc, char *argv[]){
     }
 
     printf("Player %s wins!\n", players[winner].get_player_name());
-    
+    */
 
-
+    printf("Player %s wins!\n", players[winner].get_player_name());
 
     //free(globalGraph) ; 
     board_free(board);
