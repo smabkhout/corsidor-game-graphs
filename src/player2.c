@@ -106,6 +106,10 @@ struct scored_move {
     struct move_t move;
 } ; 
 
+struct game_state apply_move(struct game_state* state ,struct move_t legale_moves ){
+    return ; 
+} ; 
+
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int beta, int color) {
     if (depth == 0 /* || is_terminal(state) */) {
         int score = color * evaluate(state, color);
