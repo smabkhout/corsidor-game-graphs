@@ -31,6 +31,14 @@ int is_empty_vertice( vertex_t n , vertex_t pos_other_player){
     return 1;
 }
 
+/*int is_empty_vertice( vertex_t n , struct board_t *board){
+        for(int i=0 ; i<NUM_PLAYERS ; i++){
+            if (board->graph->start[i] == n ) return 0 ; 
+        }
+    return 1;
+}
+*/
+
 
 int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
     if (!move || !graph) {
@@ -180,3 +188,67 @@ void test_apply_move() {
     return 0;
 }
 */
+
+
+
+
+
+
+void availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplayer, struct move_t* previous_move) {
+    int nb_moves = 0;
+
+    vertex_t current = get_player_position(id_ofplayer);
+    vertex_t opponent = get_player_position( (id_ofplayer+1)%2);
+    enum dir_t prev_dir = get_direction_from_move(previous_move);
+
+    // === Déplacements ===
+
+    // Parcours des voisins immédiats
+    for (vertex_t i = 0 ; i<graph->num_vertices ; i++){
+        if (i != opponent && is_connected(graph , current , i )) {
+            moves[nb_moves++] = make_move_move(id_ofplayer, i);
+        }
+
+        // Vérifie si saut par-dessus est possible
+        if (i == opponent) {
+            for (vertex_t j = 0 ; j<graph->num_vertices ;j++)/*each neighbor_of_opponent w in graph[opponent] */{
+                if (j != current && j != opponent &&is_connected(graph , opponent , j )) {
+                    moves[nb_moves++] = make_move_move(id_ofplayer, j);
+                }
+            }
+        }
+    }
+    /*
+    // === Déplacements longue distance (directionnelle) ===
+    if (prev_dir is known) {
+        for d in allowed_directions_based_on(prev_dir) {
+            for k = 1 to max_range(d, prev_dir) {
+                vertex_t target = move_in_direction(graph, current, d, k);
+                if (target != INVALID && is_path_clear(current, target, graph) && is_free(target)) {
+                    moves[nb_moves++] = make_move_move(id_ofplayer, target);
+                }
+            }
+        }
+    }
+
+    // === Placement de murs ===
+    if (get_remaining_walls(id_ofplayer) > 0) {
+        for each vertex fr in graph {
+            for each direction d1, d2 consécutifs autour de fr {
+                edge_t e1 = {fr, get_neighbor(fr, d1)};
+                edge_t e2 = {fr, get_neighbor(fr, d2)};
+                if (edges_are_valid(e1, e2, graph) && !edges_already_blocked(e1, e2)) {
+                    // Simuler le blocage temporairement
+                    block_edges(graph, e1, e2);
+                    if (both_players_have_path_to_goal()) {
+                        moves[nb_moves++] = make_move_wall(id_ofplayer, e1, e2);
+                    }
+                    unblock_edges(graph, e1, e2);
+                }
+            }
+        }
+    }
+    */
+    // Terminer le tableau avec NULL si besoin
+    moves[nb_moves] = NULL;
+}
