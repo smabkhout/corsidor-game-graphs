@@ -106,9 +106,13 @@ struct scored_move {
     struct move_t move;
 } ; 
 
-/*struct game_state apply_move(struct game_state* state ,struct move_t legale_moves ){
-    return ; 
-} ; */
+struct game_state apply_move(struct game_state* state ,struct move_t legale_move ){
+    (void)state;
+    (void)legale_move;
+    struct game_state next = *state;
+    return next;
+}
+
 
 int availableMoves(struct move_t moves[], struct game_state *state, int color);
 int normalized_shortest_path(struct game_state *state, int color);
