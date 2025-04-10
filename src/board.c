@@ -83,7 +83,7 @@ int is_invalid(struct move_t move, struct board_t* board) {
         enum dir_t d0 = gsl_spmatrix_uint_get(graph->t, move.e[0].fr, move.e[0].to);
         enum dir_t d1 = gsl_spmatrix_uint_get(graph->t, move.e[1].fr, move.e[1].to);
 
-        if (abs((int)d0 - (int)d1) != 1  abs((int)d0 - (int)d1) != 5)
+        if (abs((int)d0 - (int)d1) != 1 && abs((int)d0 - (int)d1) != 5)
             return 1;
 
         return 0; 
