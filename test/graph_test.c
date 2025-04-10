@@ -7,6 +7,8 @@ void test_create_Graph(){
      assert(g1->num_edges == 156);
      assert(g2->num_vertices==42);
      assert(g2->num_edges == 84);
+     graph_free(g1);
+     graph_free(g2);
 }
 
 

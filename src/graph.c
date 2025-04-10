@@ -113,6 +113,7 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     perror("Failed to allocate memory for graph");
     return NULL;
   }
+  graph->num_vertices = 0; // just for initialisation
   unsigned int n = 3 * (m * m) - 3 * m + 1;
   graph->t = gsl_spmatrix_uint_alloc(n, n);
   // Calcul du nombre de sommets à partir du nombre m
