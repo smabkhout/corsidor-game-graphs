@@ -80,14 +80,11 @@ struct move_t play(const struct move_t previous_move) {
 
     struct move_t move = find_best_move(graph1, my_pos, opp_pos, prev_dir, player_id);
 
-    int has_jumped = 0;
-
     if (gsl_spmatrix_uint_get(graph1->t, my_pos, opp_pos) > 0) {
         for (vertex_t jump = 0; jump < graph1->num_vertices; jump++) {
             if (gsl_spmatrix_uint_get(graph1->t, opp_pos, jump) > 0 &&
                 jump != my_pos && jump != opp_pos) {
                 move = make_move_move(player_id, jump);
-                has_jumped = 1;
                 break;
             }
         }

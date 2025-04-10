@@ -106,9 +106,25 @@ struct scored_move {
     struct move_t move;
 } ; 
 
-struct game_state apply_move(struct game_state* state ,struct move_t legale_moves ){
+/*struct game_state apply_move(struct game_state* state ,struct move_t legale_moves ){
     return ; 
-} ; 
+} ; */
+
+int availableMoves(struct move_t moves[], struct game_state *state, int color);
+int normalized_shortest_path(struct game_state *state, int color);
+int harmonic_potential(struct game_state *state, int color);
+int pawn_on_goal_side(struct game_state *state, int color);
+
+
+int evaluate(struct game_state *state, int color) {
+    int f1 = normalized_shortest_path(state, color);
+    int f2 = normalized_shortest_path(state, 1 - color);
+    int f3 = harmonic_potential(state, color);
+    int f4 = harmonic_potential(state, 1 - color);
+    int f5 = pawn_on_goal_side(state, color);
+
+    return 10*f1 - 8*f2 + 5*f3 - 5*f4 + 12*f5;
+}
 
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int beta, int color) {
     if (depth == 0 /* || is_terminal(state) */) {
@@ -156,17 +172,6 @@ struct move_t iterative_negamax(struct game_state *state, int time_limit_ms) {
     return best.move;
 }
 
-int evaluate(struct game_state *state, int color) {
-    int f1 = normalized_shortest_path(state, color);
-    int f2 = normalized_shortest_path(state, 1 - color);
-    int f3 = harmonic_potential(state, color);
-    int f4 = harmonic_potential(state, 1 - color);
-    int f5 = pawn_on_goal_side(state, color);
-
-    return 10*f1 - 8*f2 + 5*f3 - 5*f4 + 12*f5;
-}
-
-
 
 int is_connected1(struct graph_t *graph, vertex_t v1, vertex_t v2) {
     if (!graph || v1 >= graph->num_vertices || v2 >= graph->num_vertices) {
@@ -204,10 +209,11 @@ struct move_t play(const struct move_t previous_move) {
 
 
 int  minmax(struct move_t current ,int depth) {
+    (void)current;
     if (depth==0) return -INF ; 
     int max = -INF ; 
     int sizeOFpossiblePosition = 0 ;
-    struct move_t maxEVal ; 
+  //  struct move_t maxEVal ; 
     struct move_t possibleMOVES[10] ; 
     while (1){
     int  eval = minmax(possibleMOVES[sizeOFpossiblePosition] , depth-1)  ;
@@ -227,27 +233,3 @@ void finalize() {
     }
 }
 
-
-/*int main() {
-    unsigned int n = 4;  // Number of vertices in the graph
-    struct graph_t* graph = malloc(sizeof(struct graph_t));
-    initialize_graph(graph , n , CYCLIC) ; 
-
-    
-    struct move_t previous_move;
-    previous_move.c = 1;  // Exemple de couleur de joueur
-    previous_move.t = MOVE;
-    previous_move.m = 0;  // Position initiale du joueur
-
-    // Le graphe pour l'exemple
-    struct board_t* board = malloc(sizeof(struct board_t));
-    board->graph = graph ; 
-
-    // Appel de la fonction play avec un mouvement initial
-    struct move_t new_move = play(previous_move);
-
-    // Affichage du résultat
-    printf("New move: Player %d moves to vertex %u\n", new_move.c, new_move.m);
-
-    return 0;
-}*/

@@ -201,7 +201,7 @@ struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t oppon
     }
     if (prev_dir != NO_EDGE) {
         enum dir_t d1, d2;
-        get_side_dirs_30(prev_dir, &d1, &d2);
+        get_side_dir_30(prev_dir, &d1, &d2);
         enum dir_t side_dirs[2] = {d1, d2};
         for (int i = 0; i < 2; i++) {
             if (is_path_clear(graph, pos, side_dirs[i], 2, opponent, &dest)) {
