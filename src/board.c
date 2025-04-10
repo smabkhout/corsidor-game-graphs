@@ -38,6 +38,7 @@ void add_move_to_board(struct board_t* board, struct move_t move){
 }
 
 void board_free(struct board_t* board){
+    graph_free(board->graph);
     free(board->moves);
     free(board);
 }
