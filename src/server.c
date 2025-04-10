@@ -157,19 +157,10 @@ int main(int argc, char *argv[]){
 
     int winner = -1;
     int turn_count = 0;
-    int max_turns = 5;
 
     printf("----------Starting Game----------\n");
-
-
-    struct board_t *board = board_init();
-    board->graph = globalGraph ; 
     add_move_to_board(board, *first_move);
-
-
-
     printf("The size of the board is: %d vertices \n" , board->graph->num_vertices) ; 
-
     printf("----------Starting Game----------\n");
 
 
@@ -187,7 +178,7 @@ int main(int argc, char *argv[]){
             break;
         }
 
-        printf("Turn %d: Player %s plays %s to vertex %lu\n", turn_count,
+        printf("Turn %d: Player %s plays %s to vertex %u\n", turn_count,
                players[current_player].get_player_name(), move_type_to_string(move.t), move.m);
 
         if (move.t != NO_TYPE) {
