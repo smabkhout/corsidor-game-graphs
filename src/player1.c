@@ -1,123 +1,3 @@
-
-/*
-#include "player.h"
-#include "board.h"
-#include "move_functions.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include<time.h>
-
-//enum graph_type_t type;
-//struct board_t *board ; 
-
-struct graph_t graph1 ; 
-
-char const* get_player_name()
-{
-  srand(time(NULL));
-  char *names[] = {"Adam", "Khaoula", "Rafiq"};
-  return names[rand() % 3];
-}
-
-
-void initialize(unsigned int id, struct graph_t* graph) {
-  if (id > 1 || graph == NULL) {
-    return; 
-  }
-  graph->start[id] = 27;
-
-  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph-> num_vertices , graph->num_edges , graph->num_objectives);
-}
-
-struct move_t play(const struct move_t previous_move){
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    struct move_t move;
-    
-    move.c = (previous_move.c+1)%2 ; 
-    srand(time(NULL));
-    enum move_type_t mv = 2;
-    move.t = mv; 
-
-    unsigned int new_pos = previous_move.m;
-    //struct edge_t e[2] ;
-    //generate_wall(e); 
-
-    while (1) {
-        new_pos = (new_pos + 1) % 61;  
-
-        
-        move = create_move(previous_move.c, MOVE, new_pos, NULL);
-
-       // if (is_valid_move(&move, board->graph)) {
-         //   printf("Player %d moves to vertex %u\n", move.c, move.m);
-            break;  
-        //}
-    }
-
-    return move;
-
-}
-
-
-void finalize(){
-  //board_free(board);
-}
-
-
-/*int main() {
-    unsigned int n = 4;  // Number of vertices in the graph
-    struct graph_t* graph = malloc(sizeof(struct graph_t));
-    initialize_graph(graph , n , CYCLIC) ; 
-
-    
-    struct move_t previous_move;
-    previous_move.c = 1;  // Exemple de couleur de joueur
-    previous_move.t = MOVE;
-    previous_move.m = 0;  // Position initiale du joueur
-
-    // Le graphe pour l'exemple
-    struct board_t* board = malloc(sizeof(struct board_t));
-    board->graph = graph ; 
-
-    // Appel de la fonction play avec un mouvement initial
-    struct move_t new_move = play(previous_move);
-
-    // Affichage du résultat
-    printf("New move: Player %d moves to vertex %u\n", new_move.c, new_move.m);
-
-    return 0;
-}*/
-
-
-
-
 #include "graph.h"
 #include "player.h"
 #include "board.h"
@@ -129,9 +9,9 @@ void finalize(){
 
 //enum graph_type_t type;
 static struct graph_t *graph1= NULL ; 
-
-
-
+static unsigned int player_id;
+static vertex_t previous_position;
+static int has_played = 0;
 
 
 char const* get_player_name()
@@ -172,7 +52,8 @@ void copy_graph(struct graph_t* dest, const struct graph_t* src) {
 void initialize(unsigned int id, struct graph_t* graph) {
   graph1= malloc(sizeof(struct graph_t)) ; 
   if (!graph1){
-    puts("erreur dans l'allocation du graph pour player1 ") ; 
+    fprintf(stderr, "Erreur d'allocation\n");
+    exit(EXIT_FAILURE);
   }
 
   copy_graph(graph1 , graph) ; 
@@ -182,34 +63,42 @@ void initialize(unsigned int id, struct graph_t* graph) {
 }
 
 
-/*
 struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
-    
-    move.c = previous_move.c; 
-    srand(time(NULL));
-    enum move_type_t mv = 2;
-    move.t = mv; 
+    vertex_t my_pos = graph1->start[player_id];
+    vertex_t opp_pos = graph1->start[(player_id + 1) % 2];
 
-    unsigned int new_pos = previous_move.m;
-    //struct edge_t e[2] ;
-    //generate_wall(e); 
-
-    while (1) {
-        new_pos = (new_pos + 1) % 61 ;  
-
-        
-        move = create_move(previous_move.c, MOVE, new_pos, NULL);
-
-        //if (is_valid_move(&move, board->graph)) {
-          //  printf("Player %d moves to vertex %u\n", move.c, move.m);
-            break;  
-        //}
+    if (previous_move.t == MOVE && previous_move.c != player_id) {
+        opp_pos = previous_move.m;
     }
 
-    return move;
+    enum dir_t prev_dir = NO_EDGE;
+    if (has_played) {
+        prev_dir = get_direction(previous_position, my_pos, graph1);
+    } else {
+        prev_dir = 3;
+    }
 
-}*/
+    struct move_t move = find_best_move(graph1, my_pos, opp_pos, prev_dir, player_id);
+
+    int has_jumped = 0;
+
+    if (gsl_spmatrix_uint_get(graph1->t, my_pos, opp_pos) > 0) {
+        for (vertex_t jump = 0; jump < graph1->num_vertices; jump++) {
+            if (gsl_spmatrix_uint_get(graph1->t, opp_pos, jump) > 0 &&
+                jump != my_pos && jump != opp_pos) {
+                move = make_move_move(player_id, jump);
+                has_jumped = 1;
+                break;
+            }
+        }
+    }
+    if (move.t == MOVE) {
+        previous_position = my_pos;         
+        graph1->start[player_id] = move.m;  
+        has_played = 1;                     
+    }
+    return move;
+}
 
 
 
@@ -227,7 +116,7 @@ int is_connected1(struct graph_t *graph, vertex_t v1, vertex_t v2) {
 }
 
 
-struct move_t play(const struct move_t previous_move) {
+/*struct move_t play(const struct move_t previous_move) {
     struct move_t move;
     move.c = (previous_move.c+1)%2;
     move.t = MOVE;
@@ -245,7 +134,7 @@ struct move_t play(const struct move_t previous_move) {
     // Si aucun mouvement valide, on reste sur place
     move.m = graph1->start[move.c]  ;
     return move;
-}
+}*/
 
 
 
@@ -258,28 +147,4 @@ void finalize() {
     }
 }
 
-
-/*int main() {
-    unsigned int n = 4;  // Number of vertices in the graph
-    struct graph_t* graph = malloc(sizeof(struct graph_t));
-    initialize_graph(graph , n , CYCLIC) ; 
-
-    
-    struct move_t previous_move;
-    previous_move.c = 1;  // Exemple de couleur de joueur
-    previous_move.t = MOVE;
-    previous_move.m = 0;  // Position initiale du joueur
-
-    // Le graphe pour l'exemple
-    struct board_t* board = malloc(sizeof(struct board_t));
-    board->graph = graph ; 
-
-    // Appel de la fonction play avec un mouvement initial
-    struct move_t new_move = play(previous_move);
-
-    // Affichage du résultat
-    printf("New move: Player %d moves to vertex %u\n", new_move.c, new_move.m);
-
-    return 0;
-}*/
 

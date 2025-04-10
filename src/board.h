@@ -20,4 +20,6 @@ void board_free(struct board_t* board);
 // Fonction pour générer des murs dans le jeu.
 // Cette fonction remplit le tableau d'arêtes 'e' avec des positions aléatoires.
 void generate_wall(struct edge_t e[2], struct board_t * board);
+
+int is_invalid(struct move_t move, struct board_t* board);
 #endif // _CORS_BOARD_H_

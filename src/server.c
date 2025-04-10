@@ -103,6 +103,7 @@ int player_to_start(){
 int main(int argc, char *argv[]){
     int size_mesh = -1;
     char *type_graph = NULL;
+    int max_turns = -1;
 
     int opt;
     while ((opt = getopt(argc, argv, "m:t:M:")) != -1) {
@@ -113,18 +114,17 @@ int main(int argc, char *argv[]){
             case 't':
                 type_graph = optarg;
                 break;
-          /*  case 'M': 
-                printf("Option -M détectée avec la valeur %s\n", optarg);
-                break;*/
+            case 'M': max_turns = atoi(optarg);
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
 
     if (argc - optind != NUM_PLAYERS) {
         fprintf(stderr, "Error: You must provide exactly two player libraries.\n");
-        fprintf(stderr, "Usage: %s [-m M] [-t T] player1.so player2.so\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] player1.so player2.so\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -134,26 +134,32 @@ int main(int argc, char *argv[]){
 
     //struct graph_t *graph1 = createGraph(7, TRIANGULAR); 
     //struct graph_t *graph2 = createGraph(7, TRIANGULAR); 
-    struct graph_t *globalGraph = createGraph(7, TRIANGULAR); 
-
+    struct graph_t *globalGraph = createGraph(size_mesh, TRIANGULAR); 
+    struct board_t *board = board_init();
+    board->graph = globalGraph ; 
     struct move_t *first_move = make_first_move();
     
 
     if(syntax_test(argc) == -1){
         return EXIT_FAILURE;
     }
+
+
     int start_player = player_to_start();
-    ///////////////this is the first player
+    int current_player = start_player;
+    int other_player = (start_player + 1) % NUM_PLAYERS;
+
     players[start_player].initialize(start_player, globalGraph);
-    const char *player_name1 = players[start_player].get_player_name();
-    printf("First player:\t%s\n", player_name1);
+    players[other_player].initialize(other_player, globalGraph);
 
+    printf("First player: %s\n", players[start_player].get_player_name());
+    printf("Second player: %s\n", players[other_player].get_player_name());
 
-    /////////////////////this is the second player 
-    int next = (start_player + 1) % NUM_PLAYERS;
-    players[next].initialize(next, globalGraph);
-    const char *player_name2 = players[next].get_player_name();
-    printf("Second player:\t%s\n", player_name2);
+    int winner = -1;
+    int turn_count = 0;
+    int max_turns = 5;
+
+    printf("----------Starting Game----------\n");
 
 
     struct board_t *board = board_init();
@@ -165,71 +171,51 @@ int main(int argc, char *argv[]){
     printf("The size of the board is: %d vertices \n" , board->graph->num_vertices) ; 
 
     printf("----------Starting Game----------\n");
+
+
     struct move_t current_move = *first_move;
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
     printf("The number of moves played so far is: %d\n", board->size_moves);
     
-    int winner = -1;
-    int i = 0 ; 
-    while (i<10) {
-        struct move_t move = players[start_player].play(current_move);
-        if (move.t == MOVE) {
-            printf("Player %s moved to vertex %d\n", players[start_player].get_player_name(), move.m);
+    while (winner == -1 && turn_count < max_turns) {
+        struct move_t move = players[current_player].play(current_move);
+        if (is_invalid(move,board)){
+            printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
+
+            winner = (current_player + 1) % NUM_PLAYERS;
+            break;
+        }
+
+        printf("Turn %d: Player %s plays %s to vertex %lu\n", turn_count,
+               players[current_player].get_player_name(), move_type_to_string(move.t), move.m);
+
+        if (move.t != NO_TYPE) {
             add_move_to_board(board, move);
             current_move = move;
-            i++ ; 
+            current_player = (current_player + 1) % NUM_PLAYERS;
+            other_player = (current_player + 1) % NUM_PLAYERS;
+            turn_count++;
 
-            if (move.m == globalGraph->objectives[0]) {
-                winner = start_player;
+            for (unsigned int i = 0; i < globalGraph->num_objectives; i++) {
+                if (globalGraph->start[current_move.c] == globalGraph->objectives[i]) {
+                    winner = current_move.c;
+                    break;
+                }
             }
-       } else {
-            printf("Invalid move by player %s\n", players[start_player].get_player_name());
-        }
-
-        start_player = next;
-        i++ ; 
-    }
-    /*
-   //new vertion to simulate the game including the needed fonction from move 
-    int current_player = start_player;
-    int other_player = (start_player + 1) % NUM_PLAYERS;
-    int winner = -1;
-
-    while (winner == -1) {
-        struct move_t move = players[current_player].play(current_move);
-
-        printf("Player %s plays: %s\n", players[current_player].get_player_name(), move_type_to_string(move.t));
-
-        // Vérification du coup
-        if (!is_valid_move(&move , board->graph)) {
-            printf("Invalid move by %s! %s wins by default.\n",
-                players[current_player].get_player_name(),
-                players[other_player].get_player_name());
-            winner = other_player;
+        } else {
+            printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
+            winner = (current_player + 1) % NUM_PLAYERS; 
             break;
         }
-
-        // Appliquer le coup
-        add_move_to_board(board, move);
-        current_move = move;
-
-        // Vérification de victoire
-        if (has_won(board, current_player)) {
-            winner = current_player;
-            break;
-        }
-
-        // Changement de joueur
-        int tmp = current_player;
-        current_player = other_player;
-        other_player = tmp;
     }
 
-    printf("Player %s wins!\n", players[winner].get_player_name());
-    */
-    winner = 0 ; 
-    printf("Player %s wins!\n", players[winner].get_player_name());
+    if (winner >= 0) {
+        printf("\n🎉 Player %s wins the game!\n", players[winner].get_player_name());
+    } else {
+        printf("\n⏱️  Game ended in a draw (max turns reached)\n");
+    }
+    printf("----------The END----------");
 
     //free(globalGraph) ; 
     board_free(board);
