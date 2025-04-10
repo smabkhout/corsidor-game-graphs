@@ -7,6 +7,7 @@
 
 //struct player (ajout last-position)
 struct player_tt {
+  unsigned int walls;
   vertex_t position;
   vertex_t last_position; // pour déduire la direction
 };
@@ -71,42 +72,105 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target) {
 
     int l = l1, c = c1;
     for (int d = 1; d <= max_dist; ++d) {
-      l += direc[dir].l;
-      c += direc[dir].c;
+      
+      int next_l = l + direc[dir].l;
+      int next_c = c + direc[dir].c;
+      
       if (!in_hexagon_T(l, c, m, 0, 0)) break;
-
+      
+      vertex_t from = axial_to_index(l, c, m);
+      vertex_t to = axial_to_index(next_l, next_c, m);
+      
+      int exists = gsl_spmatrix_uint_get(g->t, from, to);
+      if (exists == 0)
+        break;// cas d'un mur
       vertex_t idx = axial_to_index(l, c, m);
       if (idx == target) return 1;
 
+       // on continue a avancer dans cette direction
+      l = next_l;
+      c = next_c;
+
       // Verifie si une arete existe dans cette direction
-      int exists = gsl_spmatrix_uint_get(g->t, axial_to_index(l - direc[dir].l, c - direc[dir].c, m), idx);
-      if (exists == 0) break; // mur ?
+      
     }
   }
 
   return 0;
 }
 
-int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
-  if (move.t != MOVE) {
-    return 0; // Ce n'est pas un déplacement
-  }
+#include "move.h"
+#include "graph.h"
+#include "player.h"
 
-  vertex_t from = p->position;
-  vertex_t to = move.m;
 
-  // Vérification du coup
-  if (!valid_move(g, p, to)) {
-    return 0;
-  }
 
-  // Mise à jour de la position et du dernier déplacement
-  p->last_position = from;
-  p->position = to;
+int valid_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
+  if (p->walls <= 0) return 0;
+
+  vertex_t fr1 = move.e[0].fr;
+  vertex_t fr2 = move.e[1].fr;
+  if (fr1 != fr2) return 0; // les deux arêtes ne partent pas du même sommet
+
+  vertex_t to1 = move.e[0].to;
+  vertex_t to2 = move.e[1].to;
+
+  int dir1 = gsl_spmatrix_uint_get(g->t, fr1, to1);
+  int dir2 = gsl_spmatrix_uint_get(g->t, fr1, to2);
+
+  if (dir1 == 0 || dir2 == 0) return 0; // arêtes inexistantes
+
+  int diff = abs(dir1 - dir2);
+  if (diff != 1 && diff != 5) return 0; // pas consécutives
 
   return 1;
 }
 
+
+
+void place_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
+  vertex_t fr = move.e[0].fr;
+  vertex_t to1 = move.e[0].to;
+  vertex_t to2 = move.e[1].to;
+
+  gsl_spmatrix_uint_set(g->t, fr, to1, 0);
+  gsl_spmatrix_uint_set(g->t, to1, fr, 0);
+  gsl_spmatrix_uint_set(g->t, fr, to2, 0);
+  gsl_spmatrix_uint_set(g->t, to2, fr, 0);
+
+  p->walls -= 1;
+}
+
+int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
+  if (move.t == MOVE) {
+    // Deplacement du joueur
+    vertex_t from = p->position;
+    vertex_t to = move.m;
+
+    if (!valid_move(g, p, to)) {
+      return 0; // Deplacement invalide
+    }
+
+    // Mise à jour du joueur
+    p->last_position = from;
+    p->position = to;
+    return 1;
+
+  } else if (move.t == WALL) {
+    // Pose d’un mur
+
+    if (!valid_wall(g, p, move)) {
+      return 0; // Mur invalide
+    }
+
+    // Appliquer le mur
+    place_wall(g, p, move);
+    return 1;
+  }
+
+  // Type de coup invalide
+  return 0;
+}
 
 
 int main() {
@@ -115,7 +179,8 @@ int main() {
 
   struct player_tt p;
   p.last_position = axial_to_index(0, 0, m);   // déplacement précédent depuis (0,0)
-  p.position = axial_to_index(0, 1, m);        // jusqu’à (0,1) → vecteur = (0,1), direction EAST
+  p.position = axial_to_index(0, 1, m);// jusqu’à (0,1) → vecteur = (0,1), direction EAST
+  p.walls = 1;
 
   // On teste un mouvement en ligne droite (EAST) à distance 1, 2, 3
   vertex_t t1 = axial_to_index(0, 2, m); // 1 pas vers l'est
@@ -128,27 +193,58 @@ int main() {
   printf("Test déplacement vers (0,4) → %d\n", valid_move(g, &p, t3)); // attendu : 1
   printf("Test déplacement vers (1,0) → %d\n", valid_move(g, &p, t4)); // attendu : 1 ou 0 (dépend si 30° ou non)
 
-  struct move_t move = {
-    .c = BLACK,
+ printf("=== Déplacement vers (0,2) ===\n");
+  struct move_t move1 = {
     .t = MOVE,
-    .m = axial_to_index(2, 1, m)  // Je veux aller en (0,2)
-  };
-  struct move_t move2 = {
     .c = BLACK,
-    .t = MOVE,
-    .m = axial_to_index(0, 2, m)  // Je veux aller en (0,2)
+    .m = axial_to_index(0, 2, m)
   };
-  printf("%d \n", move.m);
-  printf("%d \n", p.position);
-  if (apply_move(g, &p, move) && apply_move(g, &p, move2)) {
-    printf("Déplacement fait\n");
-    printf("%d \n", p.position);
-  } else {
-    printf("Déplacement invalide vers (0,2).\n");
+
+  if (apply_move(g, &p, move1)) {
+    printf("✅ Déplacement vers (0,2) réussi\n");
+    printf("position du joueur %d: \n", p.position );
+  }
+  else {
+    printf("❌ Déplacement vers (0,2) bloqué\n");
   }
   
-  
-  
+  printf("=== Pose d’un mur entre (0,2)-(1,2) et (0,2)-(0,1) ===\n");
+  struct move_t wall = {
+    .t = WALL,
+    .c = BLACK,
+    .e = {
+      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) },
+      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(-1, 2, m) }
+    }
+  };
+  struct move_t wall2 = {
+    .t = WALL,
+    .c = BLACK,
+    .e = {
+      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(1, 1, m) },
+      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) }
+    }
+  };
+
+  if (apply_move(g, &p, wall) /*&& apply_move(g, &p, wall2)*/) {
+    printf("✅ Mur posé avec succès\n");
+  } else {
+    printf("❌ Pose du mur refusée\n");
+  }
+
+  printf("=== Tentative de retour vers (0,1) ===\n");
+  struct move_t move2 = {
+    .t = MOVE,
+    .c = BLACK,
+    .m = axial_to_index(0, 1, m)
+  };
+
+  if (valid_move(g, &p, move2.m)) {
+    printf("✅ Retour vers (0,1) réussi\n");
+  } else {
+    printf("❌ Retour vers (0,1) bloqué par le mur\n");
+  }
+
   graph_free(g);
   return 0;
 }
