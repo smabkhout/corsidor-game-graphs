@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include "graph_test.h"
+#include "move_test.h"
 
 int main(){
     test_create_Graph();
