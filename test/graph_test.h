@@ -1,6 +1,6 @@
 #ifndef _CORS_GRAPH_TEST_H_
 #define _CORS_GRAPH_TEST_H_
-#include "../src/graph_functions.h"
+#include "graph_functions.h"
 
 
 

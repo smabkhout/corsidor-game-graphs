@@ -30,7 +30,7 @@ alltests: graph.o move.o
 	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
 	$(CC) --coverage $(CFLAGS) -c test/move_test.c -o move_test.o
 	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
-	$(CC) -ftest-coverage $(CFLAGS) graph.o move.o graph_test.o  alltests.o $(LDFLAGS) -lgcov -o $@
+	$(CC) -ftest-coverage $(CFLAGS) graph.o move.o graph_test.o move_test.o alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests

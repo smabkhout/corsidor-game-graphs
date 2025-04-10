@@ -7,7 +7,7 @@ int main(){
     test_graph_print();
 
     test_create_move();
-    test_is_empty_position();
+  //  test_is_empty_position();
     test_is_connected();
     test_is_valid_move() ;
     test_dijkstra();

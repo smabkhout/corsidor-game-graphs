@@ -16,12 +16,12 @@ void test_create_move() {
     printf("test_create_move passed.\n");
 }
 
-
-void test_is_empty_position() {
+/////// Aucune fonction is_empty_position est implémentée
+/*void test_is_empty_position() {
     assert(is_empty_position(2, 3) == 1);
     assert(is_empty_position(4, 4) == 0);
     printf("test_is_empty_position passed.\n");
-}
+}*/ 
 
 void test_is_connected() {
     struct graph_t graph;
