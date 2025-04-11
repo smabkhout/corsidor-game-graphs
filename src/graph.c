@@ -127,7 +127,7 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   } else if (type == HOLEY) {
     if ((m < 6) || (m % 3 != 0))
       return NULL;
-    n = 2 * (m * m) * (1 / 3) + 18 * m - 48;
+    n = 2 * (m * m/3) + 18 * m - 48;
   }
   graph->num_edges = 0;
   graph->type = type;
