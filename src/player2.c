@@ -66,35 +66,10 @@ void initialize(unsigned int id, struct graph_t* graph) {
 }
 
 
+
+
+//le code suivant il s'agit d'un code de minimax avec alpha beta pruning une strategie de jeu avancée pour l'instant est commenté , apres regler moves.c et le server on pourra l'utiliser
 /*
-struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
-    
-    move.c = previous_move.c; 
-    srand(time(NULL));
-    enum move_type_t mv = 2;
-    move.t = mv; 
-
-    unsigned int new_pos = previous_move.m;
-    //struct edge_t e[2] ;
-    //generate_wall(e); 
-
-    while (1) {
-        new_pos = (new_pos + 1) % 61 ;  
-
-        
-        move = create_move(previous_move.c, MOVE, new_pos, NULL);
-
-        //if (is_valid_move(&move, board->graph)) {
-          //  printf("Player %d moves to vertex %u\n", move.c, move.m);
-            break;  
-        //}
-    }
-
-    return move;
-
-}*/
-
 struct game_state {
     struct graph_t *graph;
     struct move_t previous_moves[2]; // last move for each player
@@ -131,7 +106,7 @@ int evaluate(struct game_state *state, int color) {
 }
 
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int beta, int color) {
-    if (depth == 0 /* || is_terminal(state) */) {
+    if (depth == 0 || state->graph->num_edges == 0) {
         int score = color * evaluate(state, color);
         return (struct scored_move){ .score = score };
     }
@@ -175,7 +150,7 @@ struct move_t iterative_negamax(struct game_state *state, int time_limit_ms) {
 
     return best.move;
 }
-
+*/
 
 int is_connected1(struct graph_t *graph, vertex_t v1, vertex_t v2) {
     if (!graph || v1 >= graph->num_vertices || v2 >= graph->num_vertices) {
@@ -197,8 +172,8 @@ struct move_t play(const struct move_t previous_move) {
     move.t = MOVE;
 
     // Trouver une position voisine valide
-    for (unsigned int i = 0; i < graph2->num_vertices; i++) {
-        if (is_connected1(graph2, graph2->start[move.c], i)) {
+    for ( unsigned int  i = 0; i < graph2->num_vertices; i++) {
+        if (valid_move(graph2, move.c, i)) {
             move.m = i;
             graph2->start[move.c] = 1 ; 
             printf("Player %d moves to vertex %u\n", move.c, move.m);
@@ -211,21 +186,6 @@ struct move_t play(const struct move_t previous_move) {
     return move;
 }
 
-
-int  minmax(struct move_t current ,int depth) {
-    (void)current;
-    if (depth==0) return -INF ; 
-    int max = -INF ; 
-    int sizeOFpossiblePosition = 0 ;
-  //  struct move_t maxEVal ; 
-    struct move_t possibleMOVES[10] ; 
-    while (1){
-    int  eval = minmax(possibleMOVES[sizeOFpossiblePosition] , depth-1)  ;
-    max = max>eval ? max:eval ;
-
-    }
-    return max  ; 
-}
 
 
 void finalize() {

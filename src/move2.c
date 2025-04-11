@@ -1,6 +1,7 @@
 #include "graph.h"
 #include "player.h"
 #include "move.h"
+#include "move2.h"
 #include "graph_functions.h"
 #include <stdlib.h>
 #include <math.h>
@@ -171,6 +172,33 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
   // Type de coup invalide
   return 0;
 }
+
+
+// fonction qui renvois tout les mouvements possibles dans un tableau passé en parametre
+/*void availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplayer, struct move_t* previous_move) {
+    int nb_moves = 0;
+
+    vertex_t current = get_player_position(id_ofplayer);
+    vertex_t opponent = get_player_position( (id_ofplayer+1)%2);
+    enum dir_t prev_dir = get_direction_from_move(previous_move);
+
+    for (vertex_t i = 0 ; i<graph->num_vertices ; i++){
+        if (i != opponent && is_connected(graph , current , i )) {
+            moves[nb_moves++] = make_move_move(id_ofplayer, i);
+        }
+        if (i == opponent) {
+            for (vertex_t j = 0 ; j<graph->num_vertices ;j++){ //each neighbor_of_opponent w in graph[opponent] 
+                if (j != current && j != opponent &&is_connected(graph , opponent , j )) {
+                    moves[nb_moves++] = make_move_move(id_ofplayer, j);
+                }
+            }
+        }
+    }
+    moves[nb_moves] = NULL;
+}*/
+
+
+
 
 
 /*int main() {
