@@ -169,21 +169,37 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
 }
 
 
-// fonction qui renvois tout les mouvements possibles dans un tableau passé en parametre
-int  availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplayer, struct move_t* previous_move) {
-    int nb_moves = 0;
 
-    vertex_t current = get_player_position(id_ofplayer);
-    vertex_t opponent = get_player_position( (id_ofplayer+1)%2);
+vertex_t get_player_position(int id_ofplayer) {
+    return players[id_ofplayer].position;
+} 
+vertex_t get_opponent_position(int id_ofplayer) {
+    return players[(id_ofplayer + 1) % NUM_PLAYERS].position;
+}
+// fonction qui renvoie la direction du dernier mouvement
+enum dir_t get_direction_from_move(struct move_t* move) {
+    int l0, c0, l1, c1;
+    index_to_axial(move->m, 5, &l0, &c0);
+    index_to_axial(move->last_position, 5, &l1, &c1);
+    int dl = l1 - l0;
+    int dc = c1 - c0;
+    return direction_axial(dl, dc);
+}
+
+
+// fonction qui renvois tout les mouvements possibles dans un tableau passé en parametre
+/*
+int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t* previous_move ,vertex_t current ,vertex_t opponent ) {
+    int nb_moves = 0;
     enum dir_t prev_dir = get_direction_from_move(previous_move);
 
     for (vertex_t i = 0 ; i<graph->num_vertices ; i++){
         if (i != opponent && valid_move(graph , current , i )) {
-            moves[nb_moves++] = make_move(id_ofplayer, i);
+            moves[nb_moves++] = make_move((previous_move->c+1)%2, i);
         }
         if (i == opponent) {
             for (vertex_t j = 0 ; j<graph->num_vertices ;j++){ //each neighbor_of_opponent w in graph[opponent] 
-                if (j != current && j != opponent &&is_connected(graph , opponent , j )) {
+                if (j != current && j != opponent && ) {
                     moves[nb_moves++] = make_move_move(id_ofplayer, j);
                 }
             }
@@ -194,7 +210,7 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplay
 }
 
 
-
+*/
 
 
 /*int main() {
