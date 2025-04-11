@@ -154,6 +154,28 @@ void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num
 }
 
 
+vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos){
+    vertex_t* objectives=graph->objectives;
+    unsigned int num_obj=graph->num_objectives;
+    int min_distance = INT_MAX;
+    vertex_t closest_objective = player_pos;
+    int distances[graph->num_vertices];
+    int prev[graph->num_vertices];
+    for (unsigned int i = 0; i < num_obj; i++) {
+        vertex_t objective = objectives[i];
+         dijistra(graph, player_pos, objective, distances, prev);
+         int obj_distance=distances[objective];
+
+         if (obj_distance < min_distance) {
+            min_distance = obj_distance;
+            closest_objective = objective;
+
+          }
+    }
+    return closest_objective;
+}
+
+
 int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist, vertex_t opponent_pos, vertex_t* result) {
     vertex_t current = from;
     for (int i = 0; i < dist; i++) {
@@ -171,6 +193,9 @@ int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist
     *result = current;
     return 1;
 }
+
+
+
 
 static const enum dir_t directions[] = {NW, NE, E, SE, SW, W};
 void get_side_dir_30(enum dir_t dir, enum dir_t* d1, enum dir_t* d2) {
