@@ -189,16 +189,18 @@ int main(int argc, char *argv[]){
             current_player = (current_player + 1) % NUM_PLAYERS;
             other_player = (current_player + 1) % NUM_PLAYERS;
             turn_count++;
-
+            /*
             for (unsigned int i = 0; i < globalGraph->num_objectives; i++) {
                 if (globalGraph->start[current_move.c] == globalGraph->objectives[i]) {
                     winner = current_move.c;
                     break;
                 }
             }
-           /* printf("Invalid move by player %s — he lost!\n", players[current_player].get_player_name());
+
+           printf("Invalid move by player %s — he lost!\n", players[current_player].get_player_name());
             winner = (current_player + 1) % NUM_PLAYERS; 
-            break;*/
+            break;
+            */
         
     }
 
