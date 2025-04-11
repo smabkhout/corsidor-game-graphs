@@ -211,9 +211,9 @@ int main(int argc, char *argv[]){
     }
     printf("----------The END----------");
 
-    //free(globalGraph) ; 
+    //graph_free(globalGraph) ; 
     board_free(board);
-    free(first_move);
+    //free(first_move);
     for (int i = 0; i < NUM_PLAYERS; i++) {
         players[i].finalize();
 
