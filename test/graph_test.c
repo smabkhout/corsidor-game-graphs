@@ -20,7 +20,3 @@ void test_create_Graph() {
     graph_free(g1);
   }
 }
-
-void test_valid_positions() {
-    struct graph_t *g1;
-}
