@@ -103,10 +103,10 @@ int player_to_start(){
 int main(int argc, char *argv[]){
     int size_mesh = -1;
     char *type_graph = NULL;
-    int max_turns = 5;
+    int max_turns = -1;
 
     int opt;
-    while ((opt = getopt(argc, argv, "m:t:")) != -1) {
+    while ((opt = getopt(argc, argv, "m:t:M:")) != -1) {
         switch (opt) {
             case 'm':
                 size_mesh = atoi(optarg);
@@ -114,8 +114,8 @@ int main(int argc, char *argv[]){
             case 't':
                 type_graph = optarg;
                 break;
-         //   case 'M': max_turns = atoi(optarg);
-               // break;
+            case 'M': max_turns = atoi(optarg);
+                break;
             default:
                 fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
