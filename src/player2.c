@@ -201,9 +201,9 @@ struct move_t play(const struct move_t previous_move) {
 
 //enum graph_type_t type;
 static struct graph_t *graph2= NULL ; 
-static unsigned int player_id;
-static vertex_t previous_position;
-static int has_played = 0;
+//static unsigned int player_id;
+//static vertex_t previous_position;
+//static int has_played = 0;
 
 
 char const* get_player_name()
