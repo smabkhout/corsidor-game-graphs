@@ -4,7 +4,6 @@
 
 int main(){
     test_create_Graph();
-    test_graph_print();
 
     test_create_move();
   //  test_is_empty_position();
