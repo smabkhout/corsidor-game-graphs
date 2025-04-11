@@ -219,7 +219,7 @@ int main(int argc, char *argv[]){
         dlclose(players[i].library);
     }
 
-    board_free(board);
+    //board_free(board);
     free(first_move);
    // return 0;
 

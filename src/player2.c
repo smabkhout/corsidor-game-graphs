@@ -200,7 +200,7 @@ struct move_t play(const struct move_t previous_move) {
 #include <gsl/gsl_spmatrix.h>
 
 //enum graph_type_t type;
-static struct graph_t *graph2= NULL ; 
+static struct board_t *board = NULL ; 
 //static unsigned int player_id;
 //static vertex_t previous_position;
 //static int has_played = 0;
@@ -245,17 +245,18 @@ void copy_graph(struct graph_t* dest, const struct graph_t* src) {
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
-  graph2= malloc(sizeof(struct graph_t)) ; 
-  if (!graph2){
-    fprintf(stderr, "Erreur d'allocation\n");
-    exit(EXIT_FAILURE);
+    board = board_init();
+    board->graph = malloc(sizeof(struct graph_t));
+      if (!board->graph) {
+          fprintf(stderr, "Erreur allocation du graph\n");
+          exit(EXIT_FAILURE);
+      }
+  
+      copy_graph(board->graph, graph); 
+  
+    printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
+  
   }
-
-  copy_graph(graph2 , graph) ; 
-
-  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph2-> num_vertices , graph2->num_edges , graph2->num_objectives);
-
-}
 
 
 /*struct move_t play(const struct move_t previous_move) {
@@ -312,17 +313,21 @@ struct move_t play(const struct move_t previous_move) {
 
     printf("👻 Player %d plays a NO_TYPE move (mock behavior)\n", move.c);
 
+    if (board != NULL) {
+        add_move_to_board(board, move);
+    } else {
+        printf("Board non initialisé dans play()\n");
+    }
+
     return move;
 }
 
 
 void finalize() {
-    graph_free(graph2);/*
-    if (graph2) {
-        free(graph2->objectives);
-        free(graph2);
-        graph2 = NULL;
-    }*/
+    if (board) {
+        board_free(board);
+        board = NULL;
+    }
 }
 
 
