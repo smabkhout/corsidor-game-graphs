@@ -154,7 +154,9 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   graph->start[1] =
       n -
       1; // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
-  graph->t = gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);  
+  gsl_spmatrix_uint* csr = gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
+  gsl_spmatrix_uint_free(graph->t);
+  graph->t = csr;
   return graph;
 }
 
