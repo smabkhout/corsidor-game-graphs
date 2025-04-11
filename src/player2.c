@@ -317,11 +317,12 @@ struct move_t play(const struct move_t previous_move) {
 
 
 void finalize() {
+    graph_free(graph2);/*
     if (graph2) {
         free(graph2->objectives);
         free(graph2);
         graph2 = NULL;
-    }
+    }*/
 }
 
 

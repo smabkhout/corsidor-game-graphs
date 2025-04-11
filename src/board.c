@@ -50,6 +50,7 @@ void board_free(struct board_t* board) {
         free(board->moves);
         free(board);
     }
+    board = NULL;
 }
 
 
