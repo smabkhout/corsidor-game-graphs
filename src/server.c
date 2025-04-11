@@ -223,7 +223,8 @@ int main(int argc, char *argv[]) {
 
     dlclose(players[i].library);
   }
-  graph_free(globalGraph);  // Ajout essentiel
+  graph_free(globalGraph); 
+  graph_free(board->graph); // Ajout essentiel
 
   board_free(board);
   free(first_move);
