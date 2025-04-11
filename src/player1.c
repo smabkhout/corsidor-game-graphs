@@ -125,7 +125,11 @@ struct move_t play(const struct move_t previous_move) {
 */
 
 void finalize() {
-    graph_free(graph1) ; 
+    if (graph1) {
+        free(graph1->objectives);
+        free(graph1);
+        graph1 = NULL;
+    }
 }
 
 

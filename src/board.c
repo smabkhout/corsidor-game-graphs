@@ -37,11 +37,21 @@ void add_move_to_board(struct board_t* board, struct move_t move){
     board->size_moves++;
 }
 
-void board_free(struct board_t* board){
-    graph_free(board->graph);
+/*void board_free(struct board_t* board){
+    //graph_free(board->graph);
     free(board->moves);
     free(board);
+}*/
+
+void board_free(struct board_t* board) {
+    if (board) {
+        if (board->graph)
+            graph_free(board->graph); 
+        free(board->moves);
+        free(board);
+    }
 }
+
 
 
 //on doit voir comment on peut generer wall sans que graph soit en parametre pour l utiliser dans la fct play
