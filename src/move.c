@@ -80,7 +80,7 @@ int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2){
 }
 
 int can_place_wall(struct graph_t *graph, struct edge_t e[2]) {
-    if(e[0].fr!=e[1].fr && e[0].to!=e[1].fr && e[0].fr!=e[1].to && e[0].to!=e[1].to ){
+    if(e[0].fr!=e[1].fr){
         return 0;
     }
     if(!is_connected(graph, e[0].fr, e[0].to)||!is_connected(graph, e[1].fr, e[1].to) ){
@@ -109,9 +109,9 @@ struct move_t make_move_move(enum player_color_t color, vertex_t dest) {
 
 
 
-int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n){
+int distance_minimal(int d[], int visited[], unsigned int n){
     int min=INT_MAX;
-    unsigned int index = graph->num_vertices;
+    unsigned int index = -1;
     for(unsigned int i=0;i<n;i++){
         if(!visited[i] && d[i]<min){
             min = d[i];
@@ -122,7 +122,6 @@ int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned in
     return index;
 }
 
-
 void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]){
     int visited[graph->num_vertices];
     for (unsigned int i=0; i<graph->num_vertices; i++){
@@ -132,14 +131,15 @@ void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num
     }
     d[a]=0;
     while(1){
-        unsigned int index_min =  distance_minimal(graph, d, visited, graph->num_vertices);
-        if (index_min >= graph->num_vertices){
+        unsigned int index_min =  distance_minimal(d, visited, graph->num_vertices);
+        if (index_min == (unsigned int)-1){
             break;
         }
         visited[index_min] = 1; 
         for (unsigned int j=0;j<graph->num_vertices; j++){
-            int poids=gsl_spmatrix_uint_get(graph->t, index_min, j);
-            if(poids >0 && d[index_min]+ poids < d[j] && !visited[j]){
+            int dir=gsl_spmatrix_uint_get(graph->t, index_min, j);
+            int poids =1;
+            if(dir>0 && dir!= 7 && d[index_min]+poids< d[j] && !visited[j]){
                 d[j]=d[index_min]+poids;
                 prev[j]=index_min;
             }
