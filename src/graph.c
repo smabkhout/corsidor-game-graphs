@@ -237,9 +237,11 @@ void graph_free(struct graph_t *g) {
   // en modifiant le champs num_objectives à 5 (par exemple)
   if (!g || g->num_objectives == 5)
     return;
-  if (g->t && g->num_objectives != 5) {
+  // on ajoute aussi si num_vertices == 2 alors la matrice creuse a deja eete libere
+  if (g->t && g->num_objectives != 5 && g->num_vertices != 2) {
     gsl_spmatrix_uint_free(g->t);
     g->t = NULL;
+    g->num_vertices = 2;
   }
   g->num_objectives = 5;
   if (g->objectives) {
