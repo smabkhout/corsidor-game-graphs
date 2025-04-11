@@ -173,7 +173,7 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
 }
 
 
-int main() {
+/*int main() {
   int m = 5;
   struct graph_t* g = createGraph(m, TRIANGULAR);
 
@@ -224,9 +224,9 @@ int main() {
       { .fr = axial_to_index(0, 2, m), .to = axial_to_index(1, 1, m) },
       { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) }
     }
-  };
+    };
 
-  if (apply_move(g, &p, wall) /*&& apply_move(g, &p, wall2)*/) {
+  if (apply_move(g, &p, wall)) 
     printf("✅ Mur posé avec succès\n");
   } else {
     printf("❌ Pose du mur refusée\n");
@@ -248,4 +248,4 @@ int main() {
   graph_free(g);
   return 0;
 }
-
+*/
