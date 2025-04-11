@@ -9,9 +9,9 @@
 
 //enum graph_type_t type;
 static struct graph_t *graph1= NULL ; 
-static unsigned int player_id;
+/*static unsigned int player_id;
 static vertex_t previous_position;
-static int has_played = 0;
+static int has_played = 0;*/
 
 
 char const* get_player_name()
@@ -63,7 +63,7 @@ void initialize(unsigned int id, struct graph_t* graph) {
 }
 
 
-struct move_t play(const struct move_t previous_move) {
+/*struct move_t play(const struct move_t previous_move) {
     vertex_t my_pos = graph1->start[player_id];
     vertex_t opp_pos = graph1->start[(player_id + 1) % 2];
 
@@ -95,52 +95,38 @@ struct move_t play(const struct move_t previous_move) {
         has_played = 1;                     
     }
     return move;
-}
-
-
-
-int is_connected1(struct graph_t *graph, vertex_t v1, vertex_t v2) {
-    if (!graph || v1 >= graph->num_vertices || v2 >= graph->num_vertices) {
-        return 0;  // Vérification de validité des indices
-    }
-
-    // Vérification de l'existence d'une arête entre v1 et v2
-    if (gsl_spmatrix_uint_get(graph->t, v1, v2) > 0) {
-        return 1;
-    }
-
-    return 0;
-}
-
-
-/*struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
-    move.c = (previous_move.c+1)%2;
-    move.t = MOVE;
-
-    // Trouver une position voisine valide
-    for (unsigned int i = 0; i < graph1->num_vertices; i++) {
-        if (is_connected1(graph1, graph1->start[move.c], i)) {
-            move.m = i;
-            graph1->start[move.c] = 1 ; 
-            printf("Player %d moves to vertex %u\n", move.c, move.m);
-            return move;
-        }
-    }
-
-    // Si aucun mouvement valide, on reste sur place
-    move.m = graph1->start[move.c]  ;
-    return move;
 }*/
+struct move_t play(const struct move_t previous_move) {
+    struct move_t move;
+
+    move.t = NO_TYPE;
+    move.c = previous_move.c == NO_COLOR ? BLACK : (previous_move.c + 1) % 2;
+    move.m = 0; 
+    move.e[0].fr = move.e[0].to = 0;
+    move.e[1].fr = move.e[1].to = 0;
+
+    printf("👻 Player %d plays a NO_TYPE move (mock behavior)\n", move.c);
+
+    return move;
+}
 
 
-
-void finalize() {
+/*void finalize() {
     if (graph1) {  
         gsl_spmatrix_uint_free(graph1->t);  
         free(graph1->objectives);  
         free(graph1);  
         graph1 = NULL;  
+    }
+}
+*/
+
+void finalize() {
+    if (graph1) {  // Vérifier si le graphe existe avant de libérer
+        gsl_spmatrix_uint_free(graph1->t);  // Libérer la matrice
+        free(graph1->objectives);  // Libérer le tableau d'objectifs
+        free(graph1);  // Libérer la structure du graphe
+        graph1 = NULL;  // Éviter tout accès à une mémoire libérée
     }
 }
 

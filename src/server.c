@@ -103,10 +103,10 @@ int player_to_start(){
 int main(int argc, char *argv[]){
     int size_mesh = -1;
     char *type_graph = NULL;
-    int max_turns = -1;
+    int max_turns = 5;
 
     int opt;
-    while ((opt = getopt(argc, argv, "m:t:M:")) != -1) {
+    while ((opt = getopt(argc, argv, "m:t:")) != -1) {
         switch (opt) {
             case 'm':
                 size_mesh = atoi(optarg);
@@ -114,8 +114,8 @@ int main(int argc, char *argv[]){
             case 't':
                 type_graph = optarg;
                 break;
-            case 'M': max_turns = atoi(optarg);
-                break;
+         //   case 'M': max_turns = atoi(optarg);
+               // break;
             default:
                 fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
@@ -148,6 +148,7 @@ int main(int argc, char *argv[]){
     int start_player = player_to_start();
     int current_player = start_player;
     int other_player = (start_player + 1) % NUM_PLAYERS;
+   // printf("firsttttttt %d secoooooooond %d", start_player, other_player);
 
     players[start_player].initialize(start_player, globalGraph);
     players[other_player].initialize(other_player, globalGraph);
@@ -158,7 +159,6 @@ int main(int argc, char *argv[]){
     int winner = -1;
     int turn_count = 0;
 
-    printf("----------Starting Game----------\n");
     add_move_to_board(board, *first_move);
     printf("The size of the board is: %d vertices \n" , board->graph->num_vertices) ; 
     printf("----------Starting Game----------\n");
@@ -170,18 +170,20 @@ int main(int argc, char *argv[]){
     printf("The number of moves played so far is: %d\n", board->size_moves);
     
     while (winner == -1 && turn_count < max_turns) {
+       // printf("winner %d, tour %d\n", winner, turn_count);
+       // printf("test1\n");
         struct move_t move = players[current_player].play(current_move);
-        if (is_invalid(move,board)){
+       /* if (is_invalid(move,board)){
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
 
             winner = (current_player + 1) % NUM_PLAYERS;
-            break;
-        }
+            break;*/
+    
 
         printf("Turn %d: Player %s plays %s to vertex %u\n", turn_count,
                players[current_player].get_player_name(), move_type_to_string(move.t), move.m);
 
-        if (move.t != NO_TYPE) {
+       // if (move.t != NO_TYPE) {
             add_move_to_board(board, move);
             current_move = move;
             current_player = (current_player + 1) % NUM_PLAYERS;
@@ -194,11 +196,10 @@ int main(int argc, char *argv[]){
                     break;
                 }
             }
-        } else {
-            printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
+           /* printf("Invalid move by player %s — he lost!\n", players[current_player].get_player_name());
             winner = (current_player + 1) % NUM_PLAYERS; 
-            break;
-        }
+            break;*/
+        
     }
 
     if (winner >= 0) {
@@ -216,7 +217,9 @@ int main(int argc, char *argv[]){
 
         dlclose(players[i].library);
     }
-    return 0;
+   // return 0;
+
 }
+
 
 
