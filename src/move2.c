@@ -175,7 +175,7 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
 
 
 // fonction qui renvois tout les mouvements possibles dans un tableau passé en parametre
-/*void availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplayer, struct move_t* previous_move) {
+int  availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplayer, struct move_t* previous_move) {
     int nb_moves = 0;
 
     vertex_t current = get_player_position(id_ofplayer);
@@ -183,8 +183,8 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
     enum dir_t prev_dir = get_direction_from_move(previous_move);
 
     for (vertex_t i = 0 ; i<graph->num_vertices ; i++){
-        if (i != opponent && is_connected(graph , current , i )) {
-            moves[nb_moves++] = make_move_move(id_ofplayer, i);
+        if (i != opponent && valid_move(graph , current , i )) {
+            moves[nb_moves++] = make_move(id_ofplayer, i);
         }
         if (i == opponent) {
             for (vertex_t j = 0 ; j<graph->num_vertices ;j++){ //each neighbor_of_opponent w in graph[opponent] 
@@ -195,7 +195,8 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
         }
     }
     moves[nb_moves] = NULL;
-}*/
+    return nb_moves;
+}
 
 
 

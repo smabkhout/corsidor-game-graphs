@@ -171,13 +171,16 @@ struct move_t play(const struct move_t previous_move) {
     move.c = (previous_move.c+1)%2;
     move.t = MOVE;
 
+    struct move_t moves[graph2->num_vertices];
+    int numberOfMoves = availableMoves(moves, graph2, move.c, &previous_move);
+
     // Trouver une position voisine valide
-    for ( unsigned int  i = 0; i < graph2->num_vertices; i++) {
-        if (valid_move(graph2, move.c, i)) {
-            move.m = i;
-            graph2->start[move.c] = 1 ; 
+    for ( unsigned int  i = 0; i < numberOfMoves; i++) {
+        if (valid_move(graph2, moves[i].c, moves[i].m)) {
+            //move.m = i;
+            graph2->start[move.c] = moves[i].m; ; 
             printf("Player %d moves to vertex %u\n", move.c, move.m);
-            return move;
+            return moves[i];
         }
     }
 
