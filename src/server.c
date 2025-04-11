@@ -212,13 +212,15 @@ int main(int argc, char *argv[]){
     printf("----------The END----------");
 
     //graph_free(globalGraph) ; 
-    board_free(board);
-    free(first_move);
+
     for (int i = 0; i < NUM_PLAYERS; i++) {
         players[i].finalize();
 
         dlclose(players[i].library);
     }
+
+    board_free(board);
+    free(first_move);
    // return 0;
 
 }
