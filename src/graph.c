@@ -237,11 +237,11 @@ void graph_free(struct graph_t *g) {
   // en modifiant le champs num_objectives à 5 (par exemple)
   if (!g || g->num_objectives == 5)
     return;
-  g->num_objectives = 5;
-  if (g->t) {
+  if (g->t && g->num_objectives != 5) {
     gsl_spmatrix_uint_free(g->t);
     g->t = NULL;
   }
+  g->num_objectives = 5;
   if (g->objectives) {
     free(g->objectives);
     g->objectives = NULL;
