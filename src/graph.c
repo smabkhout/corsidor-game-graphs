@@ -154,7 +154,8 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   graph->start[1] =
       n -
       1; // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
-  gsl_spmatrix_uint* csr = gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
+  gsl_spmatrix_uint *csr =
+      gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
   gsl_spmatrix_uint_free(graph->t);
   graph->t = csr;
   return graph;
@@ -203,9 +204,14 @@ void graph_print(struct graph_t *graph) {
 void graph_free(struct graph_t *g) {
   if (!g)
     return;
-  gsl_spmatrix_uint_free(g->t);
-  if (g->objectives)
+  if (g->t) {
+    gsl_spmatrix_uint_free(g->t);
+    g->t = NULL;
+  }
+  if (g->objectives) {
     free(g->objectives);
+    g->objectives = NULL;
+  }
   free(g);
   g = NULL;
 }
@@ -301,6 +307,3 @@ void print_hex_grid(int m) {
     printf("\n");
   }
 }
-
-
-
