@@ -6,12 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-//struct player (ajout last-position)
-struct player_tt {
-  unsigned int walls;
-  vertex_t position;
-  vertex_t last_position; // pour déduire la direction
-};
+
 //les differentes direction comme dans graph.c
 const struct axial_t direc[7] = {
     {0, 0},  // No edge
