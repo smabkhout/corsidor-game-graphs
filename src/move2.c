@@ -43,57 +43,95 @@ int direction_axial(int dl, int dc) {
 }
 
 // Renvoie vrai si le déplacement est possible selon les règles
-int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target) {
+int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t opponent_pos) {
   if (p->position == target)
-    return 0;
+    return 0; // pas de déplacement vers soi-même
 
-  int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3); // retrouve m d'apres le nombre de vertice
+  // Retrouver m depuis le nombre de sommets
+  int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+
+  // Coordonnées axiales du dernier déplacement
   int l0, c0, l1, c1;
-  index_to_axial(p->last_position, m, &l0, &c0);//met dans l0 et c0 la ligne et colone de la position precedente du joueur
-  index_to_axial(p->position, m, &l1, &c1);// met dans l1 et c1 la ligne et colone de la position actuel du joueur
-  //pour savoir la direction du dernier mouvement
+  index_to_axial(p->last_position, m, &l0, &c0);
+  index_to_axial(p->position, m, &l1, &c1);
+
   int dl_prev = l1 - l0;
   int dc_prev = c1 - c0;
 
-  int prev_dir = direction_axial(dl_prev, dc_prev); // la direction du dernier mouvement
-  if (prev_dir == 0) return 0;//direction invalide ou illegal
+  int prev_dir = direction_axial(dl_prev, dc_prev);
+  if (prev_dir == 0)
+    return 0; // aucun déplacement précédent valable
 
-  // explore les chemins dans chaque direction (1 à 6)
+  // 🔁 Tentatives de déplacement classiques selon les règles
   for (int dir = 1; dir < 7; ++dir) {
     int max_dist = 1;
     if (dir == prev_dir)
       max_dist = 3;
-    else if (abs(dir - prev_dir) == 1 || abs(dir - prev_dir) == 5) // pour les deplacement de 30 degre
+    else if (abs(dir - prev_dir) == 1 || abs(dir - prev_dir) == 5)
       max_dist = 2;
 
     int l = l1, c = c1;
+
     for (int d = 1; d <= max_dist; ++d) {
-      
       int next_l = l + direc[dir].l;
       int next_c = c + direc[dir].c;
-      
-      if (!in_hexagon_T(l, c, m, 0, 0)) break;
-      
+
+      if (!in_hexagon_T(next_l, next_c, m, 0, 0))
+        break;
+
       vertex_t from = axial_to_index(l, c, m);
       vertex_t to = axial_to_index(next_l, next_c, m);
-      
+
       int exists = gsl_spmatrix_uint_get(g->t, from, to);
       if (exists == 0)
-        break;// cas d'un mur
-      vertex_t idx = axial_to_index(l, c, m);
-      if (idx == target) return 1;
+        break;
 
-       // on continue a avancer dans cette direction
+      if (to == target)
+        return 1;
+
+      // avancer
       l = next_l;
       c = next_c;
-
-      // Verifie si une arete existe dans cette direction
-      
     }
   }
 
-  return 0;
+  // ♟️ Tentative de saut par-dessus l’adversaire (sans graph_neighbors)
+  for (int dir = 1; dir < 7; ++dir) {
+    int l_adj = l1 + direc[dir].l;
+    int c_adj = c1 + direc[dir].c;
+
+    if (!in_hexagon_T(l_adj, c_adj, m, 0, 0))
+      continue;
+
+    vertex_t adj_idx = axial_to_index(l_adj, c_adj, m);
+
+    if (adj_idx != opponent_pos)
+      continue; // ce n’est pas l’adversaire
+
+    // L’adversaire est adjacent → regarder ses cases voisines
+    for (int d = 1; d < 7; ++d) {
+      int l2 = l_adj + direc[d].l;
+      int c2 = c_adj + direc[d].c;
+
+      if (!in_hexagon_T(l2, c2, m, 0, 0))
+        continue;
+
+      vertex_t dest = axial_to_index(l2, c2, m);
+
+      if (dest == p->position)
+        continue;
+
+      if (dest == target) {
+        int exists = gsl_spmatrix_uint_get(g->t, adj_idx, dest);
+        if (exists != 0)
+          return 1; // saut valide
+      }
+    }
+  }
+  
+  return 0; // aucun mouvement permis
 }
+
 
 #include "move.h"
 #include "graph.h"
@@ -137,13 +175,13 @@ void place_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
   p->walls -= 1;
 }
 
-int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
+int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move, vertex_t opp) {
   if (move.t == MOVE) {
     // Deplacement du joueur
     vertex_t from = p->position;
     vertex_t to = move.m;
-
-    if (!valid_move(g, p, to)) {
+    
+      if (!valid_move(g, p, to, opp)) {
       return 0; // Deplacement invalide
     }
 
@@ -167,6 +205,26 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move) {
   // Type de coup invalide
   return 0;
 }
+
+
+
+vertex_t get_player_position(int id_ofplayer) {
+    return players[id_ofplayer].position;
+} 
+vertex_t get_opponent_position(int id_ofplayer) {
+    return players[(id_ofplayer + 1) % NUM_PLAYERS].position;
+}
+// fonction qui renvoie la direction du dernier mouvement
+enum dir_t get_direction_from_move(struct move_t* move) {
+    int l0, c0, l1, c1;
+    index_to_axial(move->m, 5, &l0, &c0);
+    index_to_axial(move->last_position, 5, &l1, &c1);
+    int dl = l1 - l0;
+    int dc = c1 - c0;
+    return direction_axial(dl, dc);
+}
+
+
 
 
 
