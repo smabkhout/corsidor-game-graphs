@@ -11,6 +11,7 @@ int main(){
     test_is_connected();
     test_is_valid_move() ;
     test_dijkstra();
+    test_find_closest_objective() ;
     
     return 0;
 }
