@@ -317,11 +317,6 @@ struct move_t play(const struct move_t previous_move) {
 
 
 void finalize() {
-    if (graph2) {  // Vérifier si le graphe existe avant de libérer
-        gsl_spmatrix_uint_free(graph2->t);  // Libérer la matrice
-        free(graph2->objectives);  // Libérer le tableau d'objectifs
-        free(graph2);  // Libérer la structure du graphe
-        graph2 = NULL;  // Éviter tout accès à une mémoire libérée
-    }
+    graph_free(graph2) ; 
 }
 
