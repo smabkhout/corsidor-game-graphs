@@ -75,13 +75,23 @@ void test_dijkstra() {
 
 
 void test_find_closest_objective() {
-    struct graph_t *graph=createGraph(3,TRIANGULAR);
+    struct graph_t graph;
+    graph.num_vertices = 5;
+    graph.num_objectives = 2;
+    vertex_t objectives[] = { 3, 4 };
+    graph.objectives = objectives;
+    gsl_spmatrix_uint* t = gsl_spmatrix_uint_alloc(5, 5);
+    gsl_spmatrix_uint_set(t, 0, 1, 1);  
+    gsl_spmatrix_uint_set(t, 1, 2, 1);  
+    gsl_spmatrix_uint_set(t, 2, 3, 1);  
+    gsl_spmatrix_uint_set(t, 3, 4, 1);  
+    graph.t = t;
     vertex_t player_pos = 0;
-    vertex_t closest_objective = find_closest_objective(graph, player_pos);
+    vertex_t closest_objective = find_closest_objective(&graph, player_pos);
     // On attend que le plus proche objectif soit le sommet 3  car 0 -> 1 -> 2 -> 3 est le chemin le plus court
-    printf("%d",closest_objective );
+    assert(closest_objective == 3);
     printf("Test Passed: Closest objective found correctly.\n");
-    graph_free(graph);
+    gsl_spmatrix_uint_free(t);
 }
 
 /*void test_is_path_clear(){
