@@ -205,11 +205,8 @@ void graph_free(struct graph_t *g) {
   if (!g)
     return;
   if (g->t) {
-    gsl_spmatrix_uint_free(g->t);
-    if (g->t) {
-      free(g->t);
-      g->t = NULL;
-    }
+    free(g->t);
+    //gsl_spmatrix_uint_free(g->t);
     g->t = NULL;
   }
   if (g->objectives) {
