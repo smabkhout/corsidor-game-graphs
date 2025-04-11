@@ -295,12 +295,10 @@ struct move_t play(const struct move_t previous_move) {
 
 
 void finalize() {
-    graph_free(board->graph);
     if (board) {
         board_free(board);
-       // board = NULL;
+        board = NULL;
     }
-  //  graph_free(board->graph);
 }
 
 
