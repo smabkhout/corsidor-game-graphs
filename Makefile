@@ -2,7 +2,7 @@ GSL_PATH ?= /net/ens/renault/save/gsl-2.6/install
 GSL_LIBDIR = $(shell [ -e $(GSL_PATH)/lib ] && \
         echo $(GSL_PATH)/lib || \
         echo $(GSL_PATH)/lib64)
-CFLAGS = -std=c99 -Wall -Wextra -Wpedantic -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -fPIC -g3 -I$(GSL_PATH)/include -Isrc
+CFLAGS = -std=c99 -Wall -Wextra -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -fPIC -g3 -I$(GSL_PATH)/include -Isrc
 LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 	-L$(GSL_PATH)/lib -L$(GSL_PATH)/lib64 \
 	-Wl,--rpath=${GSL_PATH}/lib
