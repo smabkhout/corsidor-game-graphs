@@ -1,5 +1,5 @@
 #pragma once
-
+#include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <gsl/gsl_spmatrix.h>
@@ -39,6 +39,8 @@ void graph_print_matrix(const struct graph_t *g);
 
 // Affichage pour debug
 void graph_print(struct graph_t *graph);
+
+void copy_graph(struct graph_t* dest, const struct graph_t* src);
 
 // Libération du graphe
 void graph_free(struct graph_t *g);

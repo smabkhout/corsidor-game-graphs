@@ -139,7 +139,9 @@ int main(int argc, char *argv[]) {
   // struct graph_t *graph2 = createGraph(7, TRIANGULAR);
   struct graph_t *globalGraph = createGraph(size_mesh, TRIANGULAR);
   struct board_t *board = board_init();
-  board->graph = globalGraph;
+ // board->graph = globalGraph;
+  board->graph = malloc(sizeof(struct graph_t));
+  copy_graph(board->graph, globalGraph);
   struct move_t *first_move = make_first_move();
 
   if (syntax_test(argc) == -1) {
@@ -212,7 +214,7 @@ int main(int argc, char *argv[]) {
   } else {
     printf("\n⏱️  Game ended in a draw (max turns reached)\n");
   }
-  printf("----------The END----------");
+  printf("----------The END----------\n");
 
   // graph_free(globalGraph) ;
 
@@ -221,6 +223,7 @@ int main(int argc, char *argv[]) {
 
     dlclose(players[i].library);
   }
+  graph_free(globalGraph);  // Ajout essentiel
 
   board_free(board);
   free(first_move);
