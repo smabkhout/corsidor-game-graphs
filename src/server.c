@@ -217,15 +217,17 @@ int main(int argc, char *argv[]) {
   printf("----------The END----------\n");
 
   // graph_free(globalGraph) ;
-
+  free(first_move);
+  board_free(board);             // Libère le plateau + sa copie du graphe
+  graph_free(globalGraph);
   for (int i = 0; i < NUM_PLAYERS; i++) {
     players[i].finalize();
 
     dlclose(players[i].library);
   }
-  graph_free(globalGraph);  // Ajout essentiel
+ /* graph_free(globalGraph);  
 
   board_free(board);
-  free(first_move);
+  free(first_move);*/
   // return 0;
 }
