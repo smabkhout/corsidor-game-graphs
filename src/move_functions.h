@@ -43,7 +43,7 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 
 
 
-int distance_minimal(struct graph_t * graph, int d[], int visited[], unsigned int n);
+int distance_minimal(int d[], int visited[], unsigned int n);
 void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]);
 vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos);
 enum dir_t get_direction(vertex_t from, vertex_t to, struct graph_t* graph) ;
