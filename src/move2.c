@@ -169,12 +169,12 @@ void place_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
   
   unsigned int* temp = gsl_spmatrix_uint_ptr(g->t, fr, to1);
   *temp = 7;
-  temp = gsl_spmatrix_uint_ptr(g->t, to1, fr);
-  *temp = 7;
-  temp = gsl_spmatrix_uint_ptr(g->t, fr, to2);
-  *temp = 7;
-  temp = gsl_spmatrix_uint_ptr(g->t, to2, fr);
-  *temp = 7;
+  unsigned int* temp1 = gsl_spmatrix_uint_ptr(g->t, to1, fr);
+  *temp1 = 7;
+  unsigned int* temp2 = gsl_spmatrix_uint_ptr(g->t, fr, to2);
+  *temp2 = 7;
+  unsigned int *temp3 = gsl_spmatrix_uint_ptr(g->t, to2, fr);
+  *temp3 = 7;
 
   
   p->walls -= 1;
@@ -316,8 +316,8 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
 
 
 
-
-/*int main() {
+/*
+int main() {
   int m = 5;
   struct graph_t* g = createGraph(m, TRIANGULAR);
   vertex_t opp = 7;
@@ -325,7 +325,7 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
   struct player_tt p;
   p.last_position = axial_to_index(0, 0, m);   // déplacement précédent depuis (0,0)
   p.position = axial_to_index(0, 1, m);// jusqu’à (0,1) → vecteur = (0,1), direction EAST
-  p.walls = 1;
+  p.walls = 3;
 
   // On teste un mouvement en ligne droite (EAST) à distance 1, 2, 3
   vertex_t t1 = axial_to_index(0, 2, m); // 1 pas vers l'est
@@ -377,7 +377,7 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
       { .fr = axial_to_index(0, 0, m), .to = axial_to_index(-1, 0, m) }
     }
     };
-
+ 
   apply_move(g, &p, wall, opp);
   printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall.e[0].fr, wall.e[0].to));
   printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall.e[1].fr, wall.e[1].to));
@@ -389,7 +389,7 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
   printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall2.e[1].fr, wall2.e[1].to));
   
   const vertex_t objectives[1] = {1};
-  if( path_to_objective_exists(g, 30, objectives, 1))
+  if( !path_to_objective_exists(g, 30, objectives, 1))
     printf("chemin bloquer\n");
   else
     printf("chemin exist putain\n");
