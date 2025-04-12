@@ -200,7 +200,7 @@ void graph_print(struct graph_t *graph) {
   }
 }
 // Copie d'un graphe
-/*/
+
 void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   // Copier les champs simples
   dest->type = src->type;
@@ -232,9 +232,9 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   }
   memcpy(dest->objectives, src->objectives,
          src->num_objectives * sizeof(vertex_t)); // Copie du tableau
-}*/
+}
 
-
+/* possible solution
 void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   // Copier les champs simples
   dest->type = src->type;
@@ -263,7 +263,7 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   }
   memcpy(dest->objectives, src->objectives,
          src->num_objectives * sizeof(vertex_t));
-}
+}*/
 
 
 // Libération du graphe
