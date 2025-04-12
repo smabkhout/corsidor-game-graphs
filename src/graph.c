@@ -200,6 +200,7 @@ void graph_print(struct graph_t *graph) {
   }
 }
 // Copie d'un graphe
+/*/
 void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   // Copier les champs simples
   dest->type = src->type;
@@ -231,8 +232,38 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   }
   memcpy(dest->objectives, src->objectives,
          src->num_objectives * sizeof(vertex_t)); // Copie du tableau
-}
+}*/
 
+
+void copy_graph(struct graph_t *dest, const struct graph_t *src) {
+  // Copier les champs simples
+  dest->type = src->type;
+  dest->num_vertices = src->num_vertices;
+  dest->num_edges = src->num_edges;
+  dest->num_objectives = src->num_objectives;
+
+  memcpy(dest->start, src->start, sizeof(vertex_t) * NUM_PLAYERS);
+
+  // Copier la matrice creuse
+  dest->t = gsl_spmatrix_uint_alloc_like(src->t);
+  if (!dest->t) {
+    fprintf(stderr, "Erreur allocation mémoire pour t (alloc_like)\n");
+    exit(1);
+  }
+  if (gsl_spmatrix_uint_memcpy(dest->t, src->t) != 0) {
+    fprintf(stderr, "Erreur lors de la copie de la matrice t\n");
+    exit(1);
+  }
+
+  // Copier les objectifs
+  dest->objectives = malloc(src->num_objectives * sizeof(vertex_t));
+  if (!dest->objectives) {
+    fprintf(stderr, "Erreur allocation mémoire pour objectives\n");
+    exit(1);
+  }
+  memcpy(dest->objectives, src->objectives,
+         src->num_objectives * sizeof(vertex_t));
+}
 
 
 // Libération du graphe
