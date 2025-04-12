@@ -237,7 +237,7 @@ void graph_free(struct graph_t *g) {
   puts("Freeing a graph !");
   // on va essayer de stocker l'information que le graphe a ete libere dans le
   // struct graph_t en modifiant le champs num_objectives à 5 (par exemple)
-  if (!g || g->num_objectives == 5) {
+  if (!g) {
     if (g->num_objectives == 5)
       puts("Attempting double free (for the same graph) !!");
     return;
@@ -251,13 +251,16 @@ void graph_free(struct graph_t *g) {
     g->t = NULL;
     g->num_vertices = 2;
   }
+  assert(g->t == NULL);
   g->num_objectives = 5;
   if (g->objectives) {
     free(g->objectives);
     g->objectives = NULL;
   }
+  assert(g->objectives == NULL);
   free(g);
   g = NULL;
+  assert(g == NULL);
 }
 /*
 void visualize_graph(struct graph_t *g, unsigned int m) {
