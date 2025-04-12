@@ -83,7 +83,7 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
       vertex_t to = axial_to_index(next_l, next_c, m);
 
       int exists = gsl_spmatrix_uint_get(g->t, from, to);
-      if (exists == 0)
+      if (exists == 7)
         break;
 
       if (to == target)
@@ -166,12 +166,17 @@ void place_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
   vertex_t fr = move.e[0].fr;
   vertex_t to1 = move.e[0].to;
   vertex_t to2 = move.e[1].to;
+  
+  unsigned int* temp = gsl_spmatrix_uint_ptr(g->t, fr, to1);
+  *temp = 7;
+  temp = gsl_spmatrix_uint_ptr(g->t, to1, fr);
+  *temp = 7;
+  temp = gsl_spmatrix_uint_ptr(g->t, fr, to2);
+  *temp = 7;
+  temp = gsl_spmatrix_uint_ptr(g->t, to2, fr);
+  *temp = 7;
 
-  gsl_spmatrix_uint_set(g->t, fr, to1, 0);
-  gsl_spmatrix_uint_set(g->t, to1, fr, 0);
-  gsl_spmatrix_uint_set(g->t, fr, to2, 0);
-  gsl_spmatrix_uint_set(g->t, to2, fr, 0);
-
+  
   p->walls -= 1;
 }
 
@@ -208,7 +213,7 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move, verte
 
 
 
-vertex_t get_player_position(int id_ofplayer) {
+/*vertex_t get_player_position(int id_ofplayer) {
     return players[id_ofplayer].position;
 } 
 vertex_t get_opponent_position(int id_ofplayer) {
@@ -222,7 +227,7 @@ enum dir_t get_direction_from_move(struct move_t* move) {
     int dl = l1 - l0;
     int dc = c1 - c0;
     return direction_axial(dl, dc);
-}
+    }*/
 
 
 
@@ -261,12 +266,53 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t
 }
 */
 
+int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *objectives, size_t nb_obj) {
+  int *visited = calloc(g->num_vertices, sizeof(int));
+  if (!visited) return 0;
+
+  vertex_t *queue = malloc(g->num_vertices * sizeof(vertex_t));
+  if (!queue) {
+    free(visited);
+    return 0;
+  }
+
+  size_t front = 0, back = 0;
+  visited[start] = 1;
+  queue[back++] = start;
+
+  while (front < back) {
+    vertex_t u = queue[front++];
+
+    // Objectif atteint ?
+    for (size_t i = 0; i < nb_obj; ++i) {
+      if (u == objectives[i]) {
+        free(queue);
+        free(visited);
+        return 1;
+      }
+    }
+
+    for (vertex_t v = 0; v < g->num_vertices; ++v) {
+      if (!visited[v] && gsl_spmatrix_uint_get(g->t, u, v) != 7) {
+        visited[v] = 1;
+        queue[back++] = v;
+      }
+    }
+  }
+
+  // Aucun objectif atteint
+  free(queue);
+  free(visited);
+  return 0;
+}
+
 
 
 
 /*int main() {
   int m = 5;
   struct graph_t* g = createGraph(m, TRIANGULAR);
+  vertex_t opp = 7; 
 
   struct player_tt p;
   p.last_position = axial_to_index(0, 0, m);   // déplacement précédent depuis (0,0)
@@ -279,10 +325,10 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t
   vertex_t t3 = axial_to_index(0, 4, m); // 3 pas
   vertex_t t4 = axial_to_index(1, 0, m); // dans une autre direction (NW ou NE)
 
-  printf("Test déplacement vers (0,2) → %d\n", valid_move(g, &p, t1)); // attendu : 1
-  printf("Test déplacement vers (0,3) → %d\n", valid_move(g, &p, t2)); // attendu : 1
-  printf("Test déplacement vers (0,4) → %d\n", valid_move(g, &p, t3)); // attendu : 1
-  printf("Test déplacement vers (1,0) → %d\n", valid_move(g, &p, t4)); // attendu : 1 ou 0 (dépend si 30° ou non)
+  printf("Test déplacement vers (0,2) → %d\n", valid_move(g, &p, t1,opp)); // attendu : 1
+  printf("Test déplacement vers (0,3) → %d\n", valid_move(g, &p, t2,opp)); // attendu : 1
+  printf("Test déplacement vers (0,4) → %d\n", valid_move(g, &p, t3,opp)); // attendu : 1
+  printf("Test déplacement vers (1,0) → %d\n", valid_move(g, &p, t4,opp)); // attendu : 1 ou 0 (dépend si 30° ou non)
 
  printf("=== Déplacement vers (0,2) ===\n");
   struct move_t move1 = {
@@ -291,7 +337,7 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t
     .m = axial_to_index(0, 2, m)
   };
 
-  if (apply_move(g, &p, move1)) {
+  if (apply_move(g, &p, move1,opp)) {
     printf("✅ Déplacement vers (0,2) réussi\n");
     printf("position du joueur %d: \n", p.position );
   }
@@ -308,6 +354,14 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t
       { .fr = axial_to_index(0, 2, m), .to = axial_to_index(-1, 2, m) }
     }
   };
+  struct move_t wall1 = {
+    .t = WALL,
+    .c = BLACK,
+    .e = {
+      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) },
+      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(-1, 2, m) }
+    }
+  };
   struct move_t wall2 = {
     .t = WALL,
     .c = BLACK,
@@ -317,9 +371,9 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t
     }
     };
 
-  if (apply_move(g, &p, wall)) 
+  if (apply_move(g, &p, wall,opp)) 
     printf("✅ Mur posé avec succès\n");
-  } else {
+  else {
     printf("❌ Pose du mur refusée\n");
   }
 
@@ -330,7 +384,7 @@ int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t
     .m = axial_to_index(0, 1, m)
   };
 
-  if (valid_move(g, &p, move2.m)) {
+  if (valid_move(g, &p, move2.m,opp)) {
     printf("✅ Retour vers (0,1) réussi\n");
   } else {
     printf("❌ Retour vers (0,1) bloqué par le mur\n");
