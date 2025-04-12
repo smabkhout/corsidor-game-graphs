@@ -292,15 +292,22 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
       }
     }
 
-    for (vertex_t v = 0; v < g->num_vertices; ++v) {
-      if (!visited[v] && gsl_spmatrix_uint_get(g->t, u, v) != 7) {
-        visited[v] = 1;
-        queue[back++] = v;
+    // Parcours de tous les éléments non nuls (en COO)
+    for (size_t k = 0; k < g->t->nz; ++k) {
+      vertex_t row = g->t->i[k];
+      vertex_t col = g->t->p[k];
+      unsigned int val = g->t->data[k];
+
+      if (val == 7) continue; // mur → bloqué
+
+      // Ajout du voisin si arête (u → v)
+      if (row == u && !visited[col]) {
+        visited[col] = 1;
+        queue[back++] = col;
       }
     }
   }
 
-  // Aucun objectif atteint
   free(queue);
   free(visited);
   return 0;
@@ -309,10 +316,11 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
 
 
 
+
 /*int main() {
   int m = 5;
   struct graph_t* g = createGraph(m, TRIANGULAR);
-  vertex_t opp = 7; 
+  vertex_t opp = 7;
 
   struct player_tt p;
   p.last_position = axial_to_index(0, 0, m);   // déplacement précédent depuis (0,0)
@@ -345,37 +353,46 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
     printf("❌ Déplacement vers (0,2) bloqué\n");
   }
   
-  printf("=== Pose d’un mur entre (0,2)-(1,2) et (0,2)-(0,1) ===\n");
   struct move_t wall = {
     .t = WALL,
     .c = BLACK,
     .e = {
-      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) },
-      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(-1, 2, m) }
+      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(0, 1, m) },
+      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(-1, 1, m) }
     }
   };
   struct move_t wall1 = {
     .t = WALL,
     .c = BLACK,
     .e = {
-      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) },
-      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(-1, 2, m) }
+      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(1, 0, m) },
+      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(1, -1, m) }
     }
   };
   struct move_t wall2 = {
     .t = WALL,
     .c = BLACK,
     .e = {
-      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(1, 1, m) },
-      { .fr = axial_to_index(0, 2, m), .to = axial_to_index(0, 1, m) }
+      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(0,-1, m) },
+      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(-1, 0, m) }
     }
     };
 
-  if (apply_move(g, &p, wall,opp)) 
-    printf("✅ Mur posé avec succès\n");
-  else {
-    printf("❌ Pose du mur refusée\n");
-  }
+  apply_move(g, &p, wall, opp);
+  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall.e[0].fr, wall.e[0].to));
+  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall.e[1].fr, wall.e[1].to));
+  apply_move(g, &p, wall1, opp);
+  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall1.e[0].fr, wall1.e[0].to));
+  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall1.e[1].fr, wall1.e[1].to));
+  apply_move(g, &p, wall2, opp);
+  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall2.e[0].fr, wall2.e[0].to));
+  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall2.e[1].fr, wall2.e[1].to));
+  
+  const vertex_t objectives[1] = {1};
+  if( path_to_objective_exists(g, 30, objectives, 1))
+    printf("chemin bloquer\n");
+  else
+    printf("chemin exist putain\n");
 
   printf("=== Tentative de retour vers (0,1) ===\n");
   struct move_t move2 = {
@@ -393,4 +410,5 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
   graph_free(g);
   return 0;
 }
+
 */
