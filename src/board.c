@@ -3,7 +3,7 @@
 #include "board.h"
 #include "graph_functions.h"
 
-struct board_t* board_init(){
+struct board_t*         board_init(){
     struct board_t *board=malloc(sizeof(struct board_t));
     board->moves=malloc(sizeof(struct move_t));
     board->size_moves=0;
@@ -45,9 +45,9 @@ void add_move_to_board(struct board_t* board, struct move_t move){
 
 void board_free(struct board_t* board) {
     if (board) {
+        free(board->moves);
         if (board->graph)
             graph_free(board->graph); 
-        free(board->moves);
         free(board);
     }
     board = NULL;
