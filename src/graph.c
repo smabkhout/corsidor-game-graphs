@@ -127,7 +127,7 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   } else if (type == HOLEY) {
     if ((m < 6) || (m % 3 != 0))
       return NULL;
-    n = 2 * (m * m/3) + 18 * m - 48;
+    n = 2 * (m * m / 3) + 18 * m - 48;
   }
   graph->num_edges = 0;
   graph->type = type;
@@ -200,45 +200,52 @@ void graph_print(struct graph_t *graph) {
   }
 }
 
-
-void copy_graph(struct graph_t* dest, const struct graph_t* src) {
+void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   // Copier les champs simples
   dest->type = src->type;
   dest->num_vertices = src->num_vertices;
   dest->num_edges = src->num_edges;
   dest->num_objectives = src->num_objectives;
-  
-  memcpy(dest->start, src->start, sizeof(vertex_t) * NUM_PLAYERS); // Copier start[]
+
+  memcpy(dest->start, src->start,
+         sizeof(vertex_t) * NUM_PLAYERS); // Copier start[]
 
   // Copier la matrice creuse (sparse matrix)
   dest->t = gsl_spmatrix_uint_alloc(src->num_vertices, src->num_vertices);
-  gsl_spmatrix_uint* csr = gsl_spmatrix_uint_compress(dest->t, GSL_SPMATRIX_CSR);
+  gsl_spmatrix_uint *csr =
+      gsl_spmatrix_uint_compress(dest->t, GSL_SPMATRIX_CSR);
   gsl_spmatrix_uint_free(dest->t);
   dest->t = csr;
   if (!dest->t) {
-      fprintf(stderr, "Erreur allocation mémoire pour t\n");
-      exit(1);
+    fprintf(stderr, "Erreur allocation mémoire pour t\n");
+    exit(1);
   }
-  gsl_spmatrix_uint_memcpy(dest->t, src->t);  // Copie de la matrice creuse
+  gsl_spmatrix_uint_memcpy(dest->t, src->t); // Copie de la matrice creuse
 
   // Copier les objectifs (tableau dynamique)
   dest->objectives = malloc(src->num_objectives * sizeof(vertex_t));
   if (!dest->objectives) {
-      fprintf(stderr, "Erreur allocation mémoire pour objectives\n");
-      exit(1);
+    fprintf(stderr, "Erreur allocation mémoire pour objectives\n");
+    exit(1);
   }
-  memcpy(dest->objectives, src->objectives, src->num_objectives * sizeof(vertex_t));  // Copie du tableau
+  memcpy(dest->objectives, src->objectives,
+         src->num_objectives * sizeof(vertex_t)); // Copie du tableau
 }
-
 
 // Libération du graphe
 void graph_free(struct graph_t *g) {
-  // on va essayer de stocker l'information que le graphe a ete libere dans le struct graph_t 
-  // en modifiant le champs num_objectives à 5 (par exemple)
-  if (!g || g->num_objectives == 5)
+  // on va essayer de stocker l'information que le graphe a ete libere dans le
+  // struct graph_t en modifiant le champs num_objectives à 5 (par exemple)
+  if (!g || g->num_objectives == 5) {
+    if (g->num_objectives == 5)
+      puts("Attempting double free (for the same graph) !!");
     return;
-  // on ajoute aussi si num_vertices == 2 alors la matrice creuse a deja eete libere
-  if (g->t && g->num_objectives != 5 && g->num_vertices != 2) {
+  }
+  // on ajoute aussi si num_vertices == 2 alors la matrice creuse a deja eete
+  // libere
+  if (g->t && g->num_objectives != 5) {
+    if (g->num_vertices == 2)
+      puts("Attempting double free (for the same sparse matrix) !!");
     gsl_spmatrix_uint_free(g->t);
     g->t = NULL;
     g->num_vertices = 2;
