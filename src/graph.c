@@ -234,6 +234,7 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
 
 // Libération du graphe
 void graph_free(struct graph_t *g) {
+  puts("Freeing a graph !");
   // on va essayer de stocker l'information que le graphe a ete libere dans le
   // struct graph_t en modifiant le champs num_objectives à 5 (par exemple)
   if (!g || g->num_objectives == 5) {
