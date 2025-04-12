@@ -235,24 +235,19 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
 // Libération du graphe
 void graph_free(struct graph_t *g) {
   puts("Freeing a graph !");
-  // on va essayer de stocker l'information que le graphe a ete libere dans le
-  // struct graph_t en modifiant le champs num_objectives à 5 (par exemple)
   if (!g) {
-    if (g->num_objectives == 5)
-      puts("Attempting double free (for the same graph) !!");
+    puts("Attempting double free (for the same graph) !!");
     return;
   }
-  // on ajoute aussi si num_vertices == 2 alors la matrice creuse a deja eete
-  // libere
-  if (g->t && g->num_objectives != 5) {
-    if (g->num_vertices == 2)
-      puts("Attempting double free (for the same sparse matrix) !!");
+  if (g->t) {
     gsl_spmatrix_uint_free(g->t);
     g->t = NULL;
     g->num_vertices = 2;
   }
+  else {
+    puts("Attempting double free (for the same sparse matrix) !!");
+  }
   assert(g->t == NULL);
-  g->num_objectives = 5;
   if (g->objectives) {
     free(g->objectives);
     g->objectives = NULL;
@@ -260,7 +255,6 @@ void graph_free(struct graph_t *g) {
   assert(g->objectives == NULL);
   free(g);
   g = NULL;
-  assert(g == NULL);
 }
 /*
 void visualize_graph(struct graph_t *g, unsigned int m) {
