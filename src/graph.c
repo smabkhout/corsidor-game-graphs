@@ -214,7 +214,8 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   dest->t = gsl_spmatrix_uint_alloc(src->num_vertices, src->num_vertices);
   gsl_spmatrix_uint *csr =
       gsl_spmatrix_uint_compress(dest->t, GSL_SPMATRIX_CSR);
-  //gsl_spmatrix_uint_free(dest->t);
+  gsl_spmatrix_uint_free(dest->t);
+  dest->t = NULL;
   dest->t = csr;
   if (!dest->t) {
     fprintf(stderr, "Erreur allocation mémoire pour t\n");
