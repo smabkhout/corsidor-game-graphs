@@ -199,7 +199,7 @@ void graph_print(struct graph_t *graph) {
     printf("Objective %u: vertex %u\n", i, graph->objectives[i]);
   }
 }
-/*
+// Copie d'un graphe
 void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   // Copier les champs simples
   dest->type = src->type;
@@ -232,43 +232,7 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   memcpy(dest->objectives, src->objectives,
          src->num_objectives * sizeof(vertex_t)); // Copie du tableau
 }
-*/
-#include <gsl/gsl_spmatrix.h>
 
-int is_compressed(const gsl_spmatrix_uint *m) {
-    return (m->sptype == GSL_SPMATRIX_CSR || m->sptype == GSL_SPMATRIX_CSC);
-}
-
-void copy_compressed_matrix(gsl_spmatrix_uint **dest, const gsl_spmatrix_uint *src) {
-    if (is_compressed(src)) {
-        // Cas 1: Matrice source compressée -> Copier en conservant le format
-        *dest = gsl_spmatrix_uint_alloc_nzmax(src->size1, src->size2, src->nzmax, src->sptype);
-        gsl_spmatrix_uint_memcpy(*dest, src);
-    } else {
-        // Cas 2: Matrice source non compressée (COO) -> Convertir en CSR après copie
-        *dest = gsl_spmatrix_uint_alloc_nzmax(src->size1, src->size2, src->nzmax, GSL_SPMATRIX_CSR);
-        gsl_spmatrix_uint_memcpy(*dest, src);
-        gsl_spmatrix_uint *tmp = gsl_spmatrix_uint_compress(*dest, GSL_SPMATRIX_CSR);
-        gsl_spmatrix_uint_free(*dest);
-        *dest = tmp;
-    }
-}
-
-void copy_graph(struct graph_t *dest, const struct graph_t *src) {
-    // Copier les métadonnées
-    dest->type = src->type;
-    dest->num_vertices = src->num_vertices;
-    dest->num_edges = src->num_edges;
-    dest->num_objectives = src->num_objectives;
-    memcpy(dest->start, src->start, sizeof(vertex_t) * NUM_PLAYERS);
-
-    // Copier la matrice en conservant son format
-    copy_compressed_matrix(&dest->t, src->t);
-
-    // Copier les objectifs
-    dest->objectives = malloc(src->num_objectives * sizeof(vertex_t));
-    memcpy(dest->objectives, src->objectives, src->num_objectives * sizeof(vertex_t));
-}
 
 
 // Libération du graphe
