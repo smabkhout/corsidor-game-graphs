@@ -12,7 +12,7 @@
 #define INF 1000000000
 
 //enum graph_type_t type;
-static struct graph_t *graph2= NULL ;
+static struct graph_t *graph2= NULL ; 
 
 
 
@@ -32,9 +32,8 @@ void copy_graph(struct graph_t* dest, const struct graph_t* src) {
     dest->num_vertices = src->num_vertices;
     dest->num_edges = src->num_edges;
     dest->num_objectives = src->num_objectives;
-
-    memcpy(dest->start, src->start, sizeof(vertex_t) * NUM_PLAYERS); // Copier
-start[]
+    
+    memcpy(dest->start, src->start, sizeof(vertex_t) * NUM_PLAYERS); // Copier start[]
 
     // Copier la matrice creuse (sparse matrix)
     dest->t = gsl_spmatrix_uint_alloc(src->num_vertices, src->num_vertices);
@@ -50,45 +49,43 @@ start[]
         fprintf(stderr, "Erreur allocation mémoire pour objectives\n");
         exit(1);
     }
-    memcpy(dest->objectives, src->objectives, src->num_objectives *
-sizeof(vertex_t));  // Copie du tableau
+    memcpy(dest->objectives, src->objectives, src->num_objectives * sizeof(vertex_t));  // Copie du tableau
 }
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
-  graph2= malloc(sizeof(struct graph_t)) ;
+  graph2= malloc(sizeof(struct graph_t)) ; 
   if (!graph2){
-    puts("erreur dans l'allocation du graph pour player2 ") ;
+    puts("erreur dans l'allocation du graph pour player2 ") ; 
   }
 
-  copy_graph(graph2 , graph) ;
+  copy_graph(graph2 , graph) ; 
 
-  printf("Player %d initialized on graph with %u vertices and %u edges , and
-with %u objectives\n", id , graph2-> num_vertices , graph2->num_edges ,
-graph2->num_objectives);
+  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , graph2-> num_vertices , graph2->num_edges , graph2->num_objectives);
 
 }
 
 
 
 
-//le code suivant il s'agit d'un code de minimax avec alpha beta pruning une
-strategie de jeu avancée pour l'instant est commenté , apres regler moves.c et
-le server on pourra l'utiliser
+//le code suivant il s'agit d'un code de minimax avec alpha beta pruning une strategie de jeu avancée pour l'instant est commenté , apres regler moves.c et le server on pourra l'utiliser
 
 struct game_state {
     struct graph_t *graph;
     struct move_t previous_moves[2]; // last move for each player
 
-} ;
+} ; 
 
 struct scored_move {
     int score;
     struct move_t move;
-} ;
+} ; 
 
-struct game_state apply_move(struct game_state* state ,struct move_t legale_move
-){ (void)state; (void)legale_move; struct game_state next = *state; return next;
+struct game_state apply_move(struct game_state* state ,struct move_t legale_move ){
+    (void)state;
+    (void)legale_move;
+    struct game_state next = *state;
+    return next;
 }
 
 
@@ -108,9 +105,10 @@ int evaluate(struct game_state *state, int color) {
     return 10*f1 - 8*f2 + 5*f3 - 5*f4 + 12*f5;
 }
 
-struct scored_move negamax(struct game_state *state, int depth, int alpha, int
-beta, int color) { if (depth == 0 || state->graph->num_edges == 0) { int score =
-color * evaluate(state, color); return (struct scored_move){ .score = score };
+struct scored_move negamax(struct game_state *state, int depth, int alpha, int beta, int color) {
+    if (depth == 0 || state->graph->num_edges == 0) {
+        int score = color * evaluate(state, color);
+        return (struct scored_move){ .score = score };
     }
 
     struct move_t legal_moves[128];
@@ -121,8 +119,8 @@ color * evaluate(state, color); return (struct scored_move){ .score = score };
     for (int i = 0; i < num_moves; i++) {
         struct game_state next = apply_move(state, legal_moves[i]);
 
-        struct scored_move result = negamax(&next, depth - 1, -beta, -alpha,
--color); int score = -result.score;
+        struct scored_move result = negamax(&next, depth - 1, -beta, -alpha, -color);
+        int score = -result.score;
 
         if (score > best.score) {
             best.score = score;
@@ -145,8 +143,9 @@ struct move_t iterative_negamax(struct game_state *state, int time_limit_ms) {
     clock_t start = clock();
 
     while ((clock() - start) * 1000 / CLOCKS_PER_SEC < time_limit_ms) {
-        struct scored_move current = negamax(state, depth, -1000000, 1000000,
-1); best = current; depth++;
+        struct scored_move current = negamax(state, depth, -1000000, 1000000, 1);
+        best = current;
+        depth++;
     }
 
     return best.move;
@@ -179,7 +178,7 @@ struct move_t play(const struct move_t previous_move) {
     for ( unsigned int  i = 0; i < numberOfMoves; i++) {
         if (valid_move(graph2, moves[i].c, moves[i].m)) {
             //move.m = i;
-            graph2->start[move.c] = moves[i].m; ;
+            graph2->start[move.c] = moves[i].m; ; 
             printf("Player %d moves to vertex %u\n", move.c, move.m);
             return moves[i];
         }
@@ -191,42 +190,45 @@ struct move_t play(const struct move_t previous_move) {
 }
 */
 
-#include "board.h"
 #include "graph.h"
 #include "player.h"
-#include <gsl/gsl_spmatrix.h>
-#include <stdio.h>
+#include "board.h"
 #include <stdlib.h>
+#include <stdio.h>
+#include<time.h>
 #include <string.h>
-#include <time.h>
+#include <gsl/gsl_spmatrix.h>
 
-// enum graph_type_t type;
-static struct board_t *board = NULL;
-// static unsigned int player_id;
-// static vertex_t previous_position;
-// static int has_played = 0;
+//enum graph_type_t type;
+static struct board_t *board = NULL ; 
+//static unsigned int player_id;
+//static vertex_t previous_position;
+//static int has_played = 0;
 
-char const *get_player_name() {
+
+char const* get_player_name()
+{
   srand(time(NULL));
   char *names[] = {"adam", "rafiq"};
   return names[rand() % 2];
 }
 
-void initialize(unsigned int id, struct graph_t *g) {
-  board = board_init();
-  board->graph = createGraph(4, TRIANGULAR);
-  if (!board->graph) {
-    fprintf(stderr, "Erreur allocation du graph\n");
-    exit(EXIT_FAILURE);
-  }
-  *g = *(board->graph);
-  // copy_graph(board->graph, graph);
 
-  printf("Player %d initialized on graph with %u vertices and %u edges , and "
-         "with %u objectives\n",
-         id, board->graph->num_vertices, board->graph->num_edges,
-         board->graph->num_objectives);
-}
+
+void initialize(unsigned int id, struct graph_t* graph) {
+    board = board_init();
+    board->graph = malloc(sizeof(struct graph_t));
+      if (!board->graph) {
+          fprintf(stderr, "Erreur allocation du graph\n");
+          exit(EXIT_FAILURE);
+      }
+  
+      copy_graph(board->graph, graph); 
+  
+    printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
+  
+  }
+
 
 /*struct move_t play(const struct move_t previous_move) {
     vertex_t my_pos = graph2->start[player_id];
@@ -243,8 +245,7 @@ void initialize(unsigned int id, struct graph_t *g) {
         prev_dir = 3;
     }
 
-    struct move_t move = find_best_move(graph2, my_pos, opp_pos, prev_dir,
-player_id);
+    struct move_t move = find_best_move(graph2, my_pos, opp_pos, prev_dir, player_id);
 
     if (gsl_spmatrix_uint_get(graph2->t, my_pos, opp_pos) > 0) {
         for (vertex_t jump = 0; jump < graph2->num_vertices; jump++) {
@@ -256,45 +257,48 @@ player_id);
         }
     }
     if (move.t == MOVE) {
-        previous_position = my_pos;
-        graph2->start[player_id] = move.m;
-        has_played = 1;
+        previous_position = my_pos;         
+        graph2->start[player_id] = move.m;  
+        has_played = 1;                     
     }
     return move;
 }
 
 void finalize() {
-    if (graph1) {
-        gsl_spmatrix_uint_free(graph1->t);
-        free(graph1->objectives);
-        free(graph1);
-        graph1 = NULL;
+    if (graph1) {  
+        gsl_spmatrix_uint_free(graph1->t);  
+        free(graph1->objectives);  
+        free(graph1);  
+        graph1 = NULL;  
     }
 }*/
 
 struct move_t play(const struct move_t previous_move) {
-  struct move_t move;
+    struct move_t move;
 
-  move.t = NO_TYPE;
-  move.c = previous_move.c == NO_COLOR ? BLACK : (previous_move.c + 1) % 2;
-  move.m = 0;
-  move.e[0].fr = move.e[0].to = 0;
-  move.e[1].fr = move.e[1].to = 0;
+    move.t = NO_TYPE;
+    move.c = previous_move.c == NO_COLOR ? BLACK : (previous_move.c + 1) % 2;
+    move.m = 0; 
+    move.e[0].fr = move.e[0].to = 0;
+    move.e[1].fr = move.e[1].to = 0;
 
-  printf("👻 Player %d plays a NO_TYPE move (mock behavior)\n", move.c);
+    printf("👻 Player %d plays a NO_TYPE move (mock behavior)\n", move.c);
 
-  if (board != NULL) {
-    add_move_to_board(board, move);
-  } else {
-    printf("Board non initialisé dans play()\n");
-  }
+    if (board != NULL) {
+        add_move_to_board(board, move);
+    } else {
+        printf("Board non initialisé dans play()\n");
+    }
 
-  return move;
+    return move;
 }
+
 
 void finalize() {
-  if (board) {
-    board_free(board);
-    board = NULL;
-  }
+    if (board) {
+        board_free(board);
+        board = NULL;
+    }
 }
+
+
