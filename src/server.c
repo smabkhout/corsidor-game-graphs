@@ -122,10 +122,9 @@ int main(int argc, char *argv[]) {
     printf("Taille de la maille: %d\n", size_mesh);
     first_step(argc, argv);
 
-    struct graph_t *globalGraph = createGraph(size_mesh, TRIANGULAR);
-    struct board_t *board = board_init();
-    board->graph = malloc(sizeof(struct graph_t));
-    copy_graph(board->graph, globalGraph);
+    // board->graph = malloc(sizeof(struct graph_t));
+    // copy_graph(board->graph, globalGraph);
+    
     struct move_t *first_move = make_first_move();
 
     if (syntax_test(argc) == -1) {
@@ -136,8 +135,15 @@ int main(int argc, char *argv[]) {
     int current_player = start_player;
     int other_player = (start_player + 1) % NUM_PLAYERS;
 
-    players[start_player].initialize(start_player, globalGraph);
-    players[other_player].initialize(other_player, globalGraph);
+    struct graph_t* g1 = createGraph(size_mesh, TRIANGULAR);
+    struct graph_t* g2 = createGraph(size_mesh, TRIANGULAR);
+
+    // struct graph_t *globalGraph = g1;
+    struct board_t *board = board_init();
+    board->graph = g1;
+
+    players[start_player].initialize(start_player, g1);
+    players[other_player].initialize(other_player, g2);
 
     printf("First player: %s\n", players[start_player].get_player_name());
     printf("Second player: %s\n", players[other_player].get_player_name());
@@ -188,8 +194,10 @@ int main(int argc, char *argv[]) {
         players[i].finalize();
         dlclose(players[i].library);
     }
-    graph_free(globalGraph);
-    board_free(board);
+    // graph_free(globalGraph);
+    // board_free(board);
+    free(board->moves);
+    free(board);
     free(first_move);
 
     return 0;

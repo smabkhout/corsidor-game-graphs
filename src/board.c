@@ -46,8 +46,10 @@ void add_move_to_board(struct board_t* board, struct move_t move){
 void board_free(struct board_t* board) {
     if (board) {
         free(board->moves);
-        if (board->graph)
-            graph_free(board->graph); 
+        if (board->graph) {
+            graph_free(board->graph);
+            board->graph = NULL;
+        }
         free(board);
     }
     board = NULL;

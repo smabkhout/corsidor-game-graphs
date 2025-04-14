@@ -25,13 +25,14 @@ char const* get_player_name()
 
 void initialize(unsigned int id, struct graph_t* graph) {
   board = board_init();
-  board->graph = malloc(sizeof(struct graph_t));
+  // board->graph = malloc(sizeof(struct graph_t));
+  board->graph = graph;
     if (!board->graph) {
         fprintf(stderr, "Erreur allocation du graph\n");
         exit(EXIT_FAILURE);
     }
 
-    copy_graph(board->graph, graph); 
+    // copy_graph(board->graph, graph); 
 
   printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
 
