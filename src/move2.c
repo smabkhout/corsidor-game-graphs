@@ -276,7 +276,7 @@ struct move_t* make_move_moove(enum player_color_t color, vertex_t dest) {
 }
 
 
-
+//
 
 //function int  a void take an array and return this array full with all available moves that we could do and return the nuber of them 
 int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
@@ -288,10 +288,9 @@ int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_t
       moves[nb_moves++] = *make_move_moove(p->c, i);
     }
   }
-  struct move_t* vide = malloc(sizeof(struct move_t));
-  vide->t = NO_TYPE;
+  
 
-  moves[nb_moves] = *vide;
+
   return nb_moves;
 }
 
@@ -328,7 +327,7 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
     if (valid_move(g, p, dest, opponent_pos)) {
       return (struct move_t){
         .t = MOVE,
-        .c = p->player_color,
+        .c = p->c,
         .m = dest
       };
     }
@@ -337,7 +336,7 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
   // Aucun déplacement trouvé
   return (struct move_t){
     .t = NO_TYPE,
-    .c = p->player_color,
+    .c = p->c,
     .m = p->position
   };
 }

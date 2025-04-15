@@ -7,7 +7,7 @@ struct player_tt {
   unsigned int walls;
   vertex_t position;
   vertex_t last_position; // pour déduire la direction
-  enum player_color_t player_color;
+  
   
 };
 
