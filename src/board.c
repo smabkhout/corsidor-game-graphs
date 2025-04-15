@@ -3,7 +3,7 @@
 #include "board.h"
 #include "graph_functions.h"
 
-struct board_t*         board_init(){
+struct board_t* board_init(){
     struct board_t *board=malloc(sizeof(struct board_t));
     board->moves=malloc(sizeof(struct move_t));
     board->size_moves=0;
@@ -35,6 +35,8 @@ void add_move_to_board(struct board_t* board, struct move_t move){
     board->moves=realloc(board->moves,(board->size_moves+1)*sizeof(struct move_t));
     board->moves[board->size_moves]=move;
     board->size_moves++;
+
+    board->current_positions[move.c] = move.m;
 }
 
 /*void board_free(struct board_t* board){
@@ -54,7 +56,6 @@ void board_free(struct board_t* board) {
     }
     board = NULL;
 }
-
 
 
 //on doit voir comment on peut generer wall sans que graph soit en parametre pour l utiliser dans la fct play
