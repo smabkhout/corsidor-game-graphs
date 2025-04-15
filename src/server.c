@@ -218,6 +218,7 @@ int main(int argc, char *argv[]) {
     free(board->moves);
     free(board);
     free(first_move);
+    free(first_move2);
 
     return 0;
 }
