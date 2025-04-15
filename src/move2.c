@@ -312,6 +312,36 @@ int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *
   free(visited);
   return 0;
 }
+//make_move_move
+struct move_t* make_move_moove(enum player_color_t color, vertex_t dest) {
+    struct move_t* move = malloc(sizeof(struct move_t));
+    if (!move) {
+        fprintf(stderr, "Erreur d'allocation mémoire pour le mouvement\n");
+        exit(EXIT_FAILURE);
+    }
+    move->t = MOVE;
+    move->c = color;
+    move->m = dest;
+    return move;
+}
+
+
+//function int  a void take an array and return this array full with all available moves that we could do and return the nuber of them 
+int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
+  int nb_moves = 0;
+  enum dir_t prev_dir =gsl_spmatrix_uint_get(graph->t, p->last_position, p->position);
+
+  for (vertex_t i = 0; i < graph->num_vertices; i++) {
+    if (valid_move(graph, p, i, opponent)) {
+      moves[nb_moves++] = *make_move_moove(p->c, i);
+    }
+  }
+  struct move_t* vide = malloc(sizeof(struct move_t));
+  vide->t = NO_TYPE;
+
+  moves[nb_moves] = *vide;
+  return nb_moves;
+}
 
 
 
