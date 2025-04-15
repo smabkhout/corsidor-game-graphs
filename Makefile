@@ -12,6 +12,8 @@ all: build
 
 build: server client
 
+build_tests: alltests
+
 %.o: src/%.c 
 	$(CC) $< $(CFLAGS) -c
 
@@ -34,11 +36,12 @@ alltests: graph.o temp_move.o
 
 
 test: alltests
+	./alltests
 
-install: server client test
-	cp server libPlayer1.so libPlayer2.so alltests install
+install: build build_tests
+	cp server libPlayer1.so libPlayer2.so alltests install/
 
 clean:
 	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda *.so
 
-.PHONY: client install test clean
+.PHONY: client install test clean build build_tests
