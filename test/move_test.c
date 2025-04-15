@@ -142,8 +142,6 @@ void test_TSP() {
     unsigned int num_objectives = graph->num_objectives;
     int distance[num_objectives][num_objectives];
     calculate_dist_objectives(graph, num_objectives, distance);
-    
-    // Affichage des distances calculées pour vérifier leur exactitude
     for (unsigned int i = 0; i < num_objectives; i++) {
         for (unsigned int j = 0; j < num_objectives; j++) {
             printf("Distance entre %d et %d: %d\n", i, j, distance[i][j]);
@@ -152,26 +150,17 @@ void test_TSP() {
 
     int best_order[graph->num_objectives];
     int min_distance = TSP(graph, best_order);
-    
-    // Afficher la meilleure permutation et la distance minimale
     printf("Meilleure permutation: ");
     for (unsigned int i = 0; i < graph->num_objectives; i++) {
         printf("%d ", best_order[i]);
     }
     printf("\n");
+    assert(min_distance >= 0);  
     
-    // Vérifier que la distance minimale est correcte (en fonction de la structure de votre graphe)
-    assert(min_distance >= 0);  // La distance minimale doit être positive ou nulle
-    
-    // Tester si la permutation retournée correspond à la permutation optimale
-    // Ici, nous vérifierons la permutation retournée par rapport à une permutation attendue,
-    // mais cela dépend des distances spécifiques entre les objectifs dans votre graphe.
-    // Par exemple, vérifier si la permutation est correcte :
    // assert(best_order[0] == 0);
    // assert(best_order[1] == 1);
     //assert(best_order[2] == 2);
-    
-    // Vous pouvez également tester des permutations spécifiques selon les distances calculées
+    free(graph);
 }
 
 void test_find_closest_objective() {
