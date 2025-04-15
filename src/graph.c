@@ -55,16 +55,40 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin) {
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin) {
   int m_prime = m / 3 + 1; // m du sous hexagone (il y en a 7)
-  int m_prime1 = m / 3 - 1;
   l = l - l_origin;
   c = c - c_origin;
+  int deplacement = 2 * (m / 3) - 1;
+  /*
   return (in_hexagon_C(l, c, m_prime, 0, 0)) ||
-         (in_hexagon_C(l, c, m_prime, 0, 2 * m_prime1 + 1)) ||
-         (in_hexagon_C(l, c, m_prime, 2 * m_prime1 + 1, 0)) ||
-         (in_hexagon_C(l, c, m_prime, -2 * m_prime1 - 1, 0)) ||
-         (in_hexagon_C(l, c, m_prime, 0, -2 * m_prime1 - 1)) ||
-         (in_hexagon_C(l, c, m_prime, -2 * m_prime1 - 1, 2 * m_prime1 + 1)) ||
-         (in_hexagon_C(l, c, m_prime, 2 * m_prime1 + 1, -2 * m_prime1 - 1));
+         (in_hexagon_C(l, c, m_prime, 0, deplacement)) ||
+         (in_hexagon_C(l, c, m_prime, deplacement, 0)) ||
+         (in_hexagon_C(l, c, m_prime, -deplacement, 0)) ||
+         (in_hexagon_C(l, c, m_prime, 0, -deplacement)) ||
+         (in_hexagon_C(l, c, m_prime, -deplacement, deplacement)) ||
+         (in_hexagon_C(l, c, m_prime, deplacement, -deplacement));
+         */
+
+  int IN = (in_hexagon_C(l, c, m_prime, 0, 0)) +
+           (in_hexagon_C(l, c, m_prime, 0, deplacement)) +
+           (in_hexagon_C(l, c, m_prime, deplacement, 0)) +
+           (in_hexagon_C(l, c, m_prime, -deplacement, 0)) +
+           (in_hexagon_C(l, c, m_prime, 0, -deplacement)) +
+           (in_hexagon_C(l, c, m_prime, -deplacement, deplacement)) +
+           (in_hexagon_C(l, c, m_prime, deplacement, -deplacement));
+  if (IN)
+    return 1;
+  else {
+    if (!in_hexagon_T(l, c, m, 0, 0))
+      return 0;
+    IN = (in_hexagon_T(l, c, m_prime, 0, 0)) +
+         (in_hexagon_T(l, c, m_prime, 0, deplacement)) +
+         (in_hexagon_T(l, c, m_prime, deplacement, 0)) +
+         (in_hexagon_T(l, c, m_prime, -deplacement, 0)) +
+         (in_hexagon_T(l, c, m_prime, 0, -deplacement)) +
+         (in_hexagon_T(l, c, m_prime, -deplacement, deplacement)) +
+         (in_hexagon_T(l, c, m_prime, deplacement, -deplacement));
+    return !IN;
+  }
 }
 
 // Vecteurs de directions (en coord. axiales)
@@ -293,7 +317,7 @@ void print_hex_grid(struct graph_t *g) {
   switch (g->type) {
   case TRIANGULAR:
     // Retrouver m depuis le nombre de sommets
-    m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+    m = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
 
     for (int l = m - 1; l > 0; --l) {
       for (int k = 0; k < l; ++k) {
