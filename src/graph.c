@@ -143,10 +143,10 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   // Initialiser les objectifs et les positions des joueurs
   // à modifier
   graph->num_objectives = 1;
-  graph->objectives = (vertex_t *)malloc(sizeof(vertex_t)*2);
+  graph->objectives = (vertex_t *)malloc(sizeof(vertex_t) * 2);
   graph->objectives[0] =
       n / 2; // Placer le premier objectif au centre du graphe (par exemple)
-  int obj = axial_to_index(m-1, 0, m);
+  int obj = axial_to_index(m - 1, 0, m);
   graph->objectives[1] =
       obj; // Placer le second objectif en haut à droite du graphe (par exemple)
 
@@ -218,7 +218,7 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
   gsl_spmatrix_uint *csr =
       gsl_spmatrix_uint_compress(dest->t, GSL_SPMATRIX_CSR);
   gsl_spmatrix_uint_free(dest->t);
-  dest->t = NULL;   
+  dest->t = NULL;
   dest->t = csr;
   if (!dest->t) {
     fprintf(stderr, "Erreur allocation mémoire pour t\n");
@@ -267,7 +267,6 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
          src->num_objectives * sizeof(vertex_t));
 }*/
 
-
 // Libération du graphe
 void graph_free(struct graph_t *g) {
   if (!g)
@@ -286,95 +285,107 @@ void graph_free(struct graph_t *g) {
   free(g);
   g = NULL;
 }
-/*
-void visualize_graph(struct graph_t *g, unsigned int m) {
+
+// impression du graphe avec les numeros d'indices
+void print_hex_grid(struct graph_t *g) {
+  int m = 0;
   switch (g->type) {
   case TRIANGULAR:
-    int size = m;
-    int i, j, k;
+    // Retrouver m depuis le nombre de sommets
+    m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
 
-    // Partie supérieure de la grille
-    for (i = 0; i < size; i++) {
-        // Espaces pour l'alignement
-        for (k = 0; k < size - i - 1; k++) {
-            printf("  ");
+    for (int l = m - 1; l > 0; --l) {
+      for (int k = 0; k < l; ++k) {
+        printf("   ");
+      }
+      for (int c = 1 - m; c < m; ++c) {
+        if (in_hexagon_T(l, c, m, 0, 0)) {
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
         }
-        // Impression des hexagones
-        for (j = 0; j < size + i; j++) {
-            printf(" / \\");
-        }
-        printf("\n");
-
-        // Espaces pour l'alignement
-        for (k = 0; k < size - i - 1; k++) {
-            printf("  ");
-        }
-        // Impression des hexagones
-        for (j = 0; j < size + i; j++) {
-            printf(" \\_/");
-        }
-        printf("\n");
+      }
+      printf("\n");
     }
-
-    // Partie inférieure de la grille
-    for (i = size - 2; i >= 0; i--) {
-        // Espaces pour l'alignement
-        for (k = 0; k < size - i - 1; k++) {
-            printf("  ");
+    for (int l = 0; l > -m; --l) {
+      for (int k = 0; k < abs(l); ++k) {
+        printf("   ");
+      }
+      for (int c = 1 - m; c < m; ++c) {
+        if (in_hexagon_T(l, c, m, 0, 0)) {
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
         }
-        // Impression des hexagones
-        for (j = 0; j < size + i; j++) {
-            printf(" / \\");
-        }
-        printf("\n");
-
-        // Espaces pour l'alignement
-        for (k = 0; k < size - i - 1; k++) {
-            printf("  ");
-        }
-        // Impression des hexagones
-        for (j = 0; j < size + i; j++) {
-            printf(" \\_/");
-        }
-        printf("\n");
+      }
+      printf("\n");
     }
-}
-    // code block
     break;
   case CYCLIC:
-    // code block
+    // Retrouver m depuis le nombre de sommets
+    m = (int)((g->num_vertices + 18) / 12);
+
+    for (int l = m - 1; l > 0; --l) {
+      for (int k = 0; k < l; ++k) {
+          printf("   \033[38;5;208mE\033[0m  ");
+      }
+      for (int c = 1 - m; c < m; ++c) {
+        if (in_hexagon_C(l, c, m, 0, 0)) {
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
+        } else if (in_hexagon_T(l, c, m, 0, 0)) {
+          printf("   \033[38;5;208mE\033[0m  ");
+        }
+      }
+      printf("\n");
+    }
+    for (int l = 0; l > -m; --l) {
+      for (int k = 0; k < abs(l); ++k) {
+        printf("   ");
+      }
+      for (int c = 1 - m; c < m; ++c) {
+        if (in_hexagon_C(l, c, m, 0, 0)) {
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
+        } else if (in_hexagon_T(l, c, m, 0, 0)) {
+          printf("   \033[38;5;208mE\033[0m  ");
+        }
+      }
+      printf("\n");
+    }
     break;
   case HOLEY:
-    // code block
+    // Retrouver m depuis le nombre de sommets
+    m = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
+
+    for (int l = m - 1; l > 0; --l) {
+      for (int k = 0; k < l; ++k) {
+        printf("   ");
+      }
+      for (int c = 1 - m; c < m; ++c) {
+        if (in_hexagon_H(l, c, m, 0, 0)) {
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
+        } else if (in_hexagon_T(l, c, m, 0, 0)) {
+          printf("   \033[38;5;208mE\033[0m  ");
+        }
+      }
+      printf("\n");
+    }
+    for (int l = 0; l > -m; --l) {
+      for (int k = 0; k < abs(l); ++k) {
+        printf("   ");
+      }
+      for (int c = 1 - m; c < m; ++c) {
+        if (in_hexagon_H(l, c, m, 0, 0)) {
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
+        } else if (in_hexagon_T(l, c, m, 0, 0)) {
+          printf("   \033[38;5;208mE\033[0m  ");
+        }
+      }
+      printf("\n");
+    }
     break;
   default:
-    break;
-}
-}
-*/
-
-void print_hex_grid(int m) {
-  for (int l = m - 1; l > -1; l--) {
-    for (int k = 0; k < l; k++) {
-      printf("  ");
-    }
-    for (int c = -m + 1; c < m; c++) {
-      if (in_hexagon_T(l, c, m, 0, 0)) {
-        int index = axial_to_index(l, c, m);
-        printf("%d    ", index);
-      }
-    }
-    printf("\n");
-  }
-  for (int l = -1; l > -m; l--) {
-    for (int c = -m + 1; c < m; c++) {
-      if (in_hexagon_T(l, c, m, 0, 0)) {
-        int index = axial_to_index(l, c, m);
-        printf("%d    ", index);
-      } else {
-        printf("    ");
-      }
-    }
-    printf("\n");
+    puts("Invalid graph type");
   }
 }
