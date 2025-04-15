@@ -84,6 +84,14 @@ struct move_t *make_first_move() {
     first_move->e[1].to = 0;
     return first_move;
 }
+struct move_t *makee_first_move() {
+    struct move_t *first_move = malloc(sizeof(struct move_t));
+    first_move->c = NO_COLOR;
+    first_move->t = NO_TYPE;
+    first_move->m = 18;
+
+    return first_move;
+}
 
 int player_to_start() {
     return rand() % NUM_PLAYERS;
@@ -126,6 +134,7 @@ int main(int argc, char *argv[]) {
     // copy_graph(board->graph, globalGraph);
     
     struct move_t *first_move = make_first_move();
+    struct move_t *first_move2 = makee_first_move();
 
     if (syntax_test(argc) == -1) {
         return EXIT_FAILURE;
@@ -159,9 +168,9 @@ int main(int argc, char *argv[]) {
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
     printf("The number of moves played so far is: %d\n", board->size_moves);
-
+    struct move_t moves_act[2] ={current_move, *first_move2};
     while (winner == -1 && turn_count < max_turns) {
-        struct move_t move = players[current_player].play(current_move);
+        struct move_t move = players[current_player].play(moves_act[current_player]);
        /* if (is_invalid(move,board)){
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
 
@@ -169,9 +178,9 @@ int main(int argc, char *argv[]) {
             break;
         }*/
 
-        printf("Turn %d: Player %s plays %s to vertex %u\n", turn_count,
-               players[current_player].get_player_name(), move_type_to_string(move.t), move.m);
-
+        printf("Turn %d: Player %s plays %s from %u to vertex %u\n", turn_count,
+               players[current_player].get_player_name(), move_type_to_string(move.t),moves_act[current_player].m ,move.m);
+        moves_act[current_player] = move;
         if (move.t != NO_TYPE) {
             add_move_to_board(board, move);
             current_move = move;
