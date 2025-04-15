@@ -22,7 +22,7 @@ void test_calculate_total_dist();
 
 void test_next_permutation() ;
 
-//void test_TSP() ;
+void test_TSP() ;
 
 void test_find_closest_objective() ;
 

@@ -100,12 +100,13 @@ int distance_minimal(int d[], int visited[], unsigned int n){
     return index;
 }
 
-void dijistra( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]){
+void dijistra( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices],int next[graph->num_vertices]){
     int visited[graph->num_vertices];
     for (unsigned int i=0; i<graph->num_vertices; i++){
         d[i]=INT_MAX;
         prev[i]=-1;
         visited[i]=0;
+        next[i]=-1;
     }
     d[a]=0;
     while(1){
@@ -120,6 +121,7 @@ void dijistra( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_
             if(dir>0 && dir!= 7 && d[index_min]+poids< d[j] && !visited[j]){
                 d[j]=d[index_min]+poids;
                 prev[j]=index_min;
+                next[index_min]=j;
             }
 
         }
@@ -140,7 +142,8 @@ void calculate_dist_objectives(struct graph_t * graph, int num_objectives, int d
             else{
                 int d[graph->num_vertices];
                 int prev[graph->num_vertices];
-                dijistra(graph, graph->objectives[i], graph->objectives[j], d, prev );
+                 int next[graph->num_vertices];
+                dijistra(graph, graph->objectives[i], graph->objectives[j], d, prev, next);
                 distance[i][j]=d[graph->objectives[j]];
             }
 
@@ -255,9 +258,10 @@ vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos){
     vertex_t closest_objective = player_pos;
     int distances[graph->num_vertices];
     int prev[graph->num_vertices];
+    int next[graph->num_vertices];
     for (unsigned int i = 0; i < num_obj; i++) {
         vertex_t objective = objectives[i];
-         dijistra(graph, player_pos, objective, distances, prev);
+         dijistra(graph, player_pos, objective, distances, prev, next);
          int obj_distance=distances[objective];
 
          if (obj_distance < min_distance) {

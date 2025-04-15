@@ -65,7 +65,8 @@ void test_dijkstra() {
 
     int d[graph->num_vertices];
     int prev[graph->num_vertices];
-    dijistra(graph, 0, 10, d, prev);
+    int next[graph->num_vertices];
+    dijistra(graph, 0, 10, d, prev, next);
     assert(d[0]==0);
     assert(d[10]==3);
     assert(prev[10]==5);
@@ -130,15 +131,15 @@ void test_next_permutation() {
     assert(next_permutation(arr, n) == 0); // Il n'y a plus de permutation suivante
     printf("test_next_permutation passed.\n");
 }
-/*
+
 void test_TSP() {
     int m = 3; 
     struct graph_t *graph = createGraph(m, TRIANGULAR);
     graph->num_objectives = 3;
     graph->objectives = realloc(graph->objectives, graph->num_objectives * sizeof(vertex_t));
     graph->objectives[0] = 0;  
-    graph->objectives[1] = 2;  
-    graph->objectives[2] = 1;  
+    graph->objectives[1] = 10;  
+    graph->objectives[2] = 5;  
     unsigned int num_objectives = graph->num_objectives;
     int distance[num_objectives][num_objectives];
     calculate_dist_objectives(graph, num_objectives, distance);
@@ -160,8 +161,8 @@ void test_TSP() {
    // assert(best_order[0] == 0);
    // assert(best_order[1] == 1);
     //assert(best_order[2] == 2);
-    free(graph);
-}*/
+    graph_free(graph);
+}
 
 void test_find_closest_objective() {
     struct graph_t graph;
@@ -199,4 +200,6 @@ void test_find_closest_objective() {
     graph.t = t;
 
 }*/
+
+
 

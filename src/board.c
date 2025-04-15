@@ -9,8 +9,11 @@ struct board_t* board_init(){
     board->moves=malloc(sizeof(struct move_t));
     board->size_moves=0;
     board->wall_count=0;
+    board->current_positions[0]=2;
+    board->current_positions[1]=5;
     return board;
 }
+
 
 /*void display_board(struct board_t *board) {
     for (int i = 0; i < board->size; i++) {
