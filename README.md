@@ -7,3 +7,7 @@ La page du sujet :
 La page sur thor :
 
 <https://thor.enseirb-matmeca.fr/ruby/projects/pr105-coursidor>
+
+Lien ladder :
+
+<https://www.labri.fr/perso/renault/working/teaching/projets/ladder/ladder.html>

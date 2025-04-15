@@ -45,4 +45,4 @@ void copy_graph(struct graph_t* dest, const struct graph_t* src);
 // Libération du graphe
 void graph_free(struct graph_t *g);
 
-void print_hex_grid(int m);
+void print_hex_grid(struct graph_t *g);

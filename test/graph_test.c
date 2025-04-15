@@ -1,4 +1,5 @@
 #include "graph_test.h"
+#include "graph_functions.h"
 
 void test_create_Graph() {
   /*
@@ -21,11 +22,19 @@ void test_create_Graph() {
     assert(g1->num_edges == 2 * (m * m) + 34 * m - 78);
     graph_free(g1);
   }
-  
+  */
+
   struct graph_t* g2 = createGraph(3, TRIANGULAR);
-  print_hex_grid(3);
+  print_hex_grid(g2);
   graph_free(g2);
+  struct graph_t* g3 = createGraph(5, CYCLIC);
+  print_hex_grid(g3);
+  graph_free(g3);
+  struct graph_t* g4 = createGraph(9, HOLEY);
+  print_hex_grid(g4);
+  graph_free(g4);
  
+ /*
   int m = 9;
   struct graph_t *g1 = createGraph(m, HOLEY);
   for (int i = 0; i < g1->num_vertices; ++i) {
@@ -48,3 +57,8 @@ void test_create_Graph() {
 
   printf("test_create_graph passed.\n");
 }
+/*
+int main(){
+    test_create_Graph();
+    return 0;
+}*/
