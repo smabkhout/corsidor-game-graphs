@@ -213,58 +213,6 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move, verte
 
 
 
-/*vertex_t get_player_position(int id_ofplayer) {
-    return players[id_ofplayer].position;
-} 
-vertex_t get_opponent_position(int id_ofplayer) {
-    return players[(id_ofplayer + 1) % NUM_PLAYERS].position;
-}
-// fonction qui renvoie la direction du dernier mouvement
-enum dir_t get_direction_from_move(struct move_t* move) {
-    int l0, c0, l1, c1;
-    index_to_axial(move->m, 5, &l0, &c0);
-    index_to_axial(move->last_position, 5, &l1, &c1);
-    int dl = l1 - l0;
-    int dc = c1 - c0;
-    return direction_axial(dl, dc);
-    }*/
-
-
-
-
-
-
-// fonction qui renvois tout les mouvements possibles dans un tableau passé en parametre
-
-
-//make_move_move
-/*
-struct move_t* make_move_move(enum player_color_t color, vertex_t dest) {
-    struct move_t* move = malloc(sizeof(struct move_t));
-    if (!move) {
-        fprintf(stderr, "Erreur d'allocation mémoire pour le mouvement\n");
-        exit(EXIT_FAILURE);
-    }
-    move->t = MOVE;
-    move->c = color;
-    move->m = dest;
-    return move;
-}
-
-
-
-int  availableMoves(struct move_t* moves[], struct graph_t *graph, struct move_t* previous_move ,vertex_t current ,vertex_t opponent ) {
-    int nb_moves = 0;
-    enum dir_t prev_dir = get_direction_from_move(previous_move);
-
-    for (vertex_t i = 0 ; i<graph->num_vertices ; i++){
-        if (valid_move(graph , current , i )) {
-            moves[nb_moves++] = make_move_move  ((previous_move->c+1)%2, i);
-        }
-    moves[nb_moves] = NULL;
-    return nb_moves;
-}
-*/
 
 int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *objectives, size_t nb_obj) {
   int *visited = calloc(g->num_vertices, sizeof(int));
