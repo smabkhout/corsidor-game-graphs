@@ -68,6 +68,7 @@ int can_move(struct graph_t *graph, vertex_t pos_player, vertex_t b, vertex_t po
     return 1;
 }
 
+
 int is_connected(struct graph_t *graph, vertex_t v1, vertex_t v2){
     if(!graph){
         return 0;
@@ -152,6 +153,122 @@ void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num
     }
     
 }
+//calculer les distances entre les objectives 
+void calculate_dist_objectives(struct graph_t * graph, int num_objectives, int distance[num_objectives][num_objectives] ){
+    for(int i=0;i<num_objectives;i++){
+        for (int j=0;j<num_objectives;j++){
+            if (i==j){
+                distance[i][j]=0;
+            }
+            else{
+                int d[graph->num_vertices];
+                int prev[graph->num_vertices];
+                dijistra(graph, graph->objectives[i], graph->objectives[j], d, prev );
+                distance[i][j]=d[graph->objectives[j]];
+            }
+
+        }
+    }
+}
+
+//fonction qui calcule la distance totale pour une permutation 
+int calculate_total_dist(int n, int d[n][n], int tab[]){
+    int t=0;
+    for(int i=0;i<n-1;i++){
+        t+=d[tab[i]][tab[i+1]];
+    }
+    t+=d[tab[n-1]][tab[0]];
+    return t;
+
+}
+
+//fonction pour generer next permutation
+int next_permutation(int arr[], int n) {
+    int i = n - 1;
+    // Trouver l'élément qui n'est pas dans l'ordre décroissant
+    while (i > 0 && arr[i - 1] >= arr[i]) i--;
+    // Si tous les éléments sont dans l'ordre décroissant, c'est la dernière permutation
+    if (i <= 0) return 0;
+    // Trouver l'élément le plus grand à droite de i-1 mais plus grand que arr[i-1]
+    int j = n - 1;
+    while (arr[j] <= arr[i - 1]) j--;
+    // Échanger arr[i-1] et arr[j]
+    int a = arr[i - 1];
+    arr[i - 1] = arr[j];
+    arr[j] = a;
+    // Inverser la séquence après la position i-1
+    j = n - 1;
+    while (i < j) {
+        a = arr[i];
+        arr[i] = arr[j];
+        arr[j] = a;
+        i++;
+        j--;
+    }
+    return 1; 
+}
+
+
+// probléme du voyageur de Commerce
+int TSP(struct graph_t *graph,int best_order[]){
+   int d[graph->num_objectives][graph->num_objectives]; 
+   calculate_dist_objectives(graph, graph->num_objectives, d);
+   int order[graph->num_objectives];
+   for (unsigned int i = 0; i < graph->num_objectives; i++) {
+     order[i] = i; 
+    }
+    int min_distance = INT_MAX; 
+    
+    int total_distance = calculate_total_dist(graph->num_objectives, d, order);
+    if (total_distance < min_distance) {
+        min_distance = total_distance;
+        for (unsigned int i = 0; i < graph->num_objectives; i++) {
+            best_order[i] = order[i];
+        }
+    }
+    while (next_permutation(order, graph->num_objectives)) { 
+        total_distance = calculate_total_dist(graph->num_objectives, d, order);
+        if (total_distance < min_distance) {
+            min_distance = total_distance;
+            for (unsigned int i = 0; i < graph->num_objectives; i++) {
+                best_order[i] = order[i];
+            }
+        }
+    }
+    return min_distance;
+
+}
+
+
+
+
+
+
+
+
+
+/*
+void dijistra_modified( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices],vertex_t opponent_pos){
+    int visited[graph->num_vertices];
+    for (unsigned int i=0; i<graph->num_vertices; i++){
+        d[i]=INT_MAX;
+        prev[i]=-1;
+        visited[i]=0;
+    }
+    d[a]=0;
+       visited[index_min] = 1; 
+        for (unsigned int j=0;j<graph->num_vertices; j++){
+            int dir=gsl_spmatrix_uint_get(graph->t, index_min, j);
+            int poids =1;
+            if(dir>0 && dir!= 7 && d[index_min]+poids< d[j] && !visited[j] && is_empty_position(j,opponent_pos)){
+                d[j]=d[index_min]+poids;
+                prev[j]=index_min;
+            }
+            vertex_t* result;
+            if(is_path_clear(graph, index_min, enum dir_t dir, 2, opponent_pos, result))
+
+        }
+}*/
 
 
 vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos){
