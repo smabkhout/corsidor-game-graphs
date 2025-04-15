@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "board.h"
 #include "graph_functions.h"
+#define NUM_DIRECTIONS 6
 
 struct board_t* board_init(){
     struct board_t *board=malloc(sizeof(struct board_t));
@@ -106,3 +107,85 @@ int is_invalid(struct move_t move, struct board_t* board) {
 
     return 1; 
 }
+
+int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist, vertex_t opponent_pos, vertex_t* result) {
+    vertex_t current = from;
+    for (int i = 0; i < dist; i++) {
+        int found = 0;
+        for (vertex_t v = 0; v < graph->num_vertices; v++) {
+            if (gsl_spmatrix_uint_get(graph->t, current, v) == dir) {
+                if (v == opponent_pos) return 0; 
+                current = v;
+                found = 1;
+                break;
+            }
+        }
+        if (!found) return 0; 
+    }
+    *result = current;
+    return 1;
+}
+
+
+
+static const enum dir_t directions[] = {NW, NE, E, SE, SW, W};
+void get_side_dir_30(enum dir_t dir, enum dir_t* d1, enum dir_t* d2) {
+    int index = -1;
+    for (int i = 0; i < NUM_DIRECTIONS; i++) {
+        if (directions[i] == dir) {
+            index = i;
+            break;
+        }
+    }
+    if (index == -1) {
+        *d1 = *d2 = NO_EDGE;
+        return;
+    }
+    *d1 = directions[(index + NUM_DIRECTIONS - 1) % NUM_DIRECTIONS];
+    *d2 = directions[(index + 1) % NUM_DIRECTIONS];
+}
+
+
+struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t opponent, enum dir_t prev_dir, enum player_color_t color) {
+    vertex_t dest;
+    if (prev_dir != NO_EDGE) {
+        for (int d = 3; d >= 1; d--) {
+            if (is_path_clear(graph, pos, prev_dir, d, opponent, &dest)) {
+                return make_move_move(color, dest);
+            }
+        }
+    }
+    if (prev_dir != NO_EDGE) {
+        enum dir_t d1, d2;
+        get_side_dir_30(prev_dir, &d1, &d2);
+        enum dir_t side_dirs[2] = {d1, d2};
+        for (int i = 0; i < 2; i++) {
+            if (is_path_clear(graph, pos, side_dirs[i], 2, opponent, &dest)) {
+                return make_move_move(color, dest);
+            }
+        }
+    }
+
+    for (vertex_t v = 0; v < graph->num_vertices; v++) {
+        if (gsl_spmatrix_uint_get(graph->t, pos, v) > 0 && v != opponent && gsl_spmatrix_uint_get(graph->t, pos, v) != 7) {
+            return make_move_move(color, v);
+        }
+    }
+
+    struct move_t invalid = { .t = NO_TYPE, .c = color };
+    return invalid;
+}
+
+
+enum dir_t get_direction(vertex_t from, vertex_t to, struct graph_t* graph) {
+    return gsl_spmatrix_uint_get(graph->t, from, to);
+}
+
+struct move_t make_move_move(enum player_color_t color, vertex_t dest) {
+    struct move_t move;
+    move.t = MOVE;
+    move.c = color;
+    move.m = dest;
+    return move;
+}
+
