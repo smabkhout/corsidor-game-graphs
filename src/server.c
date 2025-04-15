@@ -162,24 +162,34 @@ int main(int argc, char *argv[]) {
 
     while (winner == -1 && turn_count < max_turns) {
         struct move_t move = players[current_player].play(current_move);
-
-        // Vérification d'un mouvement invalide
-        if (is_invalid(move, board)) {
+       /* if (is_invalid(move,board)){
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
+
             winner = (current_player + 1) % NUM_PLAYERS;
             break;
-        }
+        }*/
 
         printf("Turn %d: Player %s plays %s to vertex %u\n", turn_count,
                players[current_player].get_player_name(), move_type_to_string(move.t), move.m);
 
-        add_move_to_board(board, move);
-        current_move = move;
-        current_player = (current_player + 1) % NUM_PLAYERS;
-        other_player = (current_player + 1) % NUM_PLAYERS;
-        turn_count++;
+        if (move.t != NO_TYPE) {
+            add_move_to_board(board, move);
+            current_move = move;
+            current_player = (current_player + 1) % NUM_PLAYERS;
+            other_player = (current_player + 1) % NUM_PLAYERS;
+            turn_count++;
 
-        // Vérification de la victoire (à implémenter)
+            for (unsigned int i = 0; i < g1->num_objectives; i++) {
+                if (g1->start[current_move.c] == g1->objectives[i]) {
+                    winner = current_move.c;
+                    break;
+                }
+            }
+        } else {
+            printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
+            winner = (current_player + 1) % NUM_PLAYERS; 
+            break;
+        }
     }
 
     if (winner >= 0) {
