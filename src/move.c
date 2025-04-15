@@ -31,13 +31,7 @@ int is_empty_vertice( vertex_t n , vertex_t pos_other_player){
     return 1;
 }
 
-/*int is_empty_vertice( vertex_t n , struct board_t *board){
-        for(int i=0 ; i<NUM_PLAYERS ; i++){
-            if (board->graph->start[i] == n ) return 0 ; 
-        }
-    return 1;
-}
-*/
+
 
 
 int is_valid_move(const struct move_t* move, const struct graph_t* graph) {
@@ -379,24 +373,3 @@ struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t oppon
 
 
 
-/*void availableMoves(struct move_t* moves[], struct graph_t *graph, int id_ofplayer, struct move_t* previous_move) {
-    int nb_moves = 0;
-
-    vertex_t current = get_player_position(id_ofplayer);
-    vertex_t opponent = get_player_position( (id_ofplayer+1)%2);
-    enum dir_t prev_dir = get_direction_from_move(previous_move);
-
-    for (vertex_t i = 0 ; i<graph->num_vertices ; i++){
-        if (i != opponent && is_connected(graph , current , i )) {
-            moves[nb_moves++] = make_move_move(id_ofplayer, i);
-        }
-        if (i == opponent) {
-            for (vertex_t j = 0 ; j<graph->num_vertices ;j++){ //each neighbor_of_opponent w in graph[opponent] 
-                if (j != current && j != opponent &&is_connected(graph , opponent , j )) {
-                    moves[nb_moves++] = make_move_move(id_ofplayer, j);
-                }
-            }
-        }
-    }
-    moves[nb_moves] = NULL;
-}*/
