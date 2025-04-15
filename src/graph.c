@@ -24,8 +24,8 @@ int axial_to_index(int l, int c, int m) {
 
 // Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
 int in_hexagon_T(int l, int c, int m, int l_origin, int c_origin) {
-  (void)l_origin;
-  (void)c_origin;
+  l = l - l_origin;
+  c = c - c_origin;
   return (abs(l) <= m - 1) && (abs(c) <= m - 1) && (abs(l + c) <= m - 1);
 }
 
@@ -54,16 +54,17 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin) {
 
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin) {
-  int m_prime = m / 3; // m du sous hexagone (il y en a 7)
+  int m_prime = m / 3 + 1; // m du sous hexagone (il y en a 7)
+  int m_prime1 = m / 3 - 1;
   l = l - l_origin;
   c = c - c_origin;
-  return (in_hexagon_C(l, c, m_prime + 1, 0, 0)) ||
-         (in_hexagon_C(l, c, m_prime + 1, 0, 2 * m_prime - 1)) ||
-         (in_hexagon_C(l, c, m_prime + 1, 2 * m_prime - 1, 0)) ||
-         (in_hexagon_C(l, c, m_prime + 1, -2 * m_prime + 1, 0)) ||
-         (in_hexagon_C(l, c, m_prime + 1, 0, -2 * m_prime + 1)) ||
-         (in_hexagon_C(l, c, m_prime + 1, -2 * m_prime + 1, 2 * m_prime - 1)) ||
-         (in_hexagon_C(l, c, m_prime + 1, 2 * m_prime - 1, -2 * m_prime + 1));
+  return (in_hexagon_C(l, c, m_prime, 0, 0)) ||
+         (in_hexagon_C(l, c, m_prime, 0, 2 * m_prime1 + 1)) ||
+         (in_hexagon_C(l, c, m_prime, 2 * m_prime1 + 1, 0)) ||
+         (in_hexagon_C(l, c, m_prime, -2 * m_prime1 - 1, 0)) ||
+         (in_hexagon_C(l, c, m_prime, 0, -2 * m_prime1 - 1)) ||
+         (in_hexagon_C(l, c, m_prime, -2 * m_prime1 - 1, 2 * m_prime1 + 1)) ||
+         (in_hexagon_C(l, c, m_prime, 2 * m_prime1 + 1, -2 * m_prime1 - 1));
 }
 
 // Vecteurs de directions (en coord. axiales)
@@ -325,13 +326,14 @@ void print_hex_grid(struct graph_t *g) {
 
     for (int l = m - 1; l > 0; --l) {
       for (int k = 0; k < l; ++k) {
-          printf("   \033[38;5;208mE\033[0m  ");
+        printf("   ");
       }
       for (int c = 1 - m; c < m; ++c) {
         if (in_hexagon_C(l, c, m, 0, 0)) {
           int index = axial_to_index(l, c, m);
           printf("%5d ", index);
-        } else if (in_hexagon_T(l, c, m, 0, 0)) {
+        }
+        if (in_hexagon_T(l, c, m, 0, 0) && !in_hexagon_C(l, c, m, 0, 0)) {
           printf("   \033[38;5;208mE\033[0m  ");
         }
       }
@@ -345,7 +347,8 @@ void print_hex_grid(struct graph_t *g) {
         if (in_hexagon_C(l, c, m, 0, 0)) {
           int index = axial_to_index(l, c, m);
           printf("%5d ", index);
-        } else if (in_hexagon_T(l, c, m, 0, 0)) {
+        }
+        if (in_hexagon_T(l, c, m, 0, 0) && !in_hexagon_C(l, c, m, 0, 0)) {
           printf("   \033[38;5;208mE\033[0m  ");
         }
       }
