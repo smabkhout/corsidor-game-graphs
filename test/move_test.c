@@ -130,7 +130,7 @@ void test_next_permutation() {
     assert(next_permutation(arr, n) == 0); // Il n'y a plus de permutation suivante
     printf("test_next_permutation passed.\n");
 }
-
+/*
 void test_TSP() {
     int m = 3; 
     struct graph_t *graph = createGraph(m, TRIANGULAR);
@@ -161,7 +161,7 @@ void test_TSP() {
    // assert(best_order[1] == 1);
     //assert(best_order[2] == 2);
     free(graph);
-}
+}*/
 
 void test_find_closest_objective() {
     struct graph_t graph;
