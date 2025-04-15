@@ -22,7 +22,7 @@ int can_place_wall(struct graph_t * graph, struct edge_t e[2]);
 // Fonction pour vérifier si une position est vide.
 // Vérifie si la position 'n' n'est pas occupée par un autre joueur à 'pos_other_player'.
 // Retourne 1 si la position est vide, sinon 0.
-int is_empty_position(vertex_t n, vertex_t pos_other_player);
+int is_empty_vertice(vertex_t n, vertex_t pos_other_player);
 
 
 
@@ -45,6 +45,10 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 
 int distance_minimal(int d[], int visited[], unsigned int n);
 void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices]);
+void calculate_dist_objectives(struct graph_t * graph, int num_objectives, int distance[num_objectives][num_objectives] );
+int calculate_total_dist(int n, int d[n][n], int tab[]);
+int next_permutation(int arr[], int n) ;
+int TSP(struct graph_t *graph,int best_order[]);
 vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos);
 enum dir_t get_direction(vertex_t from, vertex_t to, struct graph_t* graph) ;
 struct move_t make_move_move(enum player_color_t color, vertex_t dest);
