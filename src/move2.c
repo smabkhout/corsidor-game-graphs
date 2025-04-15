@@ -2,9 +2,11 @@
 #include "player.h"
 #include "move.h"
 #include "move2.h"
+#include "board.h"
 #include "graph_functions.h"
 #include <stdlib.h>
 #include <math.h>
+#include <time.h>
 
 
 //les differentes direction comme dans graph.c
@@ -274,6 +276,8 @@ struct move_t* make_move_moove(enum player_color_t color, vertex_t dest) {
 }
 
 
+
+
 //function int  a void take an array and return this array full with all available moves that we could do and return the nuber of them 
 int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
@@ -292,18 +296,68 @@ int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_t
 }
 
 
+#include <time.h>
+#include <stdlib.h>
+
+struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p, vertex_t opponent_pos) {
+  int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+  int l, c;
+  index_to_axial(p->position, m, &l, &c);
+
+  int directions[6] = {1, 2, 3, 4, 5, 6};
+
+  // Mélanger les directions
+  for (int i = 5; i > 0; --i) {
+    int j = rand() % (i + 1);
+    int tmp = directions[i];
+    directions[i] = directions[j];
+    directions[j] = tmp;
+  }
+
+  for (int i = 0; i < 6; ++i) {
+    int dl = direc[directions[i]].l;
+    int dc = direc[directions[i]].c;
+
+    int l2 = l + dl;
+    int c2 = c + dc;
+
+    if (!in_hexagon_T(l2, c2, m, 0, 0)) continue;
+
+    vertex_t dest = axial_to_index(l2, c2, m);
+
+    if (valid_move(g, p, dest, opponent_pos)) {
+      return (struct move_t){
+        .t = MOVE,
+        .c = p->player_color,
+        .m = dest
+      };
+    }
+  }
+  
+  // Aucun déplacement trouvé
+  return (struct move_t){
+    .t = NO_TYPE,
+    .c = p->player_color,
+    .m = p->position
+  };
+}
 
 
-/*
-int main() {
+
+
+
+
+/*int main() {
+  srand(time(NULL));
   int m = 5;
   struct graph_t* g = createGraph(m, TRIANGULAR);
   vertex_t opp = 7;
 
   struct player_tt p;
-  p.last_position = axial_to_index(0, 0, m);   // déplacement précédent depuis (0,0)
-  p.position = axial_to_index(0, 1, m);// jusqu’à (0,1) → vecteur = (0,1), direction EAST
+  p.last_position = 0;   // déplacement précédent depuis (0,0)
+  p.position = 1;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
   p.walls = 3;
+  p.player_color = 0;
 
   // On teste un mouvement en ligne droite (EAST) à distance 1, 2, 3
   vertex_t t1 = axial_to_index(0, 2, m); // 1 pas vers l'est
@@ -316,77 +370,22 @@ int main() {
   printf("Test déplacement vers (0,4) → %d\n", valid_move(g, &p, t3,opp)); // attendu : 1
   printf("Test déplacement vers (1,0) → %d\n", valid_move(g, &p, t4,opp)); // attendu : 1 ou 0 (dépend si 30° ou non)
 
- printf("=== Déplacement vers (0,2) ===\n");
-  struct move_t move1 = {
-    .t = MOVE,
-    .c = BLACK,
-    .m = axial_to_index(0, 2, m)
-  };
-
-  if (apply_move(g, &p, move1,opp)) {
-    printf("✅ Déplacement vers (0,2) réussi\n");
+  printf("position du joueur %d: \n", p.position );
+  struct move_t move1 = generate_random_valid_move(g, &p, opp);
+  if (apply_move(g, &p, move1, opp)) {
+    printf("✅ Déplacement réussi\n");
     printf("position du joueur %d: \n", p.position );
   }
   else {
     printf("❌ Déplacement vers (0,2) bloqué\n");
   }
   
-  struct move_t wall = {
-    .t = WALL,
-    .c = BLACK,
-    .e = {
-      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(0, 1, m) },
-      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(-1, 1, m) }
-    }
-  };
-  struct move_t wall1 = {
-    .t = WALL,
-    .c = BLACK,
-    .e = {
-      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(1, 0, m) },
-      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(1, -1, m) }
-    }
-  };
-  struct move_t wall2 = {
-    .t = WALL,
-    .c = BLACK,
-    .e = {
-      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(0,-1, m) },
-      { .fr = axial_to_index(0, 0, m), .to = axial_to_index(-1, 0, m) }
-    }
-    };
  
-  apply_move(g, &p, wall, opp);
-  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall.e[0].fr, wall.e[0].to));
-  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall.e[1].fr, wall.e[1].to));
-  apply_move(g, &p, wall1, opp);
-  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall1.e[0].fr, wall1.e[0].to));
-  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall1.e[1].fr, wall1.e[1].to));
-  apply_move(g, &p, wall2, opp);
-  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall2.e[0].fr, wall2.e[0].to));
-  printf("mur ici : %d\n, ", gsl_spmatrix_uint_get(g->t,wall2.e[1].fr, wall2.e[1].to));
-  
-  const vertex_t objectives[1] = {1};
-  if( !path_to_objective_exists(g, 30, objectives, 1))
-    printf("chemin bloquer\n");
-  else
-    printf("chemin exist putain\n");
-
-  printf("=== Tentative de retour vers (0,1) ===\n");
-  struct move_t move2 = {
-    .t = MOVE,
-    .c = BLACK,
-    .m = axial_to_index(0, 1, m)
-  };
-
-  if (valid_move(g, &p, move2.m,opp)) {
-    printf("✅ Retour vers (0,1) réussi\n");
-  } else {
-    printf("❌ Retour vers (0,1) bloqué par le mur\n");
-  }
+ 
 
   graph_free(g);
   return 0;
 }
+
 
 */
