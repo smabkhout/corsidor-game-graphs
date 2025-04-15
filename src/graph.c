@@ -54,7 +54,6 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin) {
 
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin) {
-  // à faire ...
   int m_prime = m / 3; // m du sous hexagone (il y en a 7)
   l = l - l_origin;
   c = c - c_origin;
@@ -144,9 +143,12 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   // Initialiser les objectifs et les positions des joueurs
   // à modifier
   graph->num_objectives = 1;
-  graph->objectives = (vertex_t *)malloc(sizeof(vertex_t));
+  graph->objectives = (vertex_t *)malloc(sizeof(vertex_t)*2);
   graph->objectives[0] =
-      n / 2; // Placer l'objectif au centre du graphe (par exemple)
+      n / 2; // Placer le premier objectif au centre du graphe (par exemple)
+  int obj = axial_to_index(m-1, 0, m);
+  graph->objectives[1] =
+      obj; // Placer le second objectif en haut à droite du graphe (par exemple)
 
   // Initialiser les positions de départ des joueurs
   graph->start[0] =
@@ -268,18 +270,12 @@ void copy_graph(struct graph_t *dest, const struct graph_t *src) {
 
 // Libération du graphe
 void graph_free(struct graph_t *g) {
-  puts("Freeing a graph !");
-  if (!g) {
-    puts("Attempting double free (for the same graph) !!");
+  if (!g)
     return;
-  }
   if (g->t) {
     gsl_spmatrix_uint_free(g->t);
     g->t = NULL;
     g->num_vertices = 2;
-  }
-  else {
-    puts("Attempting double free (for the same sparse matrix) !!");
   }
   assert(g->t == NULL);
   if (g->objectives) {

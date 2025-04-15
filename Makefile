@@ -39,6 +39,6 @@ install: server client test
 	cp server libPlayer1.so libPlayer2.so alltests install
 
 clean:
-	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.so
+	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda *.so
 
 .PHONY: client install test clean
