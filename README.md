@@ -11,3 +11,15 @@ La page sur thor :
 Lien ladder :
 
 <https://www.labri.fr/perso/renault/working/teaching/projets/ladder/ladder.html>
+
+Makefile guide :
+
+make build → compile le serveur uniquement
+
+make build_tests → compile alltests sans le serveur
+
+make test → lance les tests
+
+make install → installe server, .so, et alltests
+
+make clean → nettoie tout

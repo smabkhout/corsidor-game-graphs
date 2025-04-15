@@ -12,13 +12,15 @@ all: build
 
 build: server client
 
+build_tests: alltests
+
 %.o: src/%.c 
 	$(CC) $< $(CFLAGS) -c
 
-libPlayer1.so: player1.o move.o board.o graph.o
+libPlayer1.so: player1.o temp_move.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
-libPlayer2.so: player2.o move.o board.o graph.o
+libPlayer2.so: player2.o temp_move.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
 server: server.o graph.o board.o
@@ -26,19 +28,20 @@ server: server.o graph.o board.o
 
 client: libPlayer1.so libPlayer2.so	
 
-alltests: graph.o move.o
+alltests: graph.o temp_move.o
 	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
 	$(CC) --coverage $(CFLAGS) -c test/move_test.c -o move_test.o
 	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
-	$(CC) -ftest-coverage $(CFLAGS) graph.o move.o graph_test.o move_test.o alltests.o $(LDFLAGS) -lgcov -o $@
+	$(CC) -ftest-coverage $(CFLAGS) graph.o temp_move.o graph_test.o move_test.o alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests
+	./alltests
 
-install: server client test
-	cp server libPlayer1.so libPlayer2.so alltests install
+install: build build_tests
+	cp server libPlayer1.so libPlayer2.so alltests install/
 
 clean:
 	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda *.so
 
-.PHONY: client install test clean
+.PHONY: client install test clean build build_tests

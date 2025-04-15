@@ -50,10 +50,5 @@ int calculate_total_dist(int n, int d[n][n], int tab[]);
 int next_permutation(int arr[], int n) ;
 int TSP(struct graph_t *graph,int best_order[]);
 vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos);
-enum dir_t get_direction(vertex_t from, vertex_t to, struct graph_t* graph) ;
-struct move_t make_move_move(enum player_color_t color, vertex_t dest);
-int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist, vertex_t opponent_pos, vertex_t* result);
 
-void get_side_dir_30(enum dir_t dir, enum dir_t* d1, enum dir_t* d2);
-struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t opponent, enum dir_t prev_dir, enum player_color_t color);
 #endif // MOVE_H
