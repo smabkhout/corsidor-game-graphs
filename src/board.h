@@ -11,6 +11,7 @@ struct board_t {
     int wall_count;
     struct graph_t* graph;
     int size_moves;
+    vertex_t current_positions[2] ; 
 };
 
 struct board_t* board_init();

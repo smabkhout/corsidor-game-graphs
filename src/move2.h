@@ -7,6 +7,8 @@ struct player_tt {
   unsigned int walls;
   vertex_t position;
   vertex_t last_position; // pour déduire la direction
+  
+  
 };
 
 
