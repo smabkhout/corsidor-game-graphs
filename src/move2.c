@@ -1,3 +1,4 @@
+
 #include "graph.h"
 #include "player.h"
 #include "move.h"
@@ -21,20 +22,36 @@ const struct axial_t direc[7] = {
 };
 // fonction qui prend en entre l'indice du vertice et revoie la ligne et colone dans le graph
 void index_to_axial(int index, int m, int *l, int *c) {
-  int count = 0;
   int row = 0;
   for (int i = 1 - m; i < m; ++i) {
     for (int j = 1 - m; j < m; ++j) {
-      if (!in_hexagon_T(i, j, m, 0, 0)) continue; // si c'est dans le graph ou pas
-      if (count == index) {
-        *l = i;
-        *c = j;
-        return;
+      if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i,j,m)== index)) {
+	
+	*l = i;
+	*c = j;
+	return;
       }
-      ++count;
+      
     }
   }
 }
+/*void test_index_axial_inverse(int m) {
+  int total = 0;
+  for (int l = 1 - m; l < m; ++l) {
+    for (int c = 1 - m; c < m; ++c) {
+      if (in_hexagon_T(l, c, m, 0, 0)) {
+        int index = axial_to_index(l, c, m);
+        int l2, c2;
+        index_to_axial(index, m, &l2, &c2);
+        // Vérification : aller-retour (l,c) -> index -> (l2,c2)
+        assert(l == l2);
+        assert(c == c2);
+        ++total;
+      }
+    }
+  }
+  printf("✔️  Tous les %d tests index <-> axial ont réussi pour m = %d\n", total, m);
+  }*/
 //recois en entre ligne + colone et revoie la direction 
 int direction_axial(int dl, int dc) {
   for (int d = 1; d < 7; ++d) {
@@ -44,100 +61,78 @@ int direction_axial(int dl, int dc) {
   return 0;
 }
 
+/*void test_direction_axial() {
+  // Tests valides
+  assert(direction_axial(1, -1) == 1);   // NW
+  assert(direction_axial(1, 0) == 2);    // NE
+  assert(direction_axial(0, 1) == 3);    // E
+  assert(direction_axial(-1, 1) == 4);   // SE
+  assert(direction_axial(-1, 0) == 5);   // SW
+  assert(direction_axial(0, -1) == 6);   // W
+
+  // Cas invalide : aucun vecteur de direction
+  assert(direction_axial(0, 0) == 0);
+  assert(direction_axial(2, -1) == 0);
+  assert(direction_axial(-1, -1) == 0);
+
+  printf("✔️  Tous les tests de direction_axial sont passés avec succès.\n");
+  }*/
+
 // Renvoie vrai si le déplacement est possible selon les règles
 int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t opponent_pos) {
-  if (p->position == target)
-    return 0; // pas de déplacement vers soi-même
-
-  // Retrouver m depuis le nombre de sommets
+  if (p->position == target || opponent_pos == target)
+    return 0; // Interdit de rester sur place
+  
+  // Retrouver m
   int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
-
-  // Coordonnées axiales du dernier déplacement
+  
+  // Convertir les index en coordonnées axiales
   int l0, c0, l1, c1;
   index_to_axial(p->last_position, m, &l0, &c0);
   index_to_axial(p->position, m, &l1, &c1);
 
   int dl_prev = l1 - l0;
   int dc_prev = c1 - c0;
-
   int prev_dir = direction_axial(dl_prev, dc_prev);
-  if (prev_dir == 0)
-    return 0; // aucun déplacement précédent valable
 
-  // 🔁 Tentatives de déplacement classiques selon les règles
+  if (prev_dir == 0)
+    return 0; // Aucun déplacement précédent valide
+
+  // Vérifier les directions possibles
   for (int dir = 1; dir < 7; ++dir) {
     int max_dist = 1;
     if (dir == prev_dir)
       max_dist = 3;
-    else if (abs(dir - prev_dir) == 1 || abs(dir - prev_dir) == 5)
-      max_dist = 2;
+    else if ((dir == (prev_dir % 6) + 1) || (dir == (prev_dir + 4) % 6 + 1))
+      max_dist = 2; // directions adjacentes (±30°)
 
-    int l = l1, c = c1;
+    int l = l1;
+    int c = c1;
 
     for (int d = 1; d <= max_dist; ++d) {
-      int next_l = l + direc[dir].l;
-      int next_c = c + direc[dir].c;
+      l += direc[dir].l;
+      c += direc[dir].c;
 
-      if (!in_hexagon_T(next_l, next_c, m, 0, 0))
+      if (!in_hexagon_T(l, c, m, 0, 0))
         break;
 
-      vertex_t from = axial_to_index(l, c, m);
-      vertex_t to = axial_to_index(next_l, next_c, m);
+      vertex_t from = axial_to_index(l - direc[dir].l, c - direc[dir].c, m);
+      vertex_t to = axial_to_index(l, c, m);
 
       int exists = gsl_spmatrix_uint_get(g->t, from, to);
-      if (exists == 7)
+      if (exists == 0 || exists == 7) // pas d’arête ou mur
         break;
 
       if (to == target)
-        return 1;
-
-      // avancer
-      l = next_l;
-      c = next_c;
+        return 1; // Mouvement autorisé
     }
   }
 
-  // ♟️ Tentative de saut par-dessus l’adversaire (sans graph_neighbors)
-  for (int dir = 1; dir < 7; ++dir) {
-    int l_adj = l1 + direc[dir].l;
-    int c_adj = c1 + direc[dir].c;
-
-    if (!in_hexagon_T(l_adj, c_adj, m, 0, 0))
-      continue;
-
-    vertex_t adj_idx = axial_to_index(l_adj, c_adj, m);
-
-    if (adj_idx != opponent_pos)
-      continue; // ce n’est pas l’adversaire
-
-    // L’adversaire est adjacent → regarder ses cases voisines
-    for (int d = 1; d < 7; ++d) {
-      int l2 = l_adj + direc[d].l;
-      int c2 = c_adj + direc[d].c;
-
-      if (!in_hexagon_T(l2, c2, m, 0, 0))
-        continue;
-
-      vertex_t dest = axial_to_index(l2, c2, m);
-
-      if (dest == p->position)
-        continue;
-
-      if (dest == target) {
-        int exists = gsl_spmatrix_uint_get(g->t, adj_idx, dest);
-        if (exists != 0)
-          return 1; // saut valide
-      }
-    }
-  }
   
   return 0; // aucun mouvement permis
 }
 
 
-#include "move.h"
-#include "graph.h"
-#include "player.h"
 
 
 
@@ -295,8 +290,8 @@ int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_t
 }
 
 
-#include <time.h>
-#include <stdlib.h>
+
+
 
 struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p, vertex_t opponent_pos) {
   int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
@@ -305,40 +300,38 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
 
   int directions[6] = {1, 2, 3, 4, 5, 6};
 
-  // Mélanger les directions
-  for (int i = 5; i > 0; --i) {
-    int j = rand() % (i + 1);
-    int tmp = directions[i];
-    directions[i] = directions[j];
-    directions[j] = tmp;
-  }
-
-  for (int i = 0; i < 6; ++i) {
-    int dl = direc[directions[i]].l;
-    int dc = direc[directions[i]].c;
-
-    int l2 = l + dl;
-    int c2 = c + dc;
-
-    if (!in_hexagon_T(l2, c2, m, 0, 0)) continue;
-
-    vertex_t dest = axial_to_index(l2, c2, m);
-
-    if (valid_move(g, p, dest, opponent_pos)) {
-      return (struct move_t){
-        .t = MOVE,
-        .c = p->c,
-        .m = dest
-      };
+  while (1) {
+    // Mélanger les directions
+    for (int i = 5; i > 0; --i) {
+      int j = rand() % (i + 1);
+      int tmp = directions[i];
+      directions[i] = directions[j];
+      directions[j] = tmp;
     }
+
+    for (int i = 0; i < 6; ++i) {
+      int dl = direc[directions[i]].l;
+      int dc = direc[directions[i]].c;
+
+      int l2 = l + dl;
+      int c2 = c + dc;
+
+      if (!in_hexagon_T(l2, c2, m, 0, 0)) continue;
+
+      vertex_t dest = axial_to_index(l2, c2, m);
+
+      if (valid_move(g, p, dest, opponent_pos)) {
+        return (struct move_t){
+          .t = MOVE,
+          .c = p->c,
+          .m = dest
+        };
+      }
+    }
+
+    // Facultatif : pour éviter boucle infinie si bloqué (sécurité)
+    // Tu peux ajouter un compteur max essais si tu veux
   }
-  
-  // Aucun déplacement trouvé
-  return (struct move_t){
-    .t = NO_TYPE,
-    .c = p->c,
-    .m = p->position
-  };
 }
 
 
@@ -355,36 +348,34 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
   struct player_tt p;
   p.last_position = 0;   // déplacement précédent depuis (0,0)
   p.position = 1;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
-  p.walls = 3;
-  p.player_color = 0;
+  p.walls = 10;
+  p.c = 0;
 
   // On teste un mouvement en ligne droite (EAST) à distance 1, 2, 3
-  vertex_t t1 = axial_to_index(0, 2, m); // 1 pas vers l'est
-  vertex_t t2 = axial_to_index(0, 3, m); // 2 pas
-  vertex_t t3 = axial_to_index(0, 4, m); // 3 pas
-  vertex_t t4 = axial_to_index(1, 0, m); // dans une autre direction (NW ou NE)
-
-  printf("Test déplacement vers (0,2) → %d\n", valid_move(g, &p, t1,opp)); // attendu : 1
-  printf("Test déplacement vers (0,3) → %d\n", valid_move(g, &p, t2,opp)); // attendu : 1
-  printf("Test déplacement vers (0,4) → %d\n", valid_move(g, &p, t3,opp)); // attendu : 1
-  printf("Test déplacement vers (1,0) → %d\n", valid_move(g, &p, t4,opp)); // attendu : 1 ou 0 (dépend si 30° ou non)
-
+ 
   printf("position du joueur %d: \n", p.position );
-  struct move_t move1 = generate_random_valid_move(g, &p, opp);
-  if (apply_move(g, &p, move1, opp)) {
-    printf("✅ Déplacement réussi\n");
-    printf("position du joueur %d: \n", p.position );
-  }
-  else {
-    printf("❌ Déplacement vers (0,2) bloqué\n");
-  }
-  
- 
- 
 
+
+  struct move_t move1 = generate_random_valid_move(g, &p, opp);
+  if(apply_move(g, &p, move1,opp))
+    printf("nouvelle position du joueur %d: \n", p.position );
+  else
+    printf("marche pas \n");
+
+  struct move_t moves[1069];
+  int nb = availableMoves(moves, g, &p, opp);
+  
+  printf("Nombre de déplacements possibles : %d\n", nb);
+  for (int i = 0; i < nb; ++i) {
+    printf(" %u ,",  moves[i].m);
+  }
+  printf("\n");
+
+  
+    
   graph_free(g);
   return 0;
 }
-
-
 */
+
+
