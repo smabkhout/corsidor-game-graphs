@@ -1,5 +1,12 @@
 #include "graph_functions.h"
 
+// Définitions ANSI pour les couleurs
+#define RED "\033[1;31m"
+#define GREEN "\033[1;32m"
+#define BLUE "\033[1;34m"
+#define VIOLET "\033[1;35m"
+#define RESET "\033[0m"
+
 // Coordonnées axiales pour pavage hexagonal : (0, 0) en centre, (0, 1) vecteur
 // déplacement East, (1, 0) vecteur déplacement North East, (1, -1) vecteur
 // déplacement North West,
@@ -179,7 +186,7 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   graph->start[0] =
       0; // Premier joueur au sommet 0 //à changer au coordonnees axiales
   graph->start[1] =
-      n -
+      graph->num_vertices -
       1; // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
   gsl_spmatrix_uint *csr =
       gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
@@ -311,108 +318,103 @@ void graph_free(struct graph_t *g) {
   g = NULL;
 }
 
+// retourne 2 si il s'agit d'un objectif, 0 pour le joueur à la position
+// start[0] et 1 pour le joueur en start[1]
+int is_objective_or_player(int l, int c, int m, struct graph_t *g) {
+  unsigned int ax = axial_to_index(l, c, m);
+  if (ax == g->start[0])
+    return 0;
+  if (ax == g->start[1])
+    return 1;
+  for (unsigned int i = 0; i < g->num_objectives; ++i) {
+    if (g->objectives[i] == ax)
+      return 2;
+  }
+  return 3;
+}
+
 // impression du graphe avec les numeros d'indices
 void print_hex_grid(struct graph_t *g) {
   int m = 0;
+  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
+  // Choix de la fonction selon le type
   switch (g->type) {
   case TRIANGULAR:
     // Retrouver m depuis le nombre de sommets
     m = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
-
-    for (int l = m - 1; l > 0; --l) {
-      for (int k = 0; k < l; ++k) {
-        printf("   ");
-      }
-      for (int c = 1 - m; c < m; ++c) {
-        if (in_hexagon_T(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
-          printf("%5d ", index);
-        }
-      }
-      printf("\n");
-    }
-    for (int l = 0; l > -m; --l) {
-      for (int k = 0; k < abs(l); ++k) {
-        printf("   ");
-      }
-      for (int c = 1 - m; c < m; ++c) {
-        if (in_hexagon_T(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
-          printf("%5d ", index);
-        }
-      }
-      printf("\n");
-    }
+    in_hexagon = in_hexagon_T;
     break;
   case CYCLIC:
     // Retrouver m depuis le nombre de sommets
     m = (int)((g->num_vertices + 18) / 12);
-
-    for (int l = m - 1; l > 0; --l) {
-      for (int k = 0; k < l; ++k) {
-        printf("   ");
-      }
-      for (int c = 1 - m; c < m; ++c) {
-        if (in_hexagon_C(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
-          printf("%5d ", index);
-        }
-        if (in_hexagon_T(l, c, m, 0, 0) && !in_hexagon_C(l, c, m, 0, 0)) {
-          printf("   \033[38;5;208mE\033[0m  ");
-        }
-      }
-      printf("\n");
-    }
-    for (int l = 0; l > -m; --l) {
-      for (int k = 0; k < abs(l); ++k) {
-        printf("   ");
-      }
-      for (int c = 1 - m; c < m; ++c) {
-        if (in_hexagon_C(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
-          printf("%5d ", index);
-        }
-        if (in_hexagon_T(l, c, m, 0, 0) && !in_hexagon_C(l, c, m, 0, 0)) {
-          printf("   \033[38;5;208mE\033[0m  ");
-        }
-      }
-      printf("\n");
-    }
+    in_hexagon = in_hexagon_C;
     break;
   case HOLEY:
     // Retrouver m depuis le nombre de sommets
     m = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
-
-    for (int l = m - 1; l > 0; --l) {
-      for (int k = 0; k < l; ++k) {
-        printf("   ");
-      }
-      for (int c = 1 - m; c < m; ++c) {
-        if (in_hexagon_H(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
-          printf("%5d ", index);
-        } else if (in_hexagon_T(l, c, m, 0, 0)) {
-          printf("   \033[38;5;208mE\033[0m  ");
-        }
-      }
-      printf("\n");
-    }
-    for (int l = 0; l > -m; --l) {
-      for (int k = 0; k < abs(l); ++k) {
-        printf("   ");
-      }
-      for (int c = 1 - m; c < m; ++c) {
-        if (in_hexagon_H(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
-          printf("%5d ", index);
-        } else if (in_hexagon_T(l, c, m, 0, 0)) {
-          printf("   \033[38;5;208mE\033[0m  ");
-        }
-      }
-      printf("\n");
-    }
+    in_hexagon = in_hexagon_H;
     break;
   default:
     puts("Invalid graph type");
+    return;
+  }
+
+  for (int l = m - 1; l > 0; --l) {
+    for (int k = 0; k < l; ++k) {
+      printf("   ");
+    }
+    for (int c = 1 - m; c < m; ++c) {
+      if (in_hexagon_T(l, c, m, 0, 0)) {
+        if (in_hexagon(l, c, m, 0, 0)) {
+          if (is_objective_or_player(l, c, m, g) == 0) {
+            int index = axial_to_index(l, c, m);
+            printf(GREEN "%5d " RESET, index);
+            continue;
+          } else if (is_objective_or_player(l, c, m, g) == 1) {
+            int index = axial_to_index(l, c, m);
+            printf(BLUE "%5d " RESET, index);
+            continue;
+          } else if (is_objective_or_player(l, c, m, g) == 2) {
+            int index = axial_to_index(l, c, m);
+            printf(VIOLET "%5d " RESET, index);
+            continue;
+          }
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
+        } else {
+          printf("   " RED "E" RESET "  ");
+        }
+      }
+    }
+    printf("\n");
+  }
+  for (int l = 0; l > -m; --l) {
+    for (int k = 0; k < abs(l); ++k) {
+      printf("   ");
+    }
+    for (int c = 1 - m; c < m; ++c) {
+      if (in_hexagon_T(l, c, m, 0, 0)) {
+        if (in_hexagon(l, c, m, 0, 0)) {
+          if (is_objective_or_player(l, c, m, g) == 0) {
+            int index = axial_to_index(l, c, m);
+            printf(GREEN "%5d " RESET, index);
+            continue;
+          } else if (is_objective_or_player(l, c, m, g) == 1) {
+            int index = axial_to_index(l, c, m);
+            printf(BLUE "%5d " RESET, index);
+            continue;
+          } else if (is_objective_or_player(l, c, m, g) == 2) {
+            int index = axial_to_index(l, c, m);
+            printf(VIOLET "%5d " RESET, index);
+            continue;
+          }
+          int index = axial_to_index(l, c, m);
+          printf("%5d ", index);
+        } else {
+          printf("   " RED "E" RESET "  ");
+        }
+      }
+    }
+    printf("\n");
   }
 }
