@@ -270,11 +270,25 @@ struct move_t* make_move_moove(enum player_color_t color, vertex_t dest) {
     return move;
 }
 
+struct move_t* make_wall_move(enum player_color_t color, vertex_t fr, vertex_t to) {
+    struct move_t* move = malloc(sizeof(struct move_t));
+    if (!move) {
+        fprintf(stderr, "Erreur d'allocation mémoire pour le mur\n");
+        exit(EXIT_FAILURE);
+    }
+    move->t = WALL;
+    move->c = color;
+    move->e[0].fr = fr;
+    move->e[0].to = to;
+    move->e[1].fr = fr;
+    move->e[1].to = to;
+    return move;
+}
 
 //
 
 //function int  a void take an array and return this array full with all available moves that we could do and return the nuber of them 
-int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
+int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   enum dir_t prev_dir =gsl_spmatrix_uint_get(graph->t, p->last_position, p->position);
 
@@ -288,9 +302,32 @@ int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_t
 
   return nb_moves;
 }
+int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
+  int nb_moves = 0;
+  for (vertex_t i = 0; i < graph->num_vertices; i++) {
+    for (vertex_t j = 0; j < graph->num_vertices; j++) {
+      struct move_t wall_p = {
+        .t = WALL,
+        .c = p->c,
+        .e[0].fr = i,
+        .e[0].to = j,
+        .e[1].fr = i,
+        .e[1].to = j
+      };
+      if (valid_wall(graph, p, wall_p)) {
+        moves[nb_moves++] = *make_wall_move(p->c, i, j);
+      }
+    }
+  }
+  return nb_moves;
+}
 
-
-
+int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
+  int nb_moves = 0;
+  nb_moves += availableMovess(moves, graph, p, opponent);
+  nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
+  return nb_moves;
+}
 
 
 struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p, vertex_t opponent_pos) {
