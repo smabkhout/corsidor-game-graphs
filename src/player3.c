@@ -18,8 +18,8 @@ static enum player_color_t my_color;
 char const* get_player_name()
 {
   srand(time(NULL));
-  char *names[] = {"dina", "khaoula"};
-  return names[rand() % 2];
+  char *name = "dina";
+  return name;
 }
 
 
@@ -39,7 +39,15 @@ void initialize(unsigned int id, struct graph_t* graph) {
     index_objective=0;
   printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
 
-
+  printf("🧭 Objectifs déclarés :\n");
+  for (unsigned int i = 0; i < board->graph->num_objectives; i++) {
+      printf("  [%d] vertex = %d\n", i, board->graph->objectives[i]);
+  }
+  
+  printf("🔀 Ordre optimal (best_order) :\n");
+  for (unsigned int i = 0; i < board->graph->num_objectives; i++) {
+      printf("  best_order[%d] = %d -> vertex %d\n", i, best_order[i], board->graph->objectives[best_order[i]]);
+  }
 }
 
 
@@ -47,7 +55,6 @@ void initialize(unsigned int id, struct graph_t* graph) {
 struct move_t play(const struct move_t previous_move) {
     struct move_t move ;
     move.t = MOVE;
-    printf(" current position %d\n",board->current_positions[0]);
     move.c = my_color;
  //   printf("%dcolorr222",move.c);
     vertex_t pos_player=board->current_positions[move.c];
@@ -74,6 +81,7 @@ struct move_t play(const struct move_t previous_move) {
     int prev[board->graph->num_vertices];
     int next[board->graph->num_vertices];
     dijistra ( board->graph, pos_player, target , d, prev, next);
+    printf("📏 Distance to target (%d): %d\n", target, d[target]);
     printf("la position de l objective %d\n",board->graph->objectives[index_objective]);
     move.m = next[pos_player]; 
     printf(" le sommet destinataire %d\n", move.m);
@@ -83,7 +91,7 @@ struct move_t play(const struct move_t previous_move) {
 
     printf("👻 Player %d plays  moves \n", move.c);
     board->current_positions[my_color] = move.m;
-    if (move.m == board->graph->objectives[index_objective]) {
+    if (move.m == target) {
         printf("🎯 Objective %d reached!\n", index_objective);
         index_objective++;
         // Tous les objectifs atteints ? Retourner à la case de départ

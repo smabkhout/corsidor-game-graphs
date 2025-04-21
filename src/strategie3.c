@@ -121,17 +121,27 @@ void dijistra( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_
             if(dir>0 && dir!= 7 && d[index_min]+poids< d[j] && !visited[j]){
                 d[j]=d[index_min]+poids;
                 prev[j]=index_min;
-                next[index_min]=j;
             }
 
         }
         if(index_min == b){
             break;
         }
+        int path[graph->num_vertices];
+        int len = 0;
+        for (vertex_t v = b; v != (vertex_t)-1; v = prev[v]) {
+            path[len++] = v;
+        }
+        if (len > 1) {
+            next[a] = path[len - 2];  // depuis 'a', aller vers le sommet suivant
+        } else {
+            next[a] = a; // pas de déplacement possible ou déjà sur place
+        }
 
     }
-    
 }
+    
+
 //calculer les distances entre les objectives 
 void calculate_dist_objectives(struct graph_t * graph, int num_objectives, int distance[num_objectives][num_objectives] ){
     for(int i=0;i<num_objectives;i++){

@@ -174,7 +174,7 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
 
   // Initialiser les objectifs et les positions des joueurs
   // à modifier
-  graph->num_objectives = 1;
+  graph->num_objectives = 2;
   graph->objectives = (vertex_t *)malloc(sizeof(vertex_t) * 2);
   graph->objectives[0] =
       n / 2; // Placer le premier objectif au centre du graphe (par exemple)
