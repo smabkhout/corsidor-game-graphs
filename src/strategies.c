@@ -28,13 +28,14 @@ struct scored_move {
 
 // Fonction pour appliquer un mouvement à l'état du jeu
     
-struct game_state applyy_move(struct game_state *state, struct move_t legal_move) {
-    //struct game_state new_state = *state;
-    state->previous_moves[legal_move.c] = legal_move;
-    state->previous_positions[legal_move.c] = state->previous_moves[legal_move.c%2].m;
-    return *state;
-}
 
+
+struct game_state applyy_move(const struct game_state *state, struct move_t move) {
+    struct game_state new_state = *state;
+    new_state.previous_positions[move.c] = state->previous_moves[move.c].m;
+    new_state.previous_moves[move.c] = move;
+    return new_state;
+}
 
 #include <stdbool.h>
 #include <limits.h>
@@ -199,7 +200,7 @@ int evaluate(struct game_state *state, int color){
     */
    //si le joueurs arrive a l'objectif 1 si non 0 
    if (state->previous_moves[color].m == state->graph->objectives[0]) {
-       return 1;
+       return 10000;
    }
     return 0 ; 
 
@@ -321,10 +322,10 @@ int is_game_over(struct game_state *state) {
     return 0; // Jeu non terminé
 }
 
-struct scored_move negamax_ab(struct game_state *state, int depth, int alpha, int beta, int color){
-    // Condition d'arrêt : profondeur nulle ou fin de partie
+
+struct scored_move negamax_ab(struct game_state *state, int depth, int alpha, int beta, int color) {
     if (depth == 0 || is_game_over(state)) {
-        int score = color * evaluate(state, color);
+        int score = evaluate(state, color);
         return (struct scored_move){ .score = score };
     }
 
@@ -353,6 +354,7 @@ struct scored_move negamax_ab(struct game_state *state, int depth, int alpha, in
 
         if (score > alpha)
             alpha = score;
+
         if (alpha >= beta)
             break; // Coupure alpha-bêta
     }
@@ -364,7 +366,7 @@ struct scored_move negamax_ab(struct game_state *state, int depth, int alpha, in
 
 struct scored_move negamax_naive(struct game_state *state, int depth, int color) {
     if (depth == 0 || is_game_over(state)) {
-        int score = color * evaluate(state, color);
+        int score = evaluate(state, color); // Supposé relatif au joueur color
         return (struct scored_move){ .score = score };
     }
 
@@ -384,7 +386,7 @@ struct scored_move negamax_naive(struct game_state *state, int depth, int color)
     for (int i = 0; i < num_moves; i++) {
         struct game_state next = applyy_move(state, legal_moves[i]);
         struct scored_move result = negamax_naive(&next, depth - 1, -color);
-        int score = -result.score;
+        int score = -result.score; // NegaMax : inversion du signe
 
         if (score > best.score) {
             best.score = score;
@@ -396,13 +398,13 @@ struct scored_move negamax_naive(struct game_state *state, int depth, int color)
 }
 
 
-struct scored_move minMax(struct game_state *state, int depth, int color) {
+struct scored_move minMax(struct game_state *state, int depth, int maximizingPlayer) {
     if (depth == 0 || is_game_over(state)) {
-        int score = color * evaluate(state, color);
+        int score = evaluate(state, maximizingPlayer ? 1 : -1); // Score du point de vue du MAX
         return (struct scored_move){ .score = score };
     }
 
-    int self = (color == 1) ? 0 : 1;
+    int self = maximizingPlayer ? 0 : 1;
     int opponent = 1 - self;
 
     struct move_t legal_moves[128];
@@ -413,21 +415,30 @@ struct scored_move minMax(struct game_state *state, int depth, int color) {
     };
     int num_moves = availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
 
-    struct scored_move best = { .score = -1 };
+    struct scored_move best;
+    best.score = maximizingPlayer ? -1000000 : 1000000;
 
     for (int i = 0; i < num_moves; i++) {
+    
         struct game_state next = applyy_move(state, legal_moves[i]);
-        struct scored_move result = minMax(&next, depth - 1, -color);
-        int score = -result.score;
+        struct scored_move result = minMax(&next, depth - 1, !maximizingPlayer);
 
-        if (score > best.score) {
-            best.score = score;
-            best.move = legal_moves[i];
+        if (maximizingPlayer) {
+            if (result.score > best.score) {
+                best.score = result.score;
+                best.move = legal_moves[i];
+            }
+        } else {
+            if (result.score < best.score) {
+                best.score = result.score;
+                best.move = legal_moves[i];
+            }
         }
     }
 
     return best;
 }
+
 
 
 void test_evaluation_functions() {
@@ -440,7 +451,8 @@ void test_evaluation_functions() {
     // Configurer des objectifs (par exemple, les bords opposés)
     graph->num_objectives = 1;
     graph->objectives = malloc(3 * sizeof(vertex_t));
-    graph->objectives[0] = axial_to_index(0, 0, m);  // Bord nord-ouest
+    graph->objectives[0] = axial_to_index(0, -3, m);  // Bord nord-ouest
+    printf("objectif are in %d \n " , axial_to_index(0, -3 , m)); 
     //graph->objectives[1] = axial_to_index(-2, 1, m);  // Bord sud-est
     //graph->objectives[2] = axial_to_index(0, 2, m);   // Bord est
 
@@ -449,13 +461,13 @@ void test_evaluation_functions() {
     state.graph = graph;
     
     // Position des joueurs
-    state.previous_moves[0].m = axial_to_index(-3, -3, m);  // Joueur 0 au centre
+    state.previous_moves[0].m = axial_to_index(0, 0, m);  // Joueur 0 au centre
     state.previous_moves[0].c = 0;
     state.previous_moves[0].t = MOVE;
     state.previous_moves[1].c = 1;  
     state.previous_moves[1].t = MOVE;
     state.previous_moves[1].m = axial_to_index(1, -1, m); // Joueur 1 à côté
-    state.previous_positions[0] = axial_to_index(-3, -2, m);
+    state.previous_positions[0] = axial_to_index(0, 1, m);
     state.previous_positions[1] = axial_to_index(0, -1, m);
     /*
     // Tester les fonctions
@@ -506,9 +518,9 @@ void test_evaluation_functions() {
     printf("\n");
 
 
-    struct scored_move result = negamax_ab(&state, 2000, -1, 1, 1);
-    struct scored_move result2 = negamax_naive(&state, 2000, 1);
-    struct scored_move best_move = minMax(&state, 1, 1);
+    struct scored_move result = negamax_ab(&state, 10, -1, 1, -1);
+    struct scored_move result2 = negamax_naive(&state, 4, -1);
+    struct scored_move best_move = minMax(&state, 4, -1);
     
     printf("Meilleur coup trouvé:\n");
     printf("Type: %s\n", result.move.t == MOVE ? "MOVE" : "WALL");
