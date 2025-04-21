@@ -36,9 +36,8 @@ struct game_state applyy_move(struct game_state *state, struct move_t legal_move
 }
 
 
-#include <limits.h>
 #include <stdbool.h>
-#include <stdlib.h>
+#include <limits.h>
 
 int normalized_shortest_path(struct game_state *state, int color) {
     vertex_t current_pos = state->previous_moves[color].m;
@@ -184,7 +183,9 @@ int pawn_on_goal_side(struct game_state *state, int color) {
     return 0;
 }
 
-int evaluate(struct game_state *state, int color) {
+int evaluate(struct game_state *state, int color){
+
+    /*
     int f1 = normalized_shortest_path(state, color);
     int f2 = normalized_shortest_path(state, 1 - color);
     int f3 = harmonic_potential(state, color);
@@ -195,7 +196,15 @@ int evaluate(struct game_state *state, int color) {
          - 12 * (100 - f2)     // Minimiser la proximité de l'adversaire
          + 8 * f3              // Potentiel harmonique
          + 10 * f4;            // Position stratégique
+    */
+   //si le joueurs arrive a l'objectif 1 si non 0 
+   if (state->previous_moves[color].m == state->graph->objectives[0]) {
+       return 1;
+   }
+    return 0 ; 
+
 }
+/*
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int beta, int color) {
     if (depth == 0 || state->graph->num_edges == 0) {
         int score = color * evaluate(state, color);
@@ -300,18 +309,138 @@ struct move_t iterative_negamax_naive(struct game_state *state, int max_depth) {
     return best.move;
 }
 
+*/
+
+int is_game_over(struct game_state *state) {
+    // Vérifie si un joueur a atteint l'objectif
+    for (int i = 0; i < 2; i++) {
+        if (state->previous_moves[i].m == state->graph->objectives[0]) {
+            return 1; // Jeu terminé
+        }
+    }
+    return 0; // Jeu non terminé
+}
+
+struct scored_move negamax_ab(struct game_state *state, int depth, int alpha, int beta, int color){
+    // Condition d'arrêt : profondeur nulle ou fin de partie
+    if (depth == 0 || is_game_over(state)) {
+        int score = color * evaluate(state, color);
+        return (struct scored_move){ .score = score };
+    }
+
+    int self = (color == 1) ? 0 : 1;
+    int opponent = 1 - self;
+
+    struct move_t legal_moves[128];
+    struct player_tt player = {
+        .position = state->previous_moves[self].m,
+        .last_position = state->previous_positions[self],
+        .c = self
+    };
+    int num_moves = availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
+
+    struct scored_move best = { .score = -1000000 };
+
+    for (int i = 0; i < num_moves; i++) {
+        struct game_state next = applyy_move(state, legal_moves[i]);
+        struct scored_move result = negamax_ab(&next, depth - 1, -beta, -alpha, -color);
+        int score = -result.score;
+
+        if (score > best.score) {
+            best.score = score;
+            best.move = legal_moves[i];
+        }
+
+        if (score > alpha)
+            alpha = score;
+        if (alpha >= beta)
+            break; // Coupure alpha-bêta
+    }
+
+    return best;
+}
+
+
+
+struct scored_move negamax_naive(struct game_state *state, int depth, int color) {
+    if (depth == 0 || is_game_over(state)) {
+        int score = color * evaluate(state, color);
+        return (struct scored_move){ .score = score };
+    }
+
+    int self = (color == 1) ? 0 : 1;
+    int opponent = 1 - self;
+
+    struct move_t legal_moves[128];
+    struct player_tt player = {
+        .position = state->previous_moves[self].m,
+        .last_position = state->previous_positions[self],
+        .c = self
+    };
+    int num_moves = availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
+
+    struct scored_move best = { .score = -1000000 };
+
+    for (int i = 0; i < num_moves; i++) {
+        struct game_state next = applyy_move(state, legal_moves[i]);
+        struct scored_move result = negamax_naive(&next, depth - 1, -color);
+        int score = -result.score;
+
+        if (score > best.score) {
+            best.score = score;
+            best.move = legal_moves[i];
+        }
+    }
+
+    return best;
+}
+
+
+struct scored_move minMax(struct game_state *state, int depth, int color) {
+    if (depth == 0 || is_game_over(state)) {
+        int score = color * evaluate(state, color);
+        return (struct scored_move){ .score = score };
+    }
+
+    int self = (color == 1) ? 0 : 1;
+    int opponent = 1 - self;
+
+    struct move_t legal_moves[128];
+    struct player_tt player = {
+        .position = state->previous_moves[self].m,
+        .last_position = state->previous_positions[self],
+        .c = self
+    };
+    int num_moves = availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
+
+    struct scored_move best = { .score = -1 };
+
+    for (int i = 0; i < num_moves; i++) {
+        struct game_state next = applyy_move(state, legal_moves[i]);
+        struct scored_move result = minMax(&next, depth - 1, -color);
+        int score = -result.score;
+
+        if (score > best.score) {
+            best.score = score;
+            best.move = legal_moves[i];
+        }
+    }
+
+    return best;
+}
+
 
 void test_evaluation_functions() {
     printf("=== Test des fonctions d'évaluation ===\n");
     
     // Créer un graphe de test (m=3)
-    int m = 3;
+    int m =5;
     struct graph_t* graph = createGraph(m, TRIANGULAR);
     
     // Configurer des objectifs (par exemple, les bords opposés)
     graph->num_objectives = 1;
     graph->objectives = malloc(3 * sizeof(vertex_t));
-    graph->objectives[0] = axial_to_index(2, -1, m);  // Bord nord-ouest
+    graph->objectives[0] = axial_to_index(0, 0, m);  // Bord nord-ouest
     //graph->objectives[1] = axial_to_index(-2, 1, m);  // Bord sud-est
     //graph->objectives[2] = axial_to_index(0, 2, m);   // Bord est
 
@@ -320,15 +449,15 @@ void test_evaluation_functions() {
     state.graph = graph;
     
     // Position des joueurs
-    state.previous_moves[0].m = axial_to_index(1, 0, m);  // Joueur 0 au centre
+    state.previous_moves[0].m = axial_to_index(-3, -3, m);  // Joueur 0 au centre
     state.previous_moves[0].c = 0;
     state.previous_moves[0].t = MOVE;
     state.previous_moves[1].c = 1;  
     state.previous_moves[1].t = MOVE;
     state.previous_moves[1].m = axial_to_index(1, -1, m); // Joueur 1 à côté
-    state.previous_positions[0] = axial_to_index(0, 0, m);
+    state.previous_positions[0] = axial_to_index(-3, -2, m);
     state.previous_positions[1] = axial_to_index(0, -1, m);
-
+    /*
     // Tester les fonctions
     printf("Test normalized_shortest_path:\n");
     int dist_p0 = normalized_shortest_path(&state, 0);
@@ -347,7 +476,7 @@ void test_evaluation_functions() {
     int side_p1 = pawn_on_goal_side(&state, 1);
     printf("Position joueur 0: %d\n", side_p0);
     printf("Position joueur 1: %d\n", side_p1);
-
+    */
     printf("\nTest evaluate:\n");
     int eval_p0 = evaluate(&state, 0);
     int eval_p1 = evaluate(&state, 1);
@@ -357,7 +486,7 @@ void test_evaluation_functions() {
      // Test avec une profondeur limitée pour un résultat rapide
     printf("Calcul du meilleur coup pour le joueur 0...\n");
     //print available moves
-    struct move_t legal_moves[128];
+    struct move_t legal_moves[1069];
     struct player_tt *player = malloc(sizeof(struct player_tt));
     player->position = state.previous_moves[0].m;
     player->c = 0;
@@ -377,8 +506,9 @@ void test_evaluation_functions() {
     printf("\n");
 
 
-    struct scored_move result = negamax(&state, 10, -1000000, 1000000, 0);
-    struct scored_move result2 = negamax_naive(&state, 10, 0);
+    struct scored_move result = negamax_ab(&state, 2000, -1, 1, 1);
+    struct scored_move result2 = negamax_naive(&state, 2000, 1);
+    struct scored_move best_move = minMax(&state, 1, 1);
     
     printf("Meilleur coup trouvé:\n");
     printf("Type: %s\n", result.move.t == MOVE ? "MOVE" : "WALL");
@@ -390,6 +520,12 @@ void test_evaluation_functions() {
     printf("Type: %s\n", result2.move.t == MOVE ? "MOVE" : "WALL");
     printf("Destination: %d\n", result2.move.m);
     printf("Score: %d\n", result2.score);
+    
+
+    printf("Meilleur coup trouvé (minMax):\n");
+    printf("Type: %s\n", best_move.move.t == MOVE ? "MOVE" : "WALL");
+    printf("Destination: %d\n", best_move.move.m);
+    printf("Score: %d\n", best_move.score);
     
     // Vérifier que le coup est valide
     //struct player_tt player;
@@ -419,55 +555,11 @@ void test_evaluation_functions() {
 
 
 
-void test_negamax() {
-    printf("=== Test de l'algorithme Negamax ===\n");
-    
-    // Créer un petit graphe (m=3 pour un test rapide)
-    int m = 3;
-    struct graph_t* graph = createGraph(m, TRIANGULAR);
-    
-    // Initialiser l'état du jeu
-    struct game_state state;
-    state.graph = graph;
-    
-    // Positions initiales des joueurs
-    state.previous_moves[0].m = axial_to_index(0, 1, m);  // Joueur 0 au centre
-    state.previous_moves[1].m = axial_to_index(1, -1, m); // Joueur 1 à côté
-    state.previous_positions[0] = axial_to_index(0, 0, m);
-    state.previous_positions[1] = axial_to_index(1, 0, m);
-    
-    // Test avec une profondeur limitée pour un résultat rapide
-    printf("Calcul du meilleur coup pour le joueur 0...\n");
-    struct scored_move result = negamax(&state, 10, -1000000, 1000000, 0);
-    
-    printf("Meilleur coup trouvé:\n");
-    printf("Type: %s\n", result.move.t == MOVE ? "MOVE" : "WALL");
-    printf("Destination: %d\n", result.move.m);
-    printf("Score: %d\n", result.score);
-    
-    // Vérifier que le coup est valide
-    struct player_tt player;
-    player.position = state.previous_moves[0].m;
-    player.last_position = state.previous_positions[0];
-    player.c = 0;
-    
-    if (result.move.t == MOVE) {
-        int valid = valid_move(graph, &player, result.move.m, state.previous_moves[1].m);
-        printf("Coup valide: %s\n", valid ? "OUI" : "NON");
-        assert(valid);
-    }// else {
-       // int valid = valid_wall(graph, &player, result.move);
-       // printf("Mur valide: %s\n", valid ? "OUI" : "NON");
-       // assert(valid);
-    //}
-    
-    printf("Test réussi!\n");
-    //graph_free(graph);
-}
-
 int main() {
     test_evaluation_functions();
     //test_negamax();
     
     return 0;
 }
+
+

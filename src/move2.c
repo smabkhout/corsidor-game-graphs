@@ -302,21 +302,32 @@ int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_
 
   return nb_moves;
 }
+
+
+
+
 int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   for (vertex_t i = 0; i < graph->num_vertices; i++) {
     for (vertex_t j = 0; j < graph->num_vertices; j++) {
+      for (vertex_t z = 0; z < graph->num_vertices; z++) {
+        if (i == j || i == z || j == z) continue; // éviter les murs en diagonale
+      
       struct move_t wall_p = {
         .t = WALL,
         .c = p->c,
         .e[0].fr = i,
         .e[0].to = j,
         .e[1].fr = i,
-        .e[1].to = j
+        .e[1].to = z
       };
       if (valid_wall(graph, p, wall_p)) {
-        moves[nb_moves++] = *make_wall_move(p->c, i, j);
+
+        struct move_t move = *make_wall_move(p->c, i, j);
+        move.m = p->position;
+        moves[nb_moves++] = move;
       }
+    }
     }
   }
   return nb_moves;
@@ -325,7 +336,7 @@ int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_t
 int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   nb_moves += availableMovess(moves, graph, p, opponent);
-  nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
+  //nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
   return nb_moves;
 }
 
@@ -371,9 +382,39 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
   }
 }
 
+/*
+//test availableMoves
+int test_availableMoves() {
+  int m = 5;
+  struct graph_t* g = createGraph(m, TRIANGULAR);
+  struct player_tt p;
+  p.last_position = 0;   // déplacement précédent depuis (0,0)
+  p.position = 1;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
+  p.walls = 10;
+  p.c = 0;
 
+  vertex_t opp = 60;
 
+  struct move_t moves[1069];
+  int nb = availableMoves(moves, g, &p, opp);
+  
+  printf("Nombre de déplacements possibles : %d\n", nb);
+  for (int i = 0; i < nb; ++i) {
+    if (moves[i].t == MOVE)
+      printf("Move: %u ,",  moves[i].m);
+    else
+      printf("Wall: %u ,",  moves[i].e[0].fr);
+  }
+  
+  graph_free(g);
+  
+  return nb;
+}
 
+int main()  {
+  test_availableMoves();
+}
+*/
 
 
 /*int main() {
