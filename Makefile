@@ -17,13 +17,13 @@ build_tests: alltests
 %.o: src/%.c 
 	$(CC) $< $(CFLAGS) -c
 
-libPlayer1.so: player1.o temp_move.o board.o graph.o
+libPlayer1.so: player1.o strategie3.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
-libPlayer2.so: player2.o temp_move.o board.o graph.o
+libPlayer2.so: player2.o strategie3.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
-libPlayer3.so: player3.o temp_move.o board.o graph.o
+libPlayer3.so: player3.o strategie3.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
 server: server.o graph.o board.o
@@ -31,11 +31,11 @@ server: server.o graph.o board.o
 
 client: libPlayer1.so libPlayer2.so	libPlayer3.so	
 
-alltests: graph.o temp_move.o
+alltests: graph.o strategie3.o
 	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
 	$(CC) --coverage $(CFLAGS) -c test/move_test.c -o move_test.o
 	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
-	$(CC) -ftest-coverage $(CFLAGS) graph.o temp_move.o graph_test.o move_test.o alltests.o $(LDFLAGS) -lgcov -o $@
+	$(CC) -ftest-coverage $(CFLAGS) graph.o strategie3.o graph_test.o move_test.o alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests
