@@ -22,7 +22,6 @@ const struct axial_t direc[7] = {
 };
 // fonction qui prend en entre l'indice du vertice et revoie la ligne et colone dans le graph
 void index_to_axial(int index, int m, int *l, int *c) {
-  int row = 0;
   for (int i = 1 - m; i < m; ++i) {
     for (int j = 1 - m; j < m; ++j) {
       if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i,j,m)== index)) {
@@ -290,8 +289,6 @@ struct move_t* make_wall_move(enum player_color_t color, vertex_t fr, vertex_t t
 //function int  a void take an array and return this array full with all available moves that we could do and return the nuber of them 
 int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
-  enum dir_t prev_dir =gsl_spmatrix_uint_get(graph->t, p->last_position, p->position);
-
   for (vertex_t i = 0; i < graph->num_vertices; i++) {
     if (valid_move(graph, p, i, opponent)) {
       moves[nb_moves++] = *make_move_moove(p->c, i);
@@ -308,6 +305,7 @@ int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_
 
 int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
+  (void) opponent;
   for (vertex_t i = 0; i < graph->num_vertices; i++) {
     for (vertex_t j = 0; j < graph->num_vertices; j++) {
       for (vertex_t z = 0; z < graph->num_vertices; z++) {
