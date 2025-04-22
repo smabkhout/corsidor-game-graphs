@@ -83,8 +83,30 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
     return 0; // Interdit de rester sur place
   
   // Retrouver m
-  int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
-  
+  // int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+  int m = 0;
+  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
+  // Choix de la fonction selon le type
+  switch (g->type) {
+  case TRIANGULAR:
+    // Retrouver m depuis le nombre de sommets
+    m = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
+    in_hexagon = in_hexagon_T;
+    break;
+  case CYCLIC:
+    // Retrouver m depuis le nombre de sommets
+    m = (int)((g->num_vertices + 18) / 12);
+    in_hexagon = in_hexagon_C;
+    break;
+  case HOLEY:
+    // Retrouver m depuis le nombre de sommets
+    m = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
+    in_hexagon = in_hexagon_H;
+    break;
+  default:
+    puts("Invalid graph type");
+    return 0;
+  }
   // Convertir les index en coordonnées axiales
   int l0, c0, l1, c1;
   index_to_axial(p->last_position, m, &l0, &c0);
@@ -112,7 +134,7 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
       l += direc[dir].l;
       c += direc[dir].c;
 
-      if (!in_hexagon_T(l, c, m, 0, 0))
+      if (!in_hexagon(l, c, m, 0, 0))
         break;
 
       vertex_t from = axial_to_index(l - direc[dir].l, c - direc[dir].c, m);
@@ -414,30 +436,31 @@ int main()  {
 }
 */
 
-
-/*int main() {
+/*
+int main() {
   srand(time(NULL));
-  int m = 5;
-  struct graph_t* g = createGraph(m, TRIANGULAR);
+  int m = 12;
+  struct graph_t* g = createGraph(m, HOLEY);
   vertex_t opp = 7;
 
   struct player_tt p;
-  p.last_position = 0;   // déplacement précédent depuis (0,0)
-  p.position = 1;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
+  p.last_position = 187;   // déplacement précédent depuis (0,0)
+  p.position = 188;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
   p.walls = 10;
   p.c = 0;
+  g->start[p.c] = p.position;
 
   // On teste un mouvement en ligne droite (EAST) à distance 1, 2, 3
  
   printf("position du joueur %d: \n", p.position );
 
 
-  struct move_t move1 = generate_random_valid_move(g, &p, opp);
-  if(apply_move(g, &p, move1,opp))
+  // struct move_t move1 = generate_random_valid_move(g, &p, opp);
+  /*if(apply_move(g, &p, move1,opp))
     printf("nouvelle position du joueur %d: \n", p.position );
   else
     printf("marche pas \n");
-
+  *//*
   struct move_t moves[1069];
   int nb = availableMoves(moves, g, &p, opp);
   
@@ -446,12 +469,10 @@ int main()  {
     printf(" %u ,",  moves[i].m);
   }
   printf("\n");
+  print_hex_grid(g);
 
   
     
   graph_free(g);
   return 0;
-}
-*/
-
-
+}*/
