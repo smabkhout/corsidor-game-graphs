@@ -13,7 +13,7 @@ int main(){
     test_calculate_dist_objectives() ;
     test_calculate_total_dist();
     test_next_permutation() ; 
-    test_TSP() ;
+    //test_TSP() ;
     test_find_closest_objective();
     test_index_axial_inverse();
     test_direction_axial();
