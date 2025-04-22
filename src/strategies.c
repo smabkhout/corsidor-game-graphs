@@ -107,8 +107,10 @@ int normalized_shortest_path(struct game_state *state, int color) {
 }
 int harmonic_potential(struct game_state *state, int color) {
   vertex_t current_pos = state->previous_moves[color].m;
+  (void) current_pos;
   vertex_t opp_pos = state->previous_moves[1 - color].m;
   vertex_t *objectives = state->graph->objectives;
+  (void) objectives;
   unsigned int num_obj = state->graph->num_objectives;
 
   // Calcul de la distance moyenne aux objectifs
@@ -518,6 +520,7 @@ struct scored_move minMax(struct game_state *state, int depth,
                           enum player_color_t maximizingPlayer) {
   enum player_color_t self = maximizingPlayer;
   enum player_color_t opponent = 1 - self;
+  (void) opponent;
   if (depth == 0 || is_game_over(state)) {
     int score = evaluate(state, self); // Score du point de vue du MAX
     return (struct scored_move){.move = state->previous_moves[self],
@@ -758,9 +761,9 @@ void init_player(struct player_tt *p, vertex_t pos, vertex_t last_pos,
 // Test 1 : Chemin direct sans mur
 void test_shortest_path_no_wall() {
   printf("=== Test 1 : Chemin direct sans mur ===\n");
-  int m = 9;
-  struct graph_t *g = createGraph(m, TRIANGULAR);
-  g->objectives[0] = 215;
+  int m = 15;
+  struct graph_t *g = createGraph(m, HOLEY);
+  g->objectives[0] = 610;
   print_hex_grid(g);
   vertex_t start = 0; // Position initiale (0,0)
   vertex_t objective = g->objectives[0];
@@ -888,7 +891,7 @@ void test_large_graph() {
   graph_free(g);
   printf("✔️ Test réussi.\n\n");
 }
-/*
+
 int main() {
   test_shortest_path_no_wall();
   // test_shortest_path_with_wall();
@@ -899,4 +902,3 @@ int main() {
   printf("✅ Tous les tests ont réussi !\n");
   return 0;
 }
-*/

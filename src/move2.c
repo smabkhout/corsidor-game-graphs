@@ -465,7 +465,7 @@ int main() {
 
 
   // struct move_t move1 = generate_random_valid_move(g, &p, opp);
-  /*if(apply_move(g, &p, move1,opp))
+  if(apply_move(g, &p, move1,opp))
     printf("nouvelle position du joueur %d: \n", p.position );
   else
     printf("marche pas \n");
