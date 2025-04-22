@@ -114,6 +114,15 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
 
   int dl_prev = l1 - l0;
   int dc_prev = c1 - c0;
+
+  // Normalisation du vecteur direction afin qu'il soit reconnu par direction_axial
+              // par exemple dir (3, 0) devient (1, 0)
+  int max_abs = fmax(abs(dl_prev), abs(dc_prev));
+  if (max_abs != 0) {
+    dl_prev /= max_abs;
+    dc_prev /= max_abs;
+  }
+
   int prev_dir = direction_axial(dl_prev, dc_prev);
 /*
   if (prev_dir == 0)

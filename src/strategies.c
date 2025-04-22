@@ -238,14 +238,13 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     // Parcourir tous les voisins de u
     for (vertex_t v = 0; v < n-1; ++v) {
       if (nodes[v].vertex == -1) {
-        printf("Le sommet %d n'est pas valide\n", v);
         continue;
       }
       // unsigned int edge_type = gsl_spmatrix_uint_get(g->t, u, v);
       struct player_tt p;
       p.position = u;
       p.c = 0;
-      p.last_position = start;
+      p.last_position = (u == start) ? start : prev[u];
       // Vérifier si l'arête existe et n'est pas un mur
       if (valid_move(g, &p, v, opponent_pos)) { // 0 = pas d'arête, 7 = mur
         if (!nodes[v].visited && nodes[u].distance + 1 < nodes[v].distance) {
@@ -759,9 +758,9 @@ void init_player(struct player_tt *p, vertex_t pos, vertex_t last_pos,
 // Test 1 : Chemin direct sans mur
 void test_shortest_path_no_wall() {
   printf("=== Test 1 : Chemin direct sans mur ===\n");
-  int m = 5;
+  int m = 9;
   struct graph_t *g = createGraph(m, TRIANGULAR);
-  g->objectives[0] = 56;
+  g->objectives[0] = 215;
   print_hex_grid(g);
   vertex_t start = 0; // Position initiale (0,0)
   vertex_t objective = g->objectives[0];
