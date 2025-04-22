@@ -166,9 +166,10 @@ vertex_t min_distance_vertex(struct distance_node *nodes, size_t num_vertices) {
 
 // Fonction principale Dijkstra
 int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
-                         vertex_t opponent_pos) {
+                         vertex_t opponent_pos, vertex_t *path) {
   if (start == objective)
     return 0;
+  int path_length = 0;
 
   int m = 0;
   int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
@@ -195,11 +196,20 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
   }
 
   int n = 3 * (m * m) - 3 * m + 1;
-
   // Initialisation des nœuds
   struct distance_node *nodes = malloc(n * sizeof(struct distance_node));
   if (!nodes)
     return -1;
+
+  // Nouveau tableau pour reconstruire le chemin
+  vertex_t *prev = malloc(n * sizeof(vertex_t));
+  if (!prev) {
+    free(nodes);
+    return -1;
+  }
+  for (int i = 0; i < n; ++i) {
+    prev[i] = -1;
+  }
 
   for (vertex_t v = 0; v < n; ++v) {
     int l;
@@ -214,19 +224,23 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     nodes[v].visited = false;
   }
   nodes[start].distance = 0;
+  path[path_length] = start;
 
   // Algorithme de Dijkstra
   for (size_t i = 0; i < n; ++i) {
     vertex_t u = min_distance_vertex(nodes, n);
-    if (u == objective || nodes[u].distance == INT_MAX)
+    if (u == objective || nodes[u].distance == INT_MAX) {
       break;
+    }
 
     nodes[u].visited = true;
 
     // Parcourir tous les voisins de u
-    for (vertex_t v = 0; v < n; ++v) {
-      if (nodes[v].vertex == -1)
+    for (vertex_t v = 0; v < n-1; ++v) {
+      if (nodes[v].vertex == -1) {
+        printf("Le sommet %d n'est pas valide\n", v);
         continue;
+      }
       // unsigned int edge_type = gsl_spmatrix_uint_get(g->t, u, v);
       struct player_tt p;
       p.position = u;
@@ -236,27 +250,52 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
       if (valid_move(g, &p, v, opponent_pos)) { // 0 = pas d'arête, 7 = mur
         if (!nodes[v].visited && nodes[u].distance + 1 < nodes[v].distance) {
           nodes[v].distance = nodes[u].distance + 1;
+          prev[v] = u;
         }
       }
     }
   }
 
   int result = nodes[objective].distance;
+
+  if (result != INT_MAX) {
+    vertex_t current = objective;
+    path_length = 0;
+
+    // Reconstruction du chemin à l'envers
+    while (current != -1) {
+      path[path_length++] = current;
+      current = prev[current];
+    }
+
+    // Inverser le chemin
+    for (int i = 0; i < path_length / 2; ++i) {
+      vertex_t tmp = path[i];
+      path[i] = path[path_length - 1 - i];
+      path[path_length - 1 - i] = tmp;
+    }
+
+    path[path_length] = -1; // terminaison
+  } else {
+    path[0] = -1; // pas de chemin trouvé
+    path_length = 0;
+  }
+
   free(nodes);
+  free(prev);
 
   return (result == INT_MAX) ? -1 : result;
 }
 
-
 // Fonction wrapper pour un joueur
 int player_shortest_path_length(struct graph_t *g, struct player_tt *p,
                                 const vertex_t *objectives, size_t nb_obj,
-                                vertex_t opponent_pos) {
+                                vertex_t opponent_pos, vertex_t *path) {
   int min_length = INT_MAX;
 
   for (size_t i = 0; i < nb_obj; ++i) {
     int length =
-        shortest_path_length(g, p->position, objectives[i], opponent_pos);
+        shortest_path_length(g, p->position, objectives[i], opponent_pos, path);
     if (length != -1 && length < min_length) {
       min_length = length;
     }
@@ -720,14 +759,21 @@ void init_player(struct player_tt *p, vertex_t pos, vertex_t last_pos,
 // Test 1 : Chemin direct sans mur
 void test_shortest_path_no_wall() {
   printf("=== Test 1 : Chemin direct sans mur ===\n");
-  int m = 3;
+  int m = 5;
   struct graph_t *g = createGraph(m, TRIANGULAR);
-  vertex_t start = 0;     // Position initiale (0,0)
-  vertex_t objective = 2; // Objectif en (2,-1)
-
-  int length = shortest_path_length(g, start, objective, 10);
+  g->objectives[0] = 56;
+  print_hex_grid(g);
+  vertex_t start = 0; // Position initiale (0,0)
+  vertex_t objective = g->objectives[0];
+  vertex_t *path = malloc(g->num_vertices * sizeof(vertex_t));
+  int length = shortest_path_length(g, start, objective, 10, path);
   printf("Distance attendue : 2 | Distance obtenue : %d\n", length);
   // assert(length == 2); // Le chemin le plus court est de longueur 2
+  for (vertex_t v = 0; path[v] != -1; ++v) {
+    printf("%d, ", path[v]);
+  }
+  printf("\n");
+  free(path);
 
   graph_free(g);
   printf("✔️ Test réussi.\n\n");
@@ -745,10 +791,18 @@ void test_shortest_path_with_wall() {
   gsl_spmatrix_uint_set(g->t, start, objective, 7); // Mur = 7
   gsl_spmatrix_uint_set(g->t, objective, start, 7);
 
-  int length = shortest_path_length(g, start, objective, 10);
+  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
+  int length = shortest_path_length(g, start, objective, 10, path);
   printf("Distance attendue : -1 (inaccessible) | Distance obtenue : %d\n",
          length);
   // assert(length == -1); // Aucun chemin possible
+  for (vertex_t v = 0; v < g->num_vertices; ++v) {
+    if (path[v] == -1)
+      break;
+    printf("%d, ", path[v]);
+  }
+  printf("\n");
+  free(path);
 
   graph_free(g);
   printf("✔️ Test réussi.\n\n");
@@ -765,9 +819,17 @@ void test_player_on_objective() {
   init_player(&p, objective, 0, BLACK, 10); // Joueur sur l'objectif
 
   vertex_t objectives[] = {objective};
-  int length = player_shortest_path_length(g, &p, objectives, 1, 10);
+  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
+  int length = player_shortest_path_length(g, &p, objectives, 1, 10, path);
   printf("Distance attendue : 0 | Distance obtenue : %d\n", length);
   // assert(length == 0); // Distance = 0
+  for (vertex_t v = 0; v < g->num_vertices; ++v) {
+    if (path[v] == -1)
+      break;
+    printf("%d, ", path[v]);
+  }
+  printf("\n");
+  free(path);
 
   graph_free(g);
   printf("✔️ Test réussi.\n\n");
@@ -786,9 +848,18 @@ void test_multiple_objectives() {
   init_player(&p, start, 0, WHITE, 10);
 
   vertex_t objectives[] = {obj1, obj2};
-  int length = player_shortest_path_length(g, &p, objectives, 2, 10);
+  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
+  int length = player_shortest_path_length(g, &p, objectives, 2, 10, path);
   printf("Distance attendue : 1 | Distance obtenue : %d\n", length);
   // assert(length == 1); // Doit retourner la distance minimale (1)
+
+  for (vertex_t v = 0; v < g->num_vertices; ++v) {
+    if (path[v] == -1)
+      break;
+    printf("%d, ", path[v]);
+  }
+  printf("\n");
+  free(path);
 
   graph_free(g);
   printf("✔️ Test réussi.\n\n");
@@ -802,21 +873,31 @@ void test_large_graph() {
   vertex_t start = 0;                            // (0,0)
   vertex_t objective = axial_to_index(4, -3, m); // (4,-3)
 
-  int length = shortest_path_length(g, start, objective, 10);
+  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
+  int length = shortest_path_length(g, start, objective, 10, path);
   printf("Distance attendue : 4 | Distance obtenue : %d\n", length);
   // assert(length == 4); // Chemin le plus court : 4 déplacements
+
+  for (vertex_t v = 0; v < g->num_vertices; ++v) {
+    if (path[v] == -1)
+      break;
+    printf("%d, ", path[v]);
+  }
+  printf("\n");
+  free(path);
 
   graph_free(g);
   printf("✔️ Test réussi.\n\n");
 }
-
+/*
 int main() {
-  // test_shortest_path_no_wall();
+  test_shortest_path_no_wall();
   // test_shortest_path_with_wall();
   // test_player_on_objective();
   // test_multiple_objectives();
   // test_large_graph();
-  test_evaluation_functions();
+  // test_evaluation_functions();
   printf("✅ Tous les tests ont réussi !\n");
   return 0;
 }
+*/

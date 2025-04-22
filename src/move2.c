@@ -115,10 +115,10 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
   int dl_prev = l1 - l0;
   int dc_prev = c1 - c0;
   int prev_dir = direction_axial(dl_prev, dc_prev);
-
+/*
   if (prev_dir == 0)
     return 0; // Aucun déplacement précédent valide
-
+*/
   // Vérifier les directions possibles
   for (int dir = 1; dir < 7; ++dir) {
     int max_dist = 1;
