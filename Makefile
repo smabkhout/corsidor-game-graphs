@@ -31,11 +31,12 @@ server: server.o graph.o board.o
 
 client: libPlayer1.so libPlayer2.so	libPlayer3.so	
 
-alltests: graph.o strategie3.o
+alltests: graph.o strategie3.o move2.o
 	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
 	$(CC) --coverage $(CFLAGS) -c test/move_test.c -o move_test.o
+	$(CC) --coverage $(CFLAGS) -c test/move2_test.c -o move2_test.o
 	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
-	$(CC) -ftest-coverage $(CFLAGS) graph.o strategie3.o graph_test.o move_test.o alltests.o $(LDFLAGS) -lgcov -o $@
+	$(CC) -ftest-coverage $(CFLAGS) graph.o move2.o strategie3.o graph_test.o move_test.o move2_test.o alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests
