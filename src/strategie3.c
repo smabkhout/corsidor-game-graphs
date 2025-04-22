@@ -198,36 +198,79 @@ int next_permutation(int arr[], int n) {
     return 1; 
 }
 
+int exist_in_array(int a, int n, int t[]){
+    for(int i=0;i<n;i++){
+        if(t[i]==a){
+            return 1;
+        }
 
-// probléme du voyageur de Commerce
-int TSP(struct graph_t *graph,int best_order[]){
-   int d[graph->num_objectives][graph->num_objectives]; 
-   calculate_dist_objectives(graph, graph->num_objectives, d);
-   int order[graph->num_objectives];
-   for (unsigned int i = 0; i < graph->num_objectives; i++) {
-     order[i] = i; 
     }
-    int min_distance = INT_MAX; 
-    
-    int total_distance = calculate_total_dist(graph->num_objectives, d, order);
-    if (total_distance < min_distance) {
-        min_distance = total_distance;
-        for (unsigned int i = 0; i < graph->num_objectives; i++) {
-            best_order[i] = order[i];
+    return 0;
+
+}
+
+int len(int n, int t[]){
+    int s=0;
+    for(int i=0;i<n;i++){
+        if(t[i]!=-1){
+            s++;
         }
     }
-    while (next_permutation(order, graph->num_objectives)) { 
-        total_distance = calculate_total_dist(graph->num_objectives, d, order);
-        if (total_distance < min_distance) {
-            min_distance = total_distance;
-            for (unsigned int i = 0; i < graph->num_objectives; i++) {
-                best_order[i] = order[i];
+    return s;
+}
+
+// probléme du voyageur de Commerce
+int TSP(struct graph_t *graph, int best_order[], int obj_visited[]) {
+    int d[graph->num_objectives][graph->num_objectives]; 
+    calculate_dist_objectives(graph, graph->num_objectives, d);
+
+    int n = graph->num_objectives;
+    int remaining[n];
+    int num_remaining = 0;
+    for (int i = 0; i < n; i++) {
+        if (!exist_in_array(i, n, obj_visited)) {
+            remaining[num_remaining++] = i;
+        }
+    }
+
+    if (num_remaining == 0) {
+        return 0; // tous les objectifs sont déjà atteints
+    }
+
+    int perm[num_remaining];
+    for (int i = 0; i < num_remaining; i++) {
+        perm[i] = remaining[i];
+    }
+
+    int best_temp[num_remaining];
+    int min_distance = INT_MAX;
+
+    // Première permutation
+    int dist = calculate_total_dist(num_remaining, d, perm);
+    if (dist < min_distance) {
+        min_distance = dist;
+        for (int i = 0; i < num_remaining; i++) {
+            best_temp[i] = perm[i];
+        }
+    }
+
+    // Boucle des permutations restantes
+    while (next_permutation(perm, num_remaining)) {
+        dist = calculate_total_dist(num_remaining, d, perm);
+        if (dist < min_distance) {
+            min_distance = dist;
+            for (int i = 0; i < num_remaining; i++) {
+                best_temp[i] = perm[i];
             }
         }
     }
-    return min_distance;
+    for (int i = 0; i < num_remaining; i++) {
+        best_order[i] = best_temp[i];
+    }
 
+    return min_distance;
 }
+
 
 
 

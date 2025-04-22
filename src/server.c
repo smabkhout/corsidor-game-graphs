@@ -188,13 +188,12 @@ int main(int argc, char *argv[]) {
             other_player = (current_player + 1) % NUM_PLAYERS;
             turn_count++;
 
-            for (unsigned int i = 0; i < g1->num_objectives; i++) {
-                if (g1->start[current_move.c] == g1->objectives[i]) {
-                    winner = current_move.c;
-                    break;
+            if (g1->start[current_move.c] == board->current_positions[current_move.c]) {
+                winner = current_move.c;
+                break;
                 }
             }
-        } else {
+        else {
             printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
             winner = (current_player + 1) % NUM_PLAYERS; 
             break;
