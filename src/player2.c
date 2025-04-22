@@ -114,7 +114,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     return 0;
   }
 
-  int n = 3 * (m * m) - 3 * m + 1;
+  unsigned int n = 3 * (m * m) - 3 * m + 1;
   // Initialisation des nœuds
   struct distance_node *nodes = malloc(n * sizeof(struct distance_node));
   if (!nodes)
@@ -126,7 +126,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     free(nodes);
     return -1;
   }
-  for (int i = 0; i < n; ++i) {
+  for (unsigned int i = 0; i < n; ++i) {
     prev[i] = -1;
   }
 
@@ -156,7 +156,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
 
     // Parcourir tous les voisins de u
     for (vertex_t v = 0; v < n-1; ++v) {
-      if (nodes[v].vertex == -1) {
+      if (nodes[v].vertex == (unsigned int)-1) {
         printf("Le sommet %d n'est pas valide\n", v);
         continue;
       }
@@ -182,7 +182,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     path_length = 0;
 
     // Reconstruction du chemin à l'envers
-    while (current != -1) {
+    while (current != (unsigned int)-1) {
       path[path_length++] = current;
       current = prev[current];
     }
