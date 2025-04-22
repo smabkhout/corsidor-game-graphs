@@ -18,6 +18,7 @@ int main(){
     test_index_axial_inverse();
     test_direction_axial();
     test_valid_wall();
+    test_valid_move();
     
     return 0;
 }
