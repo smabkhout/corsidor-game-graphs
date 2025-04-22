@@ -44,11 +44,14 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 
 
 int distance_minimal(int d[], int visited[], unsigned int n);
-void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices],  int next[graph->num_vertices]);
+void dijistra ( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices], int prev[graph->num_vertices],  int next[graph->num_vertices];);
 void calculate_dist_objectives(struct graph_t * graph, int num_objectives, int distance[num_objectives][num_objectives] );
 int calculate_total_dist(int n, int d[n][n], int tab[]);
 int next_permutation(int arr[], int n) ;
-int TSP(struct graph_t *graph,int best_order[]);
+
+int exist_in_array(int a, int n, int t[]);
+int TSP(struct graph_t *graph,int best_order[], int obj_visited[]);
+
 vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos);
 
 #endif // MOVE_H
