@@ -320,12 +320,15 @@ int evaluate(struct game_state *state, int color) {
        + 10 * f4;            // Position stratégique
   */
   // si le joueurs arrive a l'objectif 1 si non 0
+  /*
   if (state->previous_moves[color].m == state->graph->objectives[0]) {
     return 10000;
   }
   return 0;
-  // return distance_to_objective(state, color) - distance_to_objective(state, 1
-  // - color);
+  */
+  // Calculer la distance entre le joueur et l'objectif
+  vertex_t *vertex = malloc(100 * sizeof(vertex_t));
+   return shortest_path_length(state->graph , state->previous_moves[color].m ,state->graph->objectives[0], state->previous_moves[1-color].m ,vertex ) - shortest_path_length(state->graph , state->previous_moves[1-color].m ,state->graph->objectives[0], state->previous_moves[color].m ,vertex);
 }
 /*
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int
@@ -600,12 +603,9 @@ struct scored_move minMaxi(struct game_state *state, int depth,
   // Exploration récursive des coups
   for (int i = 0; i < num_moves; i++) {
     struct game_state next_state = applyy_move(state, legal_moves[i]);
-    printf("move a traitee %d\n", legal_moves[i].m);
     // players 1 ou 2
-    printf("current player %d \n", current_player);
     struct scored_move current_result =
         minMaxi(&next_state, depth - 1, !maximizingPlayer, originalMaxPlayer);
-    printf("score %d \n", current_result.score);
     // Mise à jour du meilleur coup
     if ((maximizingPlayer && current_result.score > best_move.score) ||
         (!maximizingPlayer && current_result.score < best_move.score)) {
@@ -661,6 +661,59 @@ void test_evaluation_functions() {
   }
   printf("\n");
 
+  // === Test de la fonction de chemin le plus court ===
+  printf("\n--- Test du chemin le plus court ---\n"); 
+  vertex_t *path = malloc(graph->num_vertices * sizeof(vertex_t));
+  graph->objectives[0] = 3;
+  graph->start[0] = state.previous_moves[0].m;
+  graph->start[1] =8  ;
+  state.previous_moves[1].m = 8 ; 
+   state.previous_positions[1] = 7;
+  printf("previous position  : %d\n", state.previous_positions[0]);
+  printf("previous position  : %d\n", state.previous_positions[1]);
+  printf("previous move  : %d\n", state.previous_moves[0].m);
+  printf("previous move  : %d\n", state.previous_moves[1].m);
+  print_hex_grid(graph);
+
+  int length = shortest_path_length(graph, state.previous_moves[0].m,
+                                     graph->objectives[0],
+                                     state.previous_moves[1].m, path);
+  printf(" Distance obtenue : %d\n", length);
+  //print path 
+  for (int i = 0; path[i] != -1; ++i) {
+    printf("%d, ", path[i]);
+  }
+  printf("\n");
+
+
+  //pareil pour l'autre joueur (path )
+  vertex_t *path2 = malloc(graph->num_vertices * sizeof(vertex_t)); 
+  graph->objectives[0] = 26;
+  graph->start[0] = state.previous_moves[1].m;
+  graph->start[1] = 0;
+  state.previous_moves[0].m = 0;
+  state.previous_positions[0] = 1;  
+  printf("previous position  : %d\n", state.previous_positions[0]);
+  printf("previous position  : %d\n", state.previous_positions[1]);
+  printf("previous move  : %d\n", state.previous_moves[0].m);
+  printf("previous move  : %d\n", state.previous_moves[1].m);
+  print_hex_grid(graph);
+  length = shortest_path_length(graph, state.previous_moves[1].m,
+                                 graph->objectives[0],
+                                 state.previous_moves[0].m, path2);
+  printf(" Distance obtenue : %d\n", length);
+  //print path
+  for (int i = 0; path2[i] != -1; ++i) {
+    printf("%d, ", path2[i]);
+  }
+  printf("\n");
+
+
+  
+
+  
+  // assert(length == 2); // Le chemin le plus court est de longueur 2
+
   // === Test de la fonction d'évaluation ===
   printf("\n--- Évaluation ---\n");
   int eval_p0 = evaluate(&state, 0);
@@ -679,10 +732,10 @@ void test_evaluation_functions() {
   }
   printf("\n");
 
-  struct scored_move result_negamax = negamax_ab(&state, 10, -1, 1, 1);
+  struct scored_move result_negamax = negamax_ab(&state, 5, -1, 1, 1);
   struct scored_move result_naive = negamax_naive(&state, 4, 1);
   struct scored_move result_minmax = minMax(&state, 1, 1);
-  struct scored_move result_minmaxi = minMaxi(&state, 1, 1, 1);
+  struct scored_move result_minmaxi = minMaxi(&state, 3, 1, 1);
 
   printf("\nRésultats :\n");
   printf("Negamax Alpha-Beta : Type = %s, Dest = %d, Score = %d\n",
@@ -898,7 +951,7 @@ int main() {
   // test_player_on_objective();
   // test_multiple_objectives();
   // test_large_graph();
-  // test_evaluation_functions();
+   test_evaluation_functions();
   printf("✅ Tous les tests ont réussi !\n");
   return 0;
 }
