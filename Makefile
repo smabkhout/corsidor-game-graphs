@@ -43,7 +43,7 @@ test: alltests
 	./alltests
 
 install: build build_tests
-	cp server libPlayer1.so libPlayer2.so libPlayer3.so alltests install/
+	cp server libPlayer1.so libPlayer2.so alltests install/
 
 clean:
 	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda *.so
