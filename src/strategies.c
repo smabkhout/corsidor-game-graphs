@@ -188,7 +188,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     return 0;
   }
 
-  int n = 3 * (m * m) - 3 * m + 1;
+  vertex_t n = 3 * (m * m) - 3 * m + 1;
   // Initialisation des nœuds
   struct distance_node *nodes = malloc(n * sizeof(struct distance_node));
   if (!nodes)
@@ -200,7 +200,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     free(nodes);
     return -1;
   }
-  for (int i = 0; i < n; ++i) {
+  for (vertex_t i = 0; i < n; ++i) {
     prev[i] = -1;
   }
 
@@ -230,7 +230,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
 
     // Parcourir tous les voisins de u
     for (vertex_t v = 0; v < n-1; ++v) {
-      if (nodes[v].vertex == -1) {
+      if (nodes[v].vertex == (unsigned int)-1) {
         continue;
       }
       // unsigned int edge_type = gsl_spmatrix_uint_get(g->t, u, v);
@@ -255,7 +255,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     path_length = 0;
 
     // Reconstruction du chemin à l'envers
-    while (current != -1) {
+    while (current != (unsigned int)-1) {
       path[path_length++] = current;
       current = prev[current];
     }
@@ -671,7 +671,7 @@ void test_evaluation_functions() {
                                      state.previous_moves[1].m, path);
   printf(" Distance obtenue : %d\n", length);
   //print path 
-  for (int i = 0; path[i] != -1; ++i) {
+  for (int i = 0; path[i] != (unsigned int)-1; ++i) {
     printf("%d, ", path[i]);
   }
   printf("\n");
@@ -694,7 +694,7 @@ void test_evaluation_functions() {
                                  state.previous_moves[0].m, path2);
   printf(" Distance obtenue : %d\n", length);
   //print path
-  for (int i = 0; path2[i] != -1; ++i) {
+  for (int i = 0; path2[i] != (unsigned int)-1; ++i) {
     printf("%d, ", path2[i]);
   }
   printf("\n");
@@ -811,7 +811,7 @@ void test_shortest_path_no_wall() {
   int length = shortest_path_length(g, start, objective, 10, path);
   printf("Distance attendue : 2 | Distance obtenue : %d\n", length);
   // assert(length == 2); // Le chemin le plus court est de longueur 2
-  for (vertex_t v = 0; path[v] != -1; ++v) {
+  for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {
     printf("%d, ", path[v]);
   }
   printf("\n");
