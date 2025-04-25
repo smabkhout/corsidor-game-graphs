@@ -91,6 +91,7 @@ struct move_t play(const struct move_t previous_move) {
     p.position = my_pos;
     p.last_position = board->moves[board->size_moves - 4].m;
     p.c = player_id;
+    //id of player 
 
     int count = availableMoves(availbel, board->graph, &p, opp_pos);
     int score=0 ;
