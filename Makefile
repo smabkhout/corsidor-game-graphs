@@ -20,13 +20,13 @@ build_tests: alltests
 libPlayer1.so: player1.o strategie3.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
-libPlayer2.so: player2.o strategie3.o board.o graph.o
+libPlayer2.so: player2.o move2.o strategies.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@
 
 #libPlayer3.so: player3.o strategie3.o board.o graph.o
 #	gcc -shared -fPIC $^ -o $@
 
-server: server.o graph.o board.o
+server: server.o graph.o move2.o board.o
 	gcc $^ $(LDFLAGS) -o $@
 
 client: libPlayer1.so libPlayer2.so	#libPlayer3.so	
