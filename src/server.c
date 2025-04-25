@@ -1,6 +1,8 @@
 #include "board.h"
 #include "graph_functions.h"
 #include "player.h"
+#include "move.h"
+#include "move2.h"
 #include <dlfcn.h>
 #include <getopt.h>
 #include <stdio.h>
@@ -170,13 +172,26 @@ int main(int argc, char *argv[]) {
     printf("The number of moves played so far is: %d\n", board->size_moves);
     struct move_t moves_act[2] ={current_move, *first_move2};
     while (winner == -1 && turn_count < max_turns) {
+        struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
+        current_player_ptr->position = players[current_player].pos_actuel;
+        current_player_ptr->c = players[current_player].player_color;
+        //current_player_ptr.walls = players[current_player].walls;
+        current_player_ptr->last_position = moves_act[current_player].m;
+
+        //l'autre joueur 
+        struct player_tt *other_player_ptr = malloc(sizeof(struct player_tt));  
+        other_player_ptr->position = players[other_player].pos_actuel;
+        other_player_ptr->c = players[other_player].player_color;
+        //other_player_ptr.walls = players[other_player].walls;
+        other_player_ptr->last_position = moves_act[other_player].m;
         struct move_t move = players[current_player].play(moves_act[current_player]);
-       /* if (is_invalid(move,board)){
+
+        if (valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m) == 0) {
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
 
             winner = (current_player + 1) % NUM_PLAYERS;
             break;
-        }*/
+        }
 
         printf("Turn %d: Player %s plays %s from %u to vertex %u\n", turn_count,
                players[current_player].get_player_name(), move_type_to_string(move.t),moves_act[current_player].m ,move.m);
@@ -198,6 +213,7 @@ int main(int argc, char *argv[]) {
             winner = (current_player + 1) % NUM_PLAYERS; 
             break;
         }
+        print_hex_grid(board->graph);
     }
 
     if (winner >= 0) {

@@ -1,8 +1,4 @@
-#include "graph.h"
-#include "graph_functions.h"
-#include "move.h"
-#include "move2.h"
-#include "player.h"
+#include "strategies.h"
 #include <gsl/gsl_spblas.h>
 #include <gsl/gsl_spmatrix.h>
 #include <gsl/gsl_spmatrix_uint.h>
@@ -144,11 +140,6 @@ int harmonic_potential(struct game_state *state, int color) {
 #include <stdbool.h>
 
 // Structure pour stocker les distances dans Dijkstra
-struct distance_node {
-  vertex_t vertex;
-  int distance;
-  bool visited;
-};
 
 // Fonction utilitaire pour trouver le sommet non visité avec la distance
 // minimale
@@ -796,11 +787,7 @@ void test_evaluation_functions() {
   printf("=== Tests terminés ===\n");
 }
 
-#include "graph.h"
-#include "move.h"
-#include "player.h"
-#include <assert.h>
-#include <stdio.h>
+
 
 // Fonction pour initialiser un joueur
 void init_player(struct player_tt *p, vertex_t pos, vertex_t last_pos,
@@ -834,117 +821,7 @@ void test_shortest_path_no_wall() {
   printf("✔️ Test réussi.\n\n");
 }
 
-// Test 2 : Objectif inaccessible à cause d'un mur
-void test_shortest_path_with_wall() {
-  printf("=== Test 2 : Objectif bloqué par un mur ===\n");
-  int m = 3;
-  struct graph_t *g = createGraph(m, TRIANGULAR);
-  vertex_t start = 0;     // (0,0)
-  vertex_t objective = 4; // (1,0)
-
-  // Ajout d'un mur entre (0,0) et (1,0)
-  gsl_spmatrix_uint_set(g->t, start, objective, 7); // Mur = 7
-  gsl_spmatrix_uint_set(g->t, objective, start, 7);
-
-  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
-  int length = shortest_path_length(g, start, objective, 10, path);
-  printf("Distance attendue : -1 (inaccessible) | Distance obtenue : %d\n",
-         length);
-  // assert(length == -1); // Aucun chemin possible
-  for (vertex_t v = 0; v < g->num_vertices; ++v) {
-    if (path[v] == -1)
-      break;
-    printf("%d, ", path[v]);
-  }
-  printf("\n");
-  free(path);
-
-  graph_free(g);
-  printf("✔️ Test réussi.\n\n");
-}
-
-// Test 3 : Joueur déjà sur l'objectif
-void test_player_on_objective() {
-  printf("=== Test 3 : Joueur déjà sur l'objectif ===\n");
-  int m = 3;
-  struct graph_t *g = createGraph(m, TRIANGULAR);
-  vertex_t objective = axial_to_index(1, 0, m); // Objectif en (1,0)
-
-  struct player_tt p;
-  init_player(&p, objective, 0, BLACK, 10); // Joueur sur l'objectif
-
-  vertex_t objectives[] = {objective};
-  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
-  int length = player_shortest_path_length(g, &p, objectives, 1, 10, path);
-  printf("Distance attendue : 0 | Distance obtenue : %d\n", length);
-  // assert(length == 0); // Distance = 0
-  for (vertex_t v = 0; v < g->num_vertices; ++v) {
-    if (path[v] == -1)
-      break;
-    printf("%d, ", path[v]);
-  }
-  printf("\n");
-  free(path);
-
-  graph_free(g);
-  printf("✔️ Test réussi.\n\n");
-}
-
-// Test 4 : Plusieurs objectifs, choix du plus proche
-void test_multiple_objectives() {
-  printf("=== Test 4 : Plusieurs objectifs (choix du plus proche) ===\n");
-  int m = 3;
-  struct graph_t *g = createGraph(m, TRIANGULAR);
-  vertex_t start = 0;                       // (0,0)
-  vertex_t obj1 = axial_to_index(1, 0, m);  // (1,0) → distance 1
-  vertex_t obj2 = axial_to_index(2, -1, m); // (2,-1) → distance 2
-
-  struct player_tt p;
-  init_player(&p, start, 0, WHITE, 10);
-
-  vertex_t objectives[] = {obj1, obj2};
-  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
-  int length = player_shortest_path_length(g, &p, objectives, 2, 10, path);
-  printf("Distance attendue : 1 | Distance obtenue : %d\n", length);
-  // assert(length == 1); // Doit retourner la distance minimale (1)
-
-  for (vertex_t v = 0; v < g->num_vertices; ++v) {
-    if (path[v] == -1)
-      break;
-    printf("%d, ", path[v]);
-  }
-  printf("\n");
-  free(path);
-
-  graph_free(g);
-  printf("✔️ Test réussi.\n\n");
-}
-
-// Test 5 : Grand graphe avec chemin long
-void test_large_graph() {
-  printf("=== Test 5 : Grand graphe (m=5) avec chemin long ===\n");
-  int m = 5;
-  struct graph_t *g = createGraph(m, TRIANGULAR);
-  vertex_t start = 0;                            // (0,0)
-  vertex_t objective = axial_to_index(4, -3, m); // (4,-3)
-
-  vertex_t *path = malloc(g->num_objectives * sizeof(vertex_t));
-  int length = shortest_path_length(g, start, objective, 10, path);
-  printf("Distance attendue : 4 | Distance obtenue : %d\n", length);
-  // assert(length == 4); // Chemin le plus court : 4 déplacements
-
-  for (vertex_t v = 0; v < g->num_vertices; ++v) {
-    if (path[v] == -1)
-      break;
-    printf("%d, ", path[v]);
-  }
-  printf("\n");
-  free(path);
-
-  graph_free(g);
-  printf("✔️ Test réussi.\n\n");
-}
-
+/*
 int main() {
   test_shortest_path_no_wall();
   // test_shortest_path_with_wall();
@@ -955,3 +832,4 @@ int main() {
   printf("✅ Tous les tests ont réussi !\n");
   return 0;
 }
+*/
