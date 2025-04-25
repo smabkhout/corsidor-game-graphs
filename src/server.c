@@ -190,6 +190,8 @@ int main(int argc, char *argv[]) {
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
 
             winner = (current_player + 1) % NUM_PLAYERS;
+            free(current_player_ptr);
+            free(other_player_ptr);
             break;
         }
 
@@ -205,15 +207,21 @@ int main(int argc, char *argv[]) {
 
             if (g1->start[current_move.c] == board->current_positions[current_move.c]) {
                 winner = current_move.c;
+                free(current_player_ptr);
+                free(other_player_ptr);
                 break;
                 }
             }
         else {
             printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
             winner = (current_player + 1) % NUM_PLAYERS; 
+            free(current_player_ptr);
+            free(other_player_ptr);
             break;
         }
-        print_hex_grid(board->graph);
+        //print_hex_grid(board->graph);
+        free(current_player_ptr);
+        free(other_player_ptr);
     }
 
     if (winner >= 0) {
