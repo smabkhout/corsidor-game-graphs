@@ -105,6 +105,7 @@ struct move_t play(const struct move_t previous_move) {
             }
         free(path);
         }
+        moove->c = player_id;
         return *moove;
     }
 

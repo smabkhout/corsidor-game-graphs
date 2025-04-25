@@ -103,9 +103,11 @@ int main(int argc, char *argv[]) {
     int size_mesh = -1;
     char *type_graph = NULL;
     int max_turns = -1;
+    int seed = 150;
+    int affichage = 0;
 
     int opt;
-    while ((opt = getopt(argc, argv, "m:t:M:")) != -1) {
+    while ((opt = getopt(argc, argv, "m:t:M:s:v")) != -1) {
         switch (opt) {
             case 'm':
                 size_mesh = atoi(optarg);
@@ -116,15 +118,23 @@ int main(int argc, char *argv[]) {
             case 'M':
                 max_turns = atoi(optarg);
                 break;
+            case 's':
+                seed = atoi(optarg);
+                break;
+            case 'v':
+                affichage = 1;
+                break;
             default:
-                fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] player1.so player2.so\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] [-v] [-s seed] player1.so player2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
+    
+    srand(seed);
 
     if (argc - optind != NUM_PLAYERS) {
         fprintf(stderr, "Error: You must provide exactly two player libraries.\n");
-        fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] player1.so player2.so\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] [-v] [-s seed] player1.so player2.so\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -156,6 +166,9 @@ int main(int argc, char *argv[]) {
     players[start_player].initialize(start_player, g1);
     players[other_player].initialize(other_player, g2);
 
+    players[current_player].pos_actuel = board->graph->start[current_player];
+    players[other_player].pos_actuel = board->graph->start[other_player];
+
     printf("First player: %s\n", players[start_player].get_player_name());
     printf("Second player: %s\n", players[other_player].get_player_name());
 
@@ -169,6 +182,8 @@ int main(int argc, char *argv[]) {
     struct move_t current_move = *first_move;
     printf("The server did the first move : %s\n", move_type_to_string(current_move.t));
     printf("In the vertex %d \n", current_move.m);
+    if (affichage)
+        print_hex_grid(board->graph);
     printf("The number of moves played so far is: %d\n", board->size_moves);
     struct move_t moves_act[2] ={current_move, *first_move2};
     while (winner == -1 && turn_count < max_turns) {
@@ -185,8 +200,14 @@ int main(int argc, char *argv[]) {
         //other_player_ptr.walls = players[other_player].walls;
         other_player_ptr->last_position = moves_act[other_player].m;
         struct move_t move = players[current_player].play(moves_act[current_player]);
-
-        if (valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m) == 0) {
+        players[current_player].pos_actuel = move.m;
+        board->graph->start[current_player] = players[current_player].pos_actuel;
+    
+        if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
+            board->graph->start[current_player] = players[current_player].pos_actuel;
+            if (affichage)
+                print_hex_grid(board->graph);
+            printf("Player : %d, at position %d, tried to move to vertex %d. INVALID !!\n", current_player_ptr->c, current_player_ptr->position, move.m);
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
 
             winner = (current_player + 1) % NUM_PLAYERS;
@@ -194,6 +215,9 @@ int main(int argc, char *argv[]) {
             free(other_player_ptr);
             break;
         }
+        board->graph->start[current_player] = players[current_player].pos_actuel;
+        if (affichage)
+            print_hex_grid(board->graph);
 
         printf("Turn %d: Player %s plays %s from %u to vertex %u\n", turn_count,
                players[current_player].get_player_name(), move_type_to_string(move.t),moves_act[current_player].m ,move.m);
@@ -204,13 +228,14 @@ int main(int argc, char *argv[]) {
             current_player = (current_player + 1) % NUM_PLAYERS;
             other_player = (current_player + 1) % NUM_PLAYERS;
             turn_count++;
-
+/*
             if (g1->start[current_move.c] == board->current_positions[current_move.c]) {
                 winner = current_move.c;
                 free(current_player_ptr);
                 free(other_player_ptr);
                 break;
                 }
+*/
             }
         else {
             printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
