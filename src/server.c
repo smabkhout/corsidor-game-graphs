@@ -158,16 +158,21 @@ int main(int argc, char *argv[]) {
 
     struct graph_t* g1 = createGraph(size_mesh, TRIANGULAR);
     struct graph_t* g2 = createGraph(size_mesh, TRIANGULAR);
-
+    struct graph_t* graphs[2] = {g1, g2};
     // struct graph_t *globalGraph = g1;
     struct board_t *board = board_init();
     board->graph = g1;
 
-    players[start_player].initialize(start_player, g1);
-    players[other_player].initialize(other_player, g2);
+    vertex_t last_positions[2];
+
+    players[current_player].initialize(current_player, graphs[current_player]);
+    players[other_player].initialize(other_player, graphs[other_player]);
 
     players[current_player].pos_actuel = board->graph->start[current_player];
     players[other_player].pos_actuel = board->graph->start[other_player];
+
+    last_positions[current_player] = board->graph->start[current_player];
+    last_positions[other_player] = board->graph->start[other_player];
 
     printf("First player: %s\n", players[start_player].get_player_name());
     printf("Second player: %s\n", players[other_player].get_player_name());
@@ -186,28 +191,29 @@ int main(int argc, char *argv[]) {
         print_hex_grid(board->graph);
     printf("The number of moves played so far is: %d\n", board->size_moves);
     struct move_t moves_act[2] ={current_move, *first_move2};
+    last_positions[current_player] = board->graph->start[current_player];
+    last_positions[other_player] = board->graph->start[other_player];
     while (winner == -1 && turn_count < max_turns) {
         struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
         current_player_ptr->position = players[current_player].pos_actuel;
         current_player_ptr->c = players[current_player].player_color;
         //current_player_ptr.walls = players[current_player].walls;
-        current_player_ptr->last_position = moves_act[current_player].m;
+        current_player_ptr->last_position = last_positions[current_player];
 
         //l'autre joueur 
         struct player_tt *other_player_ptr = malloc(sizeof(struct player_tt));  
         other_player_ptr->position = players[other_player].pos_actuel;
         other_player_ptr->c = players[other_player].player_color;
         //other_player_ptr.walls = players[other_player].walls;
-        other_player_ptr->last_position = moves_act[other_player].m;
+        other_player_ptr->last_position = last_positions[other_player];
+
+
         struct move_t move = players[current_player].play(moves_act[current_player]);
-        players[current_player].pos_actuel = move.m;
-        board->graph->start[current_player] = players[current_player].pos_actuel;
-    
+        graphs[current_player]->start[current_player] = move.m; // stocker la nouvelle positions de current player dans les deux graphes des joueurs
+        graphs[other_player]->start[current_player] = move.m;
         if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
-            board->graph->start[current_player] = players[current_player].pos_actuel;
             if (affichage)
                 print_hex_grid(board->graph);
-            printf("Player : %d, at position %d, tried to move to vertex %d. INVALID !!\n", current_player_ptr->c, current_player_ptr->position, move.m);
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
 
             winner = (current_player + 1) % NUM_PLAYERS;
@@ -215,12 +221,14 @@ int main(int argc, char *argv[]) {
             free(other_player_ptr);
             break;
         }
-        board->graph->start[current_player] = players[current_player].pos_actuel;
+        // board->graph->start[current_player] = players[current_player].pos_actuel;
         if (affichage)
             print_hex_grid(board->graph);
 
         printf("Turn %d: Player %s plays %s from %u to vertex %u\n", turn_count,
-               players[current_player].get_player_name(), move_type_to_string(move.t),moves_act[current_player].m ,move.m);
+               players[current_player].get_player_name(), move_type_to_string(move.t), players[current_player].pos_actuel,move.m);
+        last_positions[current_player] = players[current_player].pos_actuel; // on stocke l'ancienne position et apres la nouvelle
+        players[current_player].pos_actuel = move.m;
         moves_act[current_player] = move;
         if (move.t != NO_TYPE) {
             add_move_to_board(board, move);

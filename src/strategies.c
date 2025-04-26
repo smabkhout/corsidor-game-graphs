@@ -145,12 +145,17 @@ int harmonic_potential(struct game_state *state, int color) {
 // minimale
 vertex_t min_distance_vertex(struct distance_node *nodes, size_t num_vertices) {
   int min_dist = INT_MAX;
+  int min_moves = INT_MAX;
   vertex_t min_vertex = 0;
 
   for (vertex_t v = 0; v < num_vertices; ++v) {
-    if (!nodes[v].visited && nodes[v].distance <= min_dist) {
-      min_dist = nodes[v].distance;
-      min_vertex = v;
+    if (!nodes[v].visited) {
+      if (nodes[v].distance < min_dist ||
+          (nodes[v].distance == min_dist && nodes[v].num_moves < min_moves)) {
+        min_dist = nodes[v].distance;
+        min_moves = nodes[v].num_moves;
+        min_vertex = v;
+      }
     }
   }
 
@@ -159,7 +164,7 @@ vertex_t min_distance_vertex(struct distance_node *nodes, size_t num_vertices) {
 
 // Fonction principale Dijkstra
 int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
-                         vertex_t opponent_pos, vertex_t *path) {
+                         vertex_t opponent_pos, vertex_t *path, vertex_t last_pos) {
   if (start == objective)
     return 0;
   int path_length = 0;
@@ -215,6 +220,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     nodes[v].vertex = v;
     nodes[v].distance = INT_MAX;
     nodes[v].visited = false;
+    nodes[v].num_moves = 0;
   }
   nodes[start].distance = 0;
   path[path_length] = start;
@@ -227,22 +233,45 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     }
 
     nodes[u].visited = true;
-
+    vertex_t* neighbors = malloc(sizeof(vertex_t)*6*3);
+    int count = 0;
     // Parcourir tous les voisins de u
     for (vertex_t v = 0; v < n-1; ++v) {
       if (nodes[v].vertex == (unsigned int)-1) {
         continue;
       }
-      // unsigned int edge_type = gsl_spmatrix_uint_get(g->t, u, v);
       struct player_tt p;
       p.position = u;
       p.c = 0;
-      p.last_position = (u == start) ? start : prev[u];
+      p.last_position = (u == start) ? last_pos : prev[u];
       // Vérifier si l'arête existe et n'est pas un mur
-      if (valid_move(g, &p, v, opponent_pos)) { // 0 = pas d'arête, 7 = mur
-        if (!nodes[v].visited && nodes[u].distance + 1 < nodes[v].distance) {
-          nodes[v].distance = nodes[u].distance + 1;
-          prev[v] = u;
+      if (valid_move(g, &p, v, opponent_pos)) {
+        neighbors[count++] = v;
+      }
+    }
+    if (count == 0)
+      return 0;
+
+    // s'assurer que dijkstra maintenant va prioriser les sauts de distance 3 si c'est possible
+    for (int wanted_jump = 3; wanted_jump >= 1; --wanted_jump) {
+      for (int i = 0; i < count; ++i) {
+        vertex_t v = neighbors[i];
+        if (nodes[v].vertex == (unsigned int)-1) {
+          continue;
+        }
+
+        struct player_tt p;
+        p.position = u;
+        p.c = 0;
+        p.last_position = (u == start) ? last_pos : prev[u];
+        int jump_distance = valid_move(g, &p, v, opponent_pos);
+
+        if (jump_distance == wanted_jump) { // 🎯 on regarde seulement ceux du bon saut
+          if (nodes[u].distance + 1 < nodes[v].distance) {
+            nodes[v].distance = nodes[u].distance + 1;
+            ++nodes[v].num_moves; // distance en termes de sauts
+            prev[v] = u;
+          }
         }
       }
     }
@@ -287,7 +316,7 @@ int player_shortest_path_length(struct graph_t *g, struct player_tt *p,
 
   for (size_t i = 0; i < nb_obj; ++i) {
     int length =
-        shortest_path_length(g, p->position, objectives[i], opponent_pos, path);
+        shortest_path_length(g, p->position, objectives[i], opponent_pos, path, 0); // 0 just for the current error
     if (length != -1 && length < min_length) {
       min_length = length;
     }
@@ -319,7 +348,7 @@ int evaluate(struct game_state *state, int color) {
   */
   // Calculer la distance entre le joueur et l'objectif
   vertex_t *vertex = malloc(100 * sizeof(vertex_t));
-   return shortest_path_length(state->graph , state->previous_moves[color].m ,state->graph->objectives[0], state->previous_moves[1-color].m ,vertex ) - shortest_path_length(state->graph , state->previous_moves[1-color].m ,state->graph->objectives[0], state->previous_moves[color].m ,vertex);
+   return shortest_path_length(state->graph , state->previous_moves[color].m ,state->graph->objectives[0], state->previous_moves[1-color].m ,vertex, 0) - shortest_path_length(state->graph , state->previous_moves[1-color].m ,state->graph->objectives[0], state->previous_moves[color].m ,vertex, 0); // 0 just for the current error
 }
 /*
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int
@@ -668,7 +697,7 @@ void test_evaluation_functions() {
 
   int length = shortest_path_length(graph, state.previous_moves[0].m,
                                      graph->objectives[0],
-                                     state.previous_moves[1].m, path);
+                                     state.previous_moves[1].m, path, 0); // 0 just for the current error
   printf(" Distance obtenue : %d\n", length);
   //print path 
   for (int i = 0; path[i] != (unsigned int)-1; ++i) {
@@ -691,7 +720,7 @@ void test_evaluation_functions() {
   print_hex_grid(graph);
   length = shortest_path_length(graph, state.previous_moves[1].m,
                                  graph->objectives[0],
-                                 state.previous_moves[0].m, path2);
+                                 state.previous_moves[0].m, path2, 0);  // 0 just for the current error
   printf(" Distance obtenue : %d\n", length);
   //print path
   for (int i = 0; path2[i] != (unsigned int)-1; ++i) {
@@ -808,7 +837,7 @@ void test_shortest_path_no_wall() {
   vertex_t start = 0; // Position initiale (0,0)
   vertex_t objective = g->objectives[0];
   vertex_t *path = malloc(g->num_vertices * sizeof(vertex_t));
-  int length = shortest_path_length(g, start, objective, 10, path);
+  int length = shortest_path_length(g, start, objective, 10, path, 0);
   printf("Distance attendue : 2 | Distance obtenue : %d\n", length);
   // assert(length == 2); // Le chemin le plus court est de longueur 2
   for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {

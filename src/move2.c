@@ -153,8 +153,9 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
       if (exists == 0 || exists == 7) // pas d’arête ou mur
         break;
 
-      if (to == target)
-        return 1; // Mouvement autorisé
+      if (to == target) {
+        return d; // Mouvement autorisé et on retourne la distance du saut
+      }
     }
   }
 

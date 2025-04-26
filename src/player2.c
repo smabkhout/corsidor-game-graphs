@@ -13,6 +13,7 @@
 //enum graph_type_t type;
 static struct board_t *board = NULL ; 
 static unsigned int player_id;
+vertex_t my_last_pos;
 //static vertex_t previous_position;
 //static int has_played = 0;
 
@@ -26,6 +27,7 @@ char const* get_player_name()
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
+    player_id = id;
     board = board_init();
     // board->graph = malloc(sizeof(struct graph_t));
     board->graph = graph;
@@ -68,6 +70,7 @@ struct move_t play(const struct move_t previous_move) {
     if (previous_move.t == MOVE && previous_move.c != player_id) {
         opp_pos = previous_move.m;
     }
+    /*
     // si board ->size_moves <4 ; fait un move aleatoire 
     if (board->size_moves < 4) {
         while(1){
@@ -84,7 +87,8 @@ struct move_t play(const struct move_t previous_move) {
         }
         
         }
-    }else {
+    } else { */
+        /*
     struct move_t *moove = malloc(sizeof(struct move_t));
     struct move_t availbel[128];
     struct player_tt p;
@@ -95,22 +99,55 @@ struct move_t play(const struct move_t previous_move) {
 
     int count = availableMoves(availbel, board->graph, &p, opp_pos);
     int score=0 ;
+*/
+    struct move_t move;
+    vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
+    path[0] = 0;
+    path[1] = 0;
+    int length = shortest_path_length(board->graph, my_pos, board->graph->objectives[0], opp_pos, path, my_last_pos);
+    move.c = player_id;
+    move.t = MOVE;
+    move.m = path[1];
+
+    if (length == -1) {
+        puts("No valid path to an objective");
+        move.t = NO_TYPE;
+        free(path);
+        return move;
+    } else if (!length) {
+        puts("Player is already in objective");
+        move.t = NO_TYPE;
+        free(path);
+        return move;
+    }
+    else {
+        printf("Player %d found this path using dijkstra :\n", player_id);
+        for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {
+          printf("%d, ", path[v]);
+        }
+        printf("\n");
+        free(path);
+        my_last_pos = my_pos;
+        return move;
+        
+    }
+    /*
     for (int i = 0; i < count; i++) {
         struct move_t move;
         move = availbel[i];
-        vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
-        if (shortest_path_length(board->graph, move.m ,board->graph->objectives[0],opp_pos , path) > score) {
-            score = shortest_path_length(board->graph, move.m ,board->graph->objectives[0],opp_pos , path);
+        if ( length > score) {
+            score = length;
             *moove = move;
-             ;
             }
         free(path);
         }
         moove->c = player_id;
         return *moove;
+        */
     }
+        
 
-    }
+    // }
     
     
 
