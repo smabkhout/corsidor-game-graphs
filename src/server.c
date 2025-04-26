@@ -77,8 +77,8 @@ const char *move_type_to_string(enum move_type_t type) {
 
 struct move_t *make_first_move() {
     struct move_t *first_move = malloc(sizeof(struct move_t));
-    first_move->c = NO_COLOR;
-    first_move->t = NO_TYPE;
+    first_move->c = 0;
+    first_move->t = MOVE;
     first_move->m = 0;
     first_move->e[0].fr = 0;
     first_move->e[0].to = 0;
@@ -88,8 +88,8 @@ struct move_t *make_first_move() {
 }
 struct move_t *makee_first_move() {
     struct move_t *first_move = malloc(sizeof(struct move_t));
-    first_move->c = NO_COLOR;
-    first_move->t = NO_TYPE;
+    first_move->c = 1;
+    first_move->t = MOVE;
     first_move->m = 18;
 
     return first_move;
@@ -125,7 +125,7 @@ int main(int argc, char *argv[]) {
                 affichage = 1;
                 break;
             default:
-                fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] [-v] [-s seed] player1.so player2.so\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] [-v] [-s seed] libplayer1.so libplayer2.so\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
@@ -134,7 +134,7 @@ int main(int argc, char *argv[]) {
 
     if (argc - optind != NUM_PLAYERS) {
         fprintf(stderr, "Error: You must provide exactly two player libraries.\n");
-        fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] [-v] [-s seed] player1.so player2.so\n", argv[0]);
+        fprintf(stderr, "Usage: %s [-m M] [-t T] [-M NB] [-v] [-s seed] libplayer1.so libplayer2.so\n", argv[0]);
         exit(EXIT_FAILURE);
     }
 
@@ -158,12 +158,16 @@ int main(int argc, char *argv[]) {
 
     struct graph_t* g1 = createGraph(size_mesh, TRIANGULAR);
     struct graph_t* g2 = createGraph(size_mesh, TRIANGULAR);
+
+
+
     struct graph_t* graphs[2] = {g1, g2};
     // struct graph_t *globalGraph = g1;
     struct board_t *board = board_init();
     board->graph = g1;
 
     vertex_t last_positions[2];
+    vertex_t current_positions[2] ; 
 
     players[current_player].initialize(current_player, graphs[current_player]);
     players[other_player].initialize(other_player, graphs[other_player]);
@@ -173,6 +177,9 @@ int main(int argc, char *argv[]) {
 
     last_positions[current_player] = board->graph->start[current_player];
     last_positions[other_player] = board->graph->start[other_player];
+
+    current_positions[current_player] = board->graph->start[current_player] ; 
+    current_positions[other_player] = board->graph->start[other_player] ; 
 
     printf("First player: %s\n", players[start_player].get_player_name());
     printf("Second player: %s\n", players[other_player].get_player_name());
@@ -191,9 +198,10 @@ int main(int argc, char *argv[]) {
         print_hex_grid(board->graph);
     printf("The number of moves played so far is: %d\n", board->size_moves);
     struct move_t moves_act[2] ={current_move, *first_move2};
-    last_positions[current_player] = board->graph->start[current_player];
-    last_positions[other_player] = board->graph->start[other_player];
+    
     while (winner == -1 && turn_count < max_turns) {
+        //printf("psition actuelle du joueur 1 : %d  , position precedente %d  \n" , current_positions[0] , last_positions[0] ) ; 
+        //printf("psition actuelle du joueur 2 : %d  , position precedente %d \n" , current_positions[1] , last_positions[1] ) ;
         struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
         current_player_ptr->position = players[current_player].pos_actuel;
         current_player_ptr->c = players[current_player].player_color;
@@ -211,11 +219,14 @@ int main(int argc, char *argv[]) {
         struct move_t move = players[current_player].play(moves_act[current_player]);
         graphs[current_player]->start[current_player] = move.m; // stocker la nouvelle positions de current player dans les deux graphes des joueurs
         graphs[other_player]->start[current_player] = move.m;
+        moves_act[current_player] = move ; 
+        last_positions[current_player] = current_positions[current_player] ; 
+        current_positions[current_player] = move.m ; 
         if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
             if (affichage)
                 print_hex_grid(board->graph);
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
-
+            printf("from %d to %d " , last_positions[current_player] , move.m) ; 
             winner = (current_player + 1) % NUM_PLAYERS;
             free(current_player_ptr);
             free(other_player_ptr);

@@ -16,7 +16,8 @@ static unsigned int player_id;
 vertex_t my_last_pos;
 //static vertex_t previous_position;
 //static int has_played = 0;
-
+int numberOfObjective ; 
+int achives[10]; 
 char const* get_player_name()
 {
   srand(time(NULL));
@@ -27,6 +28,10 @@ char const* get_player_name()
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
+    numberOfObjective = graph->num_objectives ; 
+    for(int i = 0 ; i<numberOfObjective ; i++){
+        achives[i] = 0 ; 
+    }
     player_id = id;
     board = board_init();
     // board->graph = malloc(sizeof(struct graph_t));
@@ -63,13 +68,18 @@ struct move_t make_move_no_type() {
 
 
 
+
+
 struct move_t play(const struct move_t previous_move) {
+
+    int num_ofObjective = board->graph->num_objectives;  
     vertex_t my_pos = board->graph->start[player_id];
     vertex_t opp_pos = board->graph->start[(player_id + 1) % NUM_PLAYERS];
 
     if (previous_move.t == MOVE && previous_move.c != player_id) {
         opp_pos = previous_move.m;
     }
+   
     /*
     // si board ->size_moves <4 ; fait un move aleatoire 
     if (board->size_moves < 4) {
@@ -99,12 +109,49 @@ struct move_t play(const struct move_t previous_move) {
 
     int count = availableMoves(availbel, board->graph, &p, opp_pos);
     int score=0 ;
-*/
+    
+*/  
+    int allObjectif = 1 ; 
+    for (int i = 0 ; i< num_ofObjective ; i++){
+        if (achives[i] == 0  )
+            allObjectif = 0 ; 
+    }
+
+    if (allObjectif ==1 ){
+        struct move_t availableMovees[128] ; 
+        struct player_tt p;
+        p.position = my_pos;
+        p.last_position = my_last_pos ; 
+        p.c = player_id;
+        //id of player 
+
+        availableMoves(availableMovees, board->graph, &p, opp_pos);
+        availableMovees[0].t = MOVE ; 
+        availableMovees[0].c = player_id ; 
+        my_last_pos = availableMovees[0].m ; 
+        return availableMovees[0] ; 
+
+    }
+
+    for (int i = 0 ; i<num_ofObjective ; i++){
+        if (my_pos == board->graph->objectives[i]){
+            achives[i] =1 ; 
+        }
+    }
     struct move_t move;
     vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
     path[0] = 0;
     path[1] = 0;
-    int length = shortest_path_length(board->graph, my_pos, board->graph->objectives[0], opp_pos, path, my_last_pos);
+     int start ; 
+     int taille = 100000; 
+    for (int i = 0 ; i<num_ofObjective ; i++){
+        int t = shortest_path_length(board->graph, my_pos, board->graph->objectives[0], opp_pos, path, my_last_pos);
+        if (t<taille && achives[i]==0 ){
+            taille = t ; 
+            start = i ; 
+        }
+    }
+    int length = shortest_path_length(board->graph, my_pos, board->graph->objectives[start], opp_pos, path, my_last_pos);
     move.c = player_id;
     move.t = MOVE;
     move.m = path[1];
@@ -114,12 +161,12 @@ struct move_t play(const struct move_t previous_move) {
         move.t = NO_TYPE;
         free(path);
         return move;
-    } else if (!length) {
+    } /*else if (!length) {
         puts("Player is already in objective");
         move.t = NO_TYPE;
         free(path);
         return move;
-    }
+    }*/
     else {
         printf("Player %d found this path using dijkstra :\n", player_id);
         for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {
