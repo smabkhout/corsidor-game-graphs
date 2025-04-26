@@ -37,24 +37,24 @@ void test_is_valid_move() {
     struct graph_t* graph=createGraph(3,TRIANGULAR);
     struct move_t move1 = create_move(BLACK, MOVE, 2, NULL);
     int valid1 = is_valid_move(&move1, graph);
-    assert(valid1==1);
+    assert(valid1);
 
     // Create an invalid move (player moves to vertex 5, which is out of bounds)
     struct move_t move2 = create_move(WHITE, MOVE, 50, NULL);
     int valid2 = is_valid_move(&move2, graph);
-    assert(valid2==0);
+    assert(!valid2);
 
     // Create a valid wall move (remove edge between vertices 1 and 2)
     struct edge_t edges[2] = {{1, 2}, {2, 1}};
     struct move_t move3 = create_move(BLACK, WALL, 0, edges);
     int valid3 = is_valid_move(&move3, graph);
-    assert(valid3==1);
+    assert(valid3);
 
     // Create an invalid wall move (edge between vertices 5 and 6, out of bounds)
     struct edge_t edges_invalid[2] = {{5, 6}, {6, 5}};
     struct move_t move4 = create_move(WHITE, WALL, 0, edges_invalid);
     int valid4 = is_valid_move(&move4, graph);
-    assert(valid4==1);
+    assert(valid4);
     printf("test_is_valid_move passed .\n");  // Expect 0 (invalid)
     graph_free(graph);
 }

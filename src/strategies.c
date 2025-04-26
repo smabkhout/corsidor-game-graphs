@@ -275,6 +275,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
         }
       }
     }
+    free(neighbors);
   }
 
   int result = nodes[objective].distance;

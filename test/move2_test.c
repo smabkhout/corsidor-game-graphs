@@ -108,10 +108,10 @@ void test_valid_move() {
   vertex_t t2 = axial_to_index(0, 2, 5);      
   vertex_t t3 = axial_to_index(0, 3, 5);
   vertex_t t4 = axial_to_index(0, 4, 5);
-  assert(valid_move(g, &p, t1, opponent) == 1);
-  assert(valid_move(g, &p, t2, opponent) == 1);
-  assert(valid_move(g, &p, t3, opponent) == 1);
-  assert(valid_move(g, &p, t4, opponent) == 0);// hors graphe ou arête absente
+  assert(valid_move(g, &p, t1, opponent));
+  assert(valid_move(g, &p, t2, opponent));
+  assert(valid_move(g, &p, t3, opponent));
+  assert(!valid_move(g, &p, t4, opponent));// hors graphe ou arête absente
 
   // Test d’un angle à 30° (direction SE)
   vertex_t se1 = axial_to_index(1, 0, 5);     
@@ -120,20 +120,20 @@ void test_valid_move() {
   vertex_t se4 = axial_to_index(-1, 1, 5);     
   vertex_t se5 = axial_to_index(-2, 2, 5);
   vertex_t se6 = axial_to_index(-3, 3, 5);    
-  assert(valid_move(g, &p, se1, opponent) == 1); // déplacement latéral à distance 1 autorisé
-  assert(valid_move(g, &p, se2, opponent) == 1);
-  assert(valid_move(g, &p, se3, opponent) == 0); // trop loin
-  assert(valid_move(g, &p, se4, opponent) == 1); // déplacement latéral à distance 1 autorisé
-  assert(valid_move(g, &p, se5, opponent) == 1);
-  assert(valid_move(g, &p, se6, opponent) == 0);
+  assert(valid_move(g, &p, se1, opponent)); // déplacement latéral à distance 1 autorisé
+  assert(valid_move(g, &p, se2, opponent));
+  assert(!valid_move(g, &p, se3, opponent)); // trop loin
+  assert(valid_move(g, &p, se4, opponent)); // déplacement latéral à distance 1 autorisé
+  assert(valid_move(g, &p, se5, opponent));
+  assert(!valid_move(g, &p, se6, opponent));
 
   // Test d’une direction non autorisée (ex: opposée)
   vertex_t invalid = axial_to_index(-2, 0, 5); // opposé à NE → devrait être refusé
-  assert(valid_move(g, &p, invalid, opponent) == 0);
+  assert(!valid_move(g, &p, invalid, opponent));
 
   // Test interdit : case actuelle ou position adversaire
-  assert(valid_move(g, &p, p.position, opponent) == 0);
-  assert(valid_move(g, &p, opponent, opponent) == 0);
+  assert(!valid_move(g, &p, p.position, opponent));
+  assert(!valid_move(g, &p, opponent, opponent));
 
   // Blocage par un mur
   struct move_t mv = {
@@ -143,7 +143,7 @@ void test_valid_move() {
     }
   };
   place_wall(g, &p, mv); // bloqué par un mur
-  assert(valid_move(g, &p, 31, opponent) == 0);   // doit être interdit
+  assert(!valid_move(g, &p, 31, opponent));   // doit être interdit
   
   graph_free(g);
   printf("test_valid_move passed.\n");
