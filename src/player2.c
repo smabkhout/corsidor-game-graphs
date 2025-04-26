@@ -18,6 +18,8 @@ vertex_t my_last_pos;
 //static int has_played = 0;
 int numberOfObjective ; 
 int achives[10]; 
+vertex_t home ; 
+int return_toHome ; 
 char const* get_player_name()
 {
   srand(time(NULL));
@@ -27,12 +29,15 @@ char const* get_player_name()
 
 
 
+
 void initialize(unsigned int id, struct graph_t* graph) {
     numberOfObjective = graph->num_objectives ; 
     for(int i = 0 ; i<numberOfObjective ; i++){
         achives[i] = 0 ; 
     }
     player_id = id;
+    home = graph->start[player_id] ; 
+    
     board = board_init();
     // board->graph = malloc(sizeof(struct graph_t));
     board->graph = graph;
@@ -111,6 +116,13 @@ struct move_t play(const struct move_t previous_move) {
     int score=0 ;
     
 */  
+    for (int i = 0 ; i<num_ofObjective ; i++){
+        if (my_pos == board->graph->objectives[i]){
+            achives[i] =1 ; 
+        }
+    }
+
+
     int allObjectif = 1 ; 
     for (int i = 0 ; i< num_ofObjective ; i++){
         if (achives[i] == 0  )
@@ -118,6 +130,7 @@ struct move_t play(const struct move_t previous_move) {
     }
 
     if (allObjectif ==1 ){
+        //if (return_toHome){
         struct move_t availableMovees[128] ; 
         struct player_tt p;
         p.position = my_pos;
@@ -130,14 +143,35 @@ struct move_t play(const struct move_t previous_move) {
         availableMovees[0].c = player_id ; 
         my_last_pos = availableMovees[0].m ; 
         return availableMovees[0] ; 
-
-    }
-
-    for (int i = 0 ; i<num_ofObjective ; i++){
-        if (my_pos == board->graph->objectives[i]){
-            achives[i] =1 ; 
+       // }
+        /*
+        struct move_t move;
+        vertex_t *lile = malloc(board->graph->num_vertices * sizeof(vertex_t));
+        lile[0] = 0;
+        lile[1] = 0;
+        printf("returning to home : %d \n" , home ) ; 
+        vertex_t objectif = home;  
+        int result = shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) +1 ;
+        printf("resultat %d  " , result) ; 
+        for (int i =0 ; i<result ; i++){
+            printf(" %d;" , lile[i]); 
         }
+        printf("\n") ;
+        move.c = player_id;
+        move.t = MOVE;
+        move.m = lile[1];
+        my_last_pos = move.m ; 
+        if (move.m == home){
+            return_toHome =1 ; 
+        }
+        free(lile ) ; 
+
+        return move  ; 
+        */
+
     }
+
+
     struct move_t move;
     vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
     path[0] = 0;
