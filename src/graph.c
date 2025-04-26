@@ -174,14 +174,14 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
 
   // Initialiser les objectifs et les positions des joueurs
   // à modifier
-  graph->num_objectives = 3;
+  graph->num_objectives = 2;
   graph->objectives = (vertex_t *)malloc(sizeof(vertex_t) * 2);
   graph->objectives[0] =
       n / 2; // Placer le premier objectif au centre du graphe (par exemple)
   int obj = axial_to_index(m - 1, 0, m);
   graph->objectives[1] =
       obj; // Placer le second objectif en haut à droite du graphe (par exemple)
-  graph->objectives[2] = axial_to_index(- 3, 0, m) ; 
+  
   // Initialiser les positions de départ des joueurs
   graph->start[0] =
       0; // Premier joueur au sommet 0 //à changer au coordonnees axiales
