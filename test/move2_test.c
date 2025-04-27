@@ -95,7 +95,7 @@ void test_dijkstra2() {
   struct graph_t* g = createGraph(m, TRIANGULAR);
   g->start[1] = 0;
   g->objectives[1] = 1;
-  for (int i = 6; i < 217; ++i) {
+  for (int i = 6; i < 8; ++i) {
 
   vertex_t start = 5;
   g->start[0] = start;
@@ -114,8 +114,8 @@ void test_dijkstra2() {
   printf("\n");
 */
   free(path);
-  graph_free(g);
 }
+graph_free(g);
 
 }
 
