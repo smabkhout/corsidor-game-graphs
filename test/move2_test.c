@@ -92,15 +92,18 @@ void test_valid_wall() {
 
 void test_dijkstra2() {
   int m = 5;
-  struct graph_t* g = createGraph(m, TRIANGULAR);
+  struct graph_t* g = createGraph(9, TRIANGULAR);
   g->start[1] = 0;
   g->objectives[1] = 1;
-  vertex_t start = g->num_vertices - 1;
+  for (int i = 6; i < 217; ++i) {
+
+  vertex_t start = 5;
   g->start[0] = start;
-  vertex_t destination = 7;
+  vertex_t destination = i;
   g->objectives[0] = destination;
   vertex_t *path = malloc(g->num_vertices * sizeof(vertex_t));
   int length = shortest_path_length(g, start, destination, 0, path, start);
+  /*
   print_hex_grid(g);
   printf("In order to go from vertex %d to vertex %d. ", start, destination);
   printf("Player TEST found this path using dijkstra with length %d :\n", length);
@@ -108,8 +111,9 @@ void test_dijkstra2() {
     printf("%d, ", path[v]);
   }
   printf("\n");
-
+*/
   free(path);
+}
 
 }
 

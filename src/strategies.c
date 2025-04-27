@@ -236,7 +236,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     vertex_t* neighbors = malloc(sizeof(vertex_t)*6*3);
     int count = 0;
     // Parcourir tous les voisins de u
-    for (vertex_t v = 0; v < n-1; ++v) {
+    for (vertex_t v = 0; v < n; ++v) {
       if (nodes[v].vertex == (unsigned int)-1) {
         continue;
       }
