@@ -113,6 +113,7 @@ void test_dijkstra2() {
   printf("\n");
 */
   free(path);
+  graph_free(g);
 }
 
 }
