@@ -1,5 +1,6 @@
 #include "graph_functions.h"
 #include "move2.h"
+#include "strategies.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
@@ -86,8 +87,30 @@ void test_valid_wall() {
   assert(!valid_wall(g, &p, m1) );
 
   graph_free(g);
-  printf("test_valid_wall passed.\n");
-  
+  printf("test_valid_wall passed.\n"); 
+}
+
+void test_dijkstra2() {
+  int m = 5;
+  struct graph_t* g = createGraph(m, TRIANGULAR);
+  g->start[1] = 0;
+  g->objectives[1] = 1;
+  vertex_t start = g->num_vertices - 1;
+  g->start[0] = start;
+  vertex_t destination = 7;
+  g->objectives[0] = destination;
+  vertex_t *path = malloc(g->num_vertices * sizeof(vertex_t));
+  int length = shortest_path_length(g, start, destination, 0, path, start);
+  print_hex_grid(g);
+  printf("In order to go from vertex %d to vertex %d. ", start, destination);
+  printf("Player TEST found this path using dijkstra with length %d :\n", length);
+  for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {
+    printf("%d, ", path[v]);
+  }
+  printf("\n");
+
+  free(path);
+
 }
 
 void test_valid_move() {

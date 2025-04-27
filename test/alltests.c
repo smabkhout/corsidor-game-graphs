@@ -4,6 +4,7 @@
 #include "move2_test.h"
 
 int main(){
+    /*
     test_create_Graph();
     test_create_move();
     test_is_empty_vertice() ;
@@ -19,6 +20,8 @@ int main(){
     test_direction_axial();
     test_valid_wall();
     test_valid_move();
-    
+    */
+    test_dijkstra2();
+
     return 0;
 }
