@@ -321,7 +321,7 @@ struct move_t* make_wall_move(enum player_color_t color, vertex_t fr, vertex_t t
 int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   for (vertex_t i = 0; i < graph->num_vertices; i++) {
-    if (valid_move(graph, p, i, opponent)) {
+    if (valid_move(graph, p, i, opponent) && i != p->position ) {
       moves[nb_moves++] = make_move_moove(p->c, i);
     }
   }

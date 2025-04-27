@@ -23,6 +23,11 @@ int numberOfObjectives;
 int *visited_objectives = NULL;
 vertex_t home;
 int return_toHome;
+
+
+
+
+
 char const *get_player_name() {
   srand(time(NULL));
   char *names[] = {"adam", "rafiq"};
@@ -131,7 +136,7 @@ int score=0 ;
       all_objectives_are_visited = 0;
   }
       if (all_objectives_are_visited){
-          //if (return_toHome){
+          if (return_toHome){
           struct move_t availableMovees[128] ;
           struct player_tt p;
           p.position = my_pos;
@@ -139,27 +144,46 @@ int score=0 ;
           p.c = player_id;
           //id of player
 
-          availableMoves(availableMovees, board->graph, &p, opp_pos);
-          availableMovees[0].t = MOVE ;
-          availableMovees[0].c = player_id ;
-          my_last_pos = availableMovees[0].m ;
-          return availableMovees[0];
+          int result = availableMoves(availableMovees, board->graph, &p, opp_pos);
+          /*
+          for (int i = 0 ; i<result ; i++){
+            printf(" moves disponible %d \n " ,availableMovees[i].m  ) ; 
+          }
+          */
+           // puts("\n") ; 
+          for (int i = 0 ; i < result ; i++){
+            printf(" moves disponible %d \n " ,availableMovees[i].m  ) ; 
+            availableMovees[i].t = MOVE ;
+            availableMovees[i].c = player_id ;
+            if (availableMovees[i].m != my_pos){
+                my_last_pos = my_pos ; 
+                my_pos = availableMovees[i].m ;
+                return availableMovees[i];
+            }
+          }
+          printf("\n") ; 
+          //availableMovees[0].t = MOVE ;
+          //availableMovees[0].c = player_id ;
+          //my_last_pos = availableMovees[0].m ;
+          //return availableMovees[0];
          }
-/*
           struct move_t move;
-          vertex_t *lile = malloc(board->graph->num_vertices *
-     sizeof(vertex_t)); lile[0] = 0; lile[1] = 0; printf("returning to home : %d
-     \n" , home ) ; vertex_t objectif = home; int result =
-     shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile,
-     my_last_pos) +1 ; printf("resultat %d  " , result) ; for (int i =0 ;
-     i<result ; i++){ printf(" %d;" , lile[i]);
+          vertex_t *lile = malloc(board->graph->num_vertices * sizeof(vertex_t)); lile[0] = 0; lile[1] = 0; 
+          printf("returning to home : %d\n" , home ) ;
+          printf("position of the other player %d :\n" , opp_pos); 
+          vertex_t objectif = home;
+          int result =shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile,my_last_pos) +1 ;
+          printf("resultat %d  " , result) ;
+          for (int i =0 ;i<result ; i++){
+             printf(" %d;" , lile[i]);
           }
           printf("\n") ;
           move.c = player_id;
           move.t = MOVE;
           move.m = lile[1];
-          my_last_pos = move.m ;
-          if (move.m == home){
+          my_last_pos = my_pos ; 
+          my_pos = move.m ;
+          if (move.m == objectif){
               return_toHome =1 ;
           }
           free(lile ) ;
@@ -167,7 +191,9 @@ int score=0 ;
           return move  ;
 
 
-      }*/
+      }
+
+     
 
       /*
   if (all_objectives_are_visited) { // on retourne a la position initiale
