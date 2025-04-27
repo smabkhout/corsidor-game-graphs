@@ -91,8 +91,8 @@ void test_valid_wall() {
 }
 
 void test_dijkstra2() {
-  int m = 5;
-  struct graph_t* g = createGraph(9, TRIANGULAR);
+  int m = 9;
+  struct graph_t* g = createGraph(m, TRIANGULAR);
   g->start[1] = 0;
   g->objectives[1] = 1;
   for (int i = 6; i < 217; ++i) {
@@ -103,6 +103,7 @@ void test_dijkstra2() {
   g->objectives[0] = destination;
   vertex_t *path = malloc(g->num_vertices * sizeof(vertex_t));
   int length = shortest_path_length(g, start, destination, 0, path, start);
+  (void) length;
   /*
   print_hex_grid(g);
   printf("In order to go from vertex %d to vertex %d. ", start, destination);
