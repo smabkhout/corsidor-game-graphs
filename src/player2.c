@@ -187,13 +187,15 @@ struct move_t play(const struct move_t previous_move) {
 
     // calculate all distances to non-visited objectives
     vertex_t** paths = malloc(sizeof(vertex_t*)*numberOfObjectives);
-    int* distances_to_objectives = malloc(sizeof(int)*numberOfObjectives);    
+    int* distances_to_objectives = malloc(sizeof(int)*numberOfObjectives);
+    int count = 0;   
     for (int i = 0; i<numberOfObjectives; ++i) {
         if (visited_objectives[i]) {
             paths[i] = NULL;
             distances_to_objectives[i] = -1;
             continue;
         }
+        count++;
         paths[i] = malloc(board->graph->num_vertices * sizeof(vertex_t));
         distances_to_objectives[i] = shortest_path_length(board->graph, my_pos, board->graph->objectives[i], opp_pos, paths[i], my_last_pos);
     }
@@ -219,13 +221,14 @@ struct move_t play(const struct move_t previous_move) {
       printf("%d, ", paths[obj_index][v]);
     }
     printf("\n");
-        
+    
     for (int i = 0; i<numberOfObjectives; ++i) {
         if (visited_objectives[i])
             continue;
         free(paths[i]);
     }
     free(paths);
+    free(distances_to_objectives);
 
     /*
     for (int i = 0 ; i<num_ofObjective ; i++){
