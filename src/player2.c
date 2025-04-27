@@ -146,8 +146,8 @@ struct move_t play(const struct move_t previous_move) {
         availableMoves(availableMovees, board->graph, &p, opp_pos);
         availableMovees[0].t = MOVE ; 
         availableMovees[0].c = player_id ; 
-        my_last_pos = availableMovees[0].m ; 
-        return availableMovees[0] ; 
+        my_last_pos = availableMovees[0].m ;
+        return availableMovees[0];
        // }
         /*
         struct move_t move;
@@ -212,9 +212,6 @@ struct move_t play(const struct move_t previous_move) {
     struct move_t move;
     move.c = player_id;
     move.t = MOVE;
-    printf("The objectives are %d and %d\n", board->graph->objectives[0], board->graph->objectives[1]);
-    printf("obj_index is %d\n", obj_index);
-    printf("%d\n", paths[obj_index][0]);
     move.m = paths[obj_index][1];
 
     printf("Player %d found this path using dijkstra :\n", player_id);

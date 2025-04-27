@@ -229,7 +229,7 @@ int main(int argc, char *argv[]) {
             }
             if (affichage)
                 print_hex_grid(board->graph);
-            printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
+            printf("🤖 Player %s executed an illegal move of type %s. Did they even read the rules? RIP\n", players[current_player].get_player_name(), move_type_to_string(move.t));
             printf("from %d to %d " , last_positions[current_player] , move.m) ; 
             winner = (current_player + 1) % NUM_PLAYERS;
             free(current_player_ptr);
