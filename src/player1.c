@@ -35,7 +35,7 @@ void initialize(unsigned int id, struct graph_t* graph) {
     }
 
     // copy_graph(board->graph, graph); 
-
+  player_id = id;
   printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
 
 }

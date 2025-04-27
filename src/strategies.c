@@ -249,8 +249,11 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
         neighbors[count++] = v;
       }
     }
-    if (count == 0)
+    if (count == 0) {
+      puts("AAAAAAAAAAaa");
+      free(nodes);
       return 0;
+    }
 
     // s'assurer que dijkstra maintenant va prioriser les sauts de distance 3 si c'est possible
     for (int wanted_jump = 3; wanted_jump >= 1; --wanted_jump) {

@@ -108,7 +108,10 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
     return 0;
   }
   // Convertir les index en coordonnées axiales
-  int l0, c0, l1, c1;
+  int l0 = 0;
+  int c0 = 0;
+  int l1 = 0;
+  int c1 = 0;
   index_to_axial(p->last_position, m, &l0, &c0);
   index_to_axial(p->position, m, &l1, &c1);
 

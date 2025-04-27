@@ -223,6 +223,10 @@ int main(int argc, char *argv[]) {
         last_positions[current_player] = current_positions[current_player] ; 
         current_positions[current_player] = move.m ; 
         if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
+            int id = move.c;
+            if (id != current_player) {
+                printf("Player %s with id %d returned a move with id: %d\n", players[current_player].get_player_name(), current_player, move.c);
+            }
             if (affichage)
                 print_hex_grid(board->graph);
             printf("🤖 Player %s executed an illegal move. Did they even read the rules? RIP\n", players[current_player].get_player_name());
@@ -236,8 +240,8 @@ int main(int argc, char *argv[]) {
         if (affichage)
             print_hex_grid(board->graph);
 
-        printf("Turn %d: Player %s plays %s from %u to vertex %u\n", turn_count,
-               players[current_player].get_player_name(), move_type_to_string(move.t), players[current_player].pos_actuel,move.m);
+        printf("Turn %d: Player %s plays %s from %u to vertex %u, his id is: %d\n", turn_count,
+               players[current_player].get_player_name(), move_type_to_string(move.t), players[current_player].pos_actuel,move.m, current_player);
         last_positions[current_player] = players[current_player].pos_actuel; // on stocke l'ancienne position et apres la nouvelle
         players[current_player].pos_actuel = move.m;
         moves_act[current_player] = move;

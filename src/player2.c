@@ -13,11 +13,13 @@
 //enum graph_type_t type;
 static struct board_t *board = NULL ; 
 static unsigned int player_id;
-vertex_t my_last_pos;
+vertex_t my_pos = -1;
+vertex_t my_last_pos = -1;
+vertex_t opp_pos = -1;
 //static vertex_t previous_position;
 //static int has_played = 0;
-int numberOfObjective ; 
-int achives[10]; 
+int numberOfObjectives ; 
+int* visited_objectives = NULL; 
 vertex_t home ; 
 int return_toHome ; 
 char const* get_player_name()
@@ -31,9 +33,10 @@ char const* get_player_name()
 
 
 void initialize(unsigned int id, struct graph_t* graph) {
-    numberOfObjective = graph->num_objectives ; 
-    for(int i = 0 ; i<numberOfObjective ; i++){
-        achives[i] = 0 ; 
+    numberOfObjectives = graph->num_objectives ;
+    visited_objectives = malloc(sizeof(int) * numberOfObjectives);
+    for(int i = 0 ; i<numberOfObjectives ; i++){
+        visited_objectives[i] = 0 ; 
     }
     player_id = id;
     home = graph->start[player_id] ; 
@@ -77,9 +80,11 @@ struct move_t make_move_no_type() {
 
 struct move_t play(const struct move_t previous_move) {
 
-    int num_ofObjective = board->graph->num_objectives;  
-    vertex_t my_pos = board->graph->start[player_id];
-    vertex_t opp_pos = board->graph->start[(player_id + 1) % NUM_PLAYERS];
+    int num_ofObjective = numberOfObjectives;
+    if (my_pos == (unsigned int)-1)
+        my_pos = board->graph->start[player_id];
+    if (opp_pos == (unsigned int)-1)
+        opp_pos = board->graph->start[(player_id + 1) % NUM_PLAYERS];
 
     if (previous_move.t == MOVE && previous_move.c != player_id) {
         opp_pos = previous_move.m;
@@ -118,18 +123,18 @@ struct move_t play(const struct move_t previous_move) {
 */  
     for (int i = 0 ; i<num_ofObjective ; i++){
         if (my_pos == board->graph->objectives[i]){
-            achives[i] =1 ; 
+            visited_objectives[i] = 1 ;
         }
     }
 
 
-    int allObjectif = 1 ; 
+    int all_objectives_are_visited = 1 ; 
     for (int i = 0 ; i< num_ofObjective ; i++){
-        if (achives[i] == 0  )
-            allObjectif = 0 ; 
+        if (visited_objectives[i] == 0 )
+            all_objectives_are_visited = 0 ; 
     }
 
-    if (allObjectif ==1 ){
+    if (all_objectives_are_visited){
         //if (return_toHome){
         struct move_t availableMovees[128] ; 
         struct player_tt p;
@@ -171,29 +176,73 @@ struct move_t play(const struct move_t previous_move) {
 
     }
 
-
+/*
     struct move_t move;
     vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
     path[0] = 0;
     path[1] = 0;
      int start ; 
-     int taille = 100000; 
+     int taille = 100000;
+*/
+
+    // calculate all distances to non-visited objectives
+    vertex_t** paths = malloc(sizeof(vertex_t*)*numberOfObjectives);
+    int* distances_to_objectives = malloc(sizeof(int)*numberOfObjectives);    
+    for (int i = 0; i<numberOfObjectives; ++i) {
+        if (visited_objectives[i]) {
+            paths[i] = NULL;
+            distances_to_objectives[i] = -1;
+            continue;
+        }
+        paths[i] = malloc(board->graph->num_vertices * sizeof(vertex_t));
+        distances_to_objectives[i] = shortest_path_length(board->graph, my_pos, board->graph->objectives[i], opp_pos, paths[i], my_last_pos);
+    }
+
+
+    // find the closest objective
+    int min_distance = INT_MAX;
+    int obj_index;
+    for (int i = 0; i<numberOfObjectives; ++i) {
+        if (!visited_objectives[i] && distances_to_objectives[i] < min_distance) {
+            obj_index = i;
+            min_distance = distances_to_objectives[i];
+        }
+    }
+    
+    struct move_t move;
+    move.c = player_id;
+    move.t = MOVE;
+    printf("The objectives are %d and %d\n", board->graph->objectives[0], board->graph->objectives[1]);
+    printf("obj_index is %d\n", obj_index);
+    printf("%d\n", paths[obj_index][0]);
+    move.m = paths[obj_index][1];
+
+    printf("Player %d found this path using dijkstra :\n", player_id);
+    for (vertex_t v = 0; paths[obj_index][v] != (unsigned int)-1; ++v) {
+      printf("%d, ", paths[obj_index][v]);
+    }
+    printf("\n");
+        
+    for (int i = 0; i<numberOfObjectives; ++i) {
+        if (visited_objectives[i])
+            continue;
+        free(paths[i]);
+    }
+    free(paths);
+
+    /*
     for (int i = 0 ; i<num_ofObjective ; i++){
         int t = shortest_path_length(board->graph, my_pos, board->graph->objectives[0], opp_pos, path, my_last_pos);
-        if (t<taille && achives[i]==0 ){
+        if (t<taille && visited_objectives[i]==0 ){
             taille = t ; 
             start = i ; 
         }
     }
-    int length = shortest_path_length(board->graph, my_pos, board->graph->objectives[start], opp_pos, path, my_last_pos);
-    move.c = player_id;
-    move.t = MOVE;
-    move.m = path[1];
-
+    */
+    int length = min_distance;
     if (length == -1) {
         puts("No valid path to an objective");
         move.t = NO_TYPE;
-        free(path);
         return move;
     } /*else if (!length) {
         puts("Player is already in objective");
@@ -202,13 +251,8 @@ struct move_t play(const struct move_t previous_move) {
         return move;
     }*/
     else {
-        printf("Player %d found this path using dijkstra :\n", player_id);
-        for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {
-          printf("%d, ", path[v]);
-        }
-        printf("\n");
-        free(path);
         my_last_pos = my_pos;
+        my_pos = move.m;
         return move;
         
     }
@@ -259,6 +303,9 @@ struct move_t play(const struct move_t previous_move) {
 
 
 void finalize() {
+    if (visited_objectives != 0) {
+        free(visited_objectives);
+    }
     if (board) {
         board_free(board);
         board = NULL;
