@@ -250,7 +250,6 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
       }
     }
     if (count == 0) {
-      puts("AAAAAAAAAAaa");
       free(nodes);
       return 0;
     }

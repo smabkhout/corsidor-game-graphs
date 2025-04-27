@@ -300,7 +300,7 @@ struct move_t play(const struct move_t previous_move) {
 
 
 void finalize() {
-    if (visited_objectives != 0) {
+    if (visited_objectives) {
         free(visited_objectives);
     }
     if (board) {
