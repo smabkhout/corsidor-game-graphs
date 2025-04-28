@@ -237,6 +237,8 @@ int main(int argc, char *argv[]) {
         
     }
 
+
+
     struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
     current_player_ptr->position = players[current_player].pos_actuel;
     current_player_ptr->c = players[current_player].player_color;
@@ -251,14 +253,20 @@ int main(int argc, char *argv[]) {
     other_player_ptr->last_position = last_positions[other_player];
 
     struct move_t move =players[current_player].play(moves_act[other_player]);
+    printf("move.m = %d  \n" , move.m  ) ;
     graphs[current_player]->start[current_player] = move.m; // stocker la nouvelle positions de current player dans les deux
                 // graphes des joueurs
     graphs[other_player]->start[current_player] = move.m;
     moves_act[current_player] = move;
     last_positions[current_player] = current_positions[current_player];
     current_positions[current_player] = move.m;
-    if (!valid_move(board->graph, current_player_ptr, move.m,
-                    moves_act[other_player].m)) {
+
+     // puts("--------------------------") ;
+    //print move.m , moves_act[other_player].m , moves_act[current_player].m ;
+    // printf("move.m = %d , moves_act[other_player].m = %d , moves_act[current_player].m = %d \n" , move.m , moves_act[other_player].m , moves_act[current_player].m ) ;
+
+     puts("--------------------------") ;
+    if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
       int id = move.c;
       if (id != current_player) {
         printf("Player %s with id %d returned a move with id: %d\n",
