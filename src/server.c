@@ -93,7 +93,7 @@ struct move_t *makee_first_move() {
   struct move_t *first_move = malloc(sizeof(struct move_t));
   first_move->c = 1;
   first_move->t = MOVE;
-  first_move->m = 60 ;
+  first_move->m = 18;
 
   return first_move;
 }
@@ -165,15 +165,6 @@ int main(int argc, char *argv[]) {
 
   struct graph_t *g1 = createGraph(size_mesh, TRIANGULAR);
   struct graph_t *g2 = createGraph(size_mesh, TRIANGULAR);
-  int returnHome[2] = {0 ,0} ;
-  int (*visitedObjectif)[2] = malloc(g1->num_objectives* sizeof(*visitedObjectif));  
-  for (unsigned int i = 0 ; i<g1->num_objectives ; i++){
-        visitedObjectif[i][0] = 0 ;
-        visitedObjectif[i][1] = 0 ;
-  }
-  vertex_t  start[2] = {g1->start[0], g2->start[1]};
-
-   
 
   struct graph_t *graphs[2] = {g1, g2};
   // struct graph_t *globalGraph = g1;
@@ -220,25 +211,6 @@ int main(int argc, char *argv[]) {
     // , current_positions[0] , last_positions[0] ) ; printf("psition actuelle
     // du joueur 2 : %d  , position precedente %d \n" , current_positions[1] ,
     // last_positions[1] ) ;
-   
-    int all_objectives_are_visited = 1;
-    for ( unsigned int i = 0 ; i<graphs[current_player]->num_objectives ; i++){
-        if (visitedObjectif[i][current_player] == 0 ){
-            all_objectives_are_visited = 0 ;
-            
-        }
-    }
-
-    if (all_objectives_are_visited && returnHome[current_player] == 1) {
-        //stop the game the winner is the current player
-        winner = current_player;
-        printf("Player %s visited all objectives and returned home!\n",
-               players[current_player].get_player_name());
-        
-    }
-
-
-
     struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
     current_player_ptr->position = players[current_player].pos_actuel;
     current_player_ptr->c = players[current_player].player_color;
@@ -252,21 +224,17 @@ int main(int argc, char *argv[]) {
     // other_player_ptr.walls = players[other_player].walls;
     other_player_ptr->last_position = last_positions[other_player];
 
-    struct move_t move =players[current_player].play(moves_act[other_player]);
-    printf("move.m = %d  \n" , move.m  ) ;
-    graphs[current_player]->start[current_player] = move.m; // stocker la nouvelle positions de current player dans les deux
+    struct move_t move =
+        players[current_player].play(moves_act[current_player]);
+    graphs[current_player]->start[current_player] =
+        move.m; // stocker la nouvelle positions de current player dans les deux
                 // graphes des joueurs
     graphs[other_player]->start[current_player] = move.m;
     moves_act[current_player] = move;
     last_positions[current_player] = current_positions[current_player];
     current_positions[current_player] = move.m;
-
-     // puts("--------------------------") ;
-    //print move.m , moves_act[other_player].m , moves_act[current_player].m ;
-    // printf("move.m = %d , moves_act[other_player].m = %d , moves_act[current_player].m = %d \n" , move.m , moves_act[other_player].m , moves_act[current_player].m ) ;
-
-     puts("--------------------------") ;
-    if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
+    if (!valid_move(board->graph, current_player_ptr, move.m,
+                    moves_act[other_player].m)) {
       int id = move.c;
       if (id != current_player) {
         printf("Player %s with id %d returned a move with id: %d\n",
@@ -293,7 +261,9 @@ int main(int argc, char *argv[]) {
            turn_count, players[current_player].get_player_name(),
            move_type_to_string(move.t), players[current_player].pos_actuel,
            move.m, current_player);
-    last_positions[current_player] =players[current_player].pos_actuel; // on stocke l'ancienne position et apres la nouvelle
+    last_positions[current_player] =
+        players[current_player]
+            .pos_actuel; // on stocke l'ancienne position et apres la nouvelle
     players[current_player].pos_actuel = move.m;
     moves_act[current_player] = move;
     if (move.t != NO_TYPE) {
@@ -319,25 +289,8 @@ int main(int argc, char *argv[]) {
       break;
     }
     // print_hex_grid(board->graph);
-
-    for (unsigned int i = 0; i <graphs[current_player]->num_objectives; i++) {
-      if (g1->objectives[i] == current_positions[current_player]) {
-        visitedObjectif[i][current_player] = 1;
-        printf("Player %s visited objective %d\n",
-               players[current_player].get_player_name(), i);
-        break;
-      }
-    }
-    printf("all_objectives_are_visited = %d\n", all_objectives_are_visited);
-    if ((all_objectives_are_visited==1) && (move.m == start[current_player])) {
-      returnHome[current_player] = 1;
-      printf("Player %s returned home!\n",
-             players[current_player].get_player_name());
-    }
-
     free(current_player_ptr);
     free(other_player_ptr);
-
   }
 
   if (winner >= 0) {
@@ -359,7 +312,6 @@ int main(int argc, char *argv[]) {
   free(board);
   free(first_move);
   free(first_move2);
-  free(visitedObjectif);
 
   return 0;
 }
