@@ -167,6 +167,10 @@ int main(int argc, char *argv[]) {
   struct graph_t *g2 = createGraph(size_mesh, TRIANGULAR);
   int returnHome[2] = {0 ,0} ;
   int (*visitedObjectif)[2] = malloc(g1->num_objectives* sizeof(*visitedObjectif));  
+  for (unsigned int i = 0 ; i<g1->num_objectives ; i++){
+        visitedObjectif[i][0] = 0 ;
+        visitedObjectif[i][1] = 0 ;
+  }
   vertex_t  start[2] = {g1->start[0], g2->start[1]};
 
    
