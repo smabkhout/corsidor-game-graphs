@@ -85,9 +85,9 @@ int get_neighbors(struct graph_t* graph, vertex_t v, vertex_t* out, int max_out)
 }
 struct move_t make_move_no_type() {
     struct move_t move;
-    move.t = NO_TYPE;
+    move.t = MOVE;
     move.c = NO_COLOR;
-    move.m = 0;
+    move.m = 9;
     move.e[0].fr = move.e[0].to = 0;
     move.e[1].fr = move.e[1].to = 0;
     return move;
