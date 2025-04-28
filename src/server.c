@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
         winner = current_player;
         printf("Player %s visited all objectives and returned home!\n",
                players[current_player].get_player_name());
-        break;
+        
     }
 
     struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
