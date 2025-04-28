@@ -220,18 +220,7 @@ int main(int argc, char *argv[]) {
     // , current_positions[0] , last_positions[0] ) ; printf("psition actuelle
     // du joueur 2 : %d  , position precedente %d \n" , current_positions[1] ,
     // last_positions[1] ) ;
-    struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
-    current_player_ptr->position = players[current_player].pos_actuel;
-    current_player_ptr->c = players[current_player].player_color;
-    // current_player_ptr.walls = players[current_player].walls;
-    current_player_ptr->last_position = last_positions[current_player];
-
-    // l'autre joueur
-    struct player_tt *other_player_ptr = malloc(sizeof(struct player_tt));
-    other_player_ptr->position = players[other_player].pos_actuel;
-    other_player_ptr->c = players[other_player].player_color;
-    // other_player_ptr.walls = players[other_player].walls;
-    other_player_ptr->last_position = last_positions[other_player];
+   
     int all_objectives_are_visited = 1;
     for ( unsigned int i = 0 ; i<graphs[current_player]->num_objectives ; i++){
         if (visitedObjectif[i][current_player] == 0 ){
@@ -248,6 +237,18 @@ int main(int argc, char *argv[]) {
         break;
     }
 
+    struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
+    current_player_ptr->position = players[current_player].pos_actuel;
+    current_player_ptr->c = players[current_player].player_color;
+    // current_player_ptr.walls = players[current_player].walls;
+    current_player_ptr->last_position = last_positions[current_player];
+
+    // l'autre joueur
+    struct player_tt *other_player_ptr = malloc(sizeof(struct player_tt));
+    other_player_ptr->position = players[other_player].pos_actuel;
+    other_player_ptr->c = players[other_player].player_color;
+    // other_player_ptr.walls = players[other_player].walls;
+    other_player_ptr->last_position = last_positions[other_player];
 
     struct move_t move =players[current_player].play(moves_act[other_player]);
     graphs[current_player]->start[current_player] = move.m; // stocker la nouvelle positions de current player dans les deux
