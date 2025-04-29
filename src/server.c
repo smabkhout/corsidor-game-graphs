@@ -81,7 +81,7 @@ const char *move_type_to_string(enum move_type_t type) {
 struct move_t *make_first_move() {
   struct move_t *first_move = malloc(sizeof(struct move_t));
   first_move->c = 0;
-  first_move->t = MOVE;
+  first_move->t = NO_TYPE;
   first_move->m = 0;
   first_move->e[0].fr = 0;
   first_move->e[0].to = 0;
@@ -204,7 +204,7 @@ int main(int argc, char *argv[]) {
   if (affichage)
     print_hex_grid(board->graph);
   printf("The number of moves played so far is: %d\n", board->size_moves);
-  struct move_t moves_act[2] = {current_move, *first_move2};
+  struct move_t moves_act[2] = {current_move, current_move};
 
   while (winner == -1 && turn_count < max_turns) {
     // printf("psition actuelle du joueur 1 : %d  , position precedente %d  \n"
@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
     other_player_ptr->last_position = last_positions[other_player];
 
     struct move_t move =
-        players[current_player].play(moves_act[current_player]);
+        players[current_player].play(moves_act[other_player]);
     graphs[current_player]->start[current_player] =
         move.m; // stocker la nouvelle positions de current player dans les deux
                 // graphes des joueurs
