@@ -225,7 +225,7 @@ int main(int argc, char *argv[]) {
     other_player_ptr->last_position = last_positions[other_player];
 
     struct move_t move =
-        players[current_player].play(moves_act[other_player]);
+        players[current_player].play(moves_act[current_player]);
     graphs[current_player]->start[current_player] =
         move.m; // stocker la nouvelle positions de current player dans les deux
                 // graphes des joueurs
