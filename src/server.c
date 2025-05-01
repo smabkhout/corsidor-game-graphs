@@ -178,6 +178,7 @@ int main(int argc, char *argv[]) {
   players[other_player].initialize(other_player, graphs[other_player]);
 
   players[current_player].pos_actuel = board->graph->start[current_player];
+  
   players[other_player].pos_actuel = board->graph->start[other_player];
 
   last_positions[current_player] = board->graph->start[current_player];
@@ -207,10 +208,6 @@ int main(int argc, char *argv[]) {
   struct move_t moves_act[2] = {current_move, current_move};
 
   while (winner == -1 && turn_count < max_turns) {
-    // printf("psition actuelle du joueur 1 : %d  , position precedente %d  \n"
-    // , current_positions[0] , last_positions[0] ) ; printf("psition actuelle
-    // du joueur 2 : %d  , position precedente %d \n" , current_positions[1] ,
-    // last_positions[1] ) ;
     struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
     current_player_ptr->position = players[current_player].pos_actuel;
     current_player_ptr->c = players[current_player].player_color;
@@ -224,28 +221,29 @@ int main(int argc, char *argv[]) {
     // other_player_ptr.walls = players[other_player].walls;
     other_player_ptr->last_position = last_positions[other_player];
 
-    struct move_t move =
-        players[current_player].play(moves_act[current_player]);
-    graphs[current_player]->start[current_player] =
-        move.m; // stocker la nouvelle positions de current player dans les deux
-                // graphes des joueurs
+    struct move_t move = players[current_player].play(moves_act[other_player]);
+    graphs[current_player]->start[current_player] = move.m; 
     graphs[other_player]->start[current_player] = move.m;
     moves_act[current_player] = move;
     last_positions[current_player] = current_positions[current_player];
     current_positions[current_player] = move.m;
-    if (!valid_move(board->graph, current_player_ptr, move.m,
-                    moves_act[other_player].m)) {
+
+  /*  printf("DEBUG SERVER: joueur %d joue de %d vers %d (last=%d), opp=%d\n",
+       current_player,
+       players[current_player].pos_actuel,
+       move.m,
+       current_player_ptr->last_position,
+       moves_act[other_player].m);*/
+
+
+    if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
       int id = move.c;
       if (id != current_player) {
-        printf("Player %s with id %d returned a move with id: %d\n",
-               players[current_player].get_player_name(), current_player,
-               move.c);
+        printf("Player %s with id %d returned a move with id: %d\n", players[current_player].get_player_name(), current_player, move.c);
       }
       if (affichage)
         print_hex_grid(board->graph);
-      printf("🤖 Player %s executed an illegal move of type %s. Did they even "
-             "read the rules? RIP\n",
-             players[current_player].get_player_name(),
+      printf("🤖 Player %s executed an illegal move of type %s. Did they even read the rules? RIP\n", players[current_player].get_player_name(),
              move_type_to_string(move.t));
       printf("from %d to %d ", last_positions[current_player], move.m);
       winner = (current_player + 1) % NUM_PLAYERS;
@@ -253,7 +251,6 @@ int main(int argc, char *argv[]) {
       free(other_player_ptr);
       break;
     }
-    // board->graph->start[current_player] = players[current_player].pos_actuel;
     if (affichage)
       print_hex_grid(board->graph);
 
@@ -261,9 +258,7 @@ int main(int argc, char *argv[]) {
            turn_count, players[current_player].get_player_name(),
            move_type_to_string(move.t), players[current_player].pos_actuel,
            move.m, current_player);
-    last_positions[current_player] =
-        players[current_player]
-            .pos_actuel; // on stocke l'ancienne position et apres la nouvelle
+    last_positions[current_player] = players[current_player].pos_actuel; 
     players[current_player].pos_actuel = move.m;
     moves_act[current_player] = move;
     if (move.t != NO_TYPE) {
@@ -272,17 +267,9 @@ int main(int argc, char *argv[]) {
       current_player = (current_player + 1) % NUM_PLAYERS;
       other_player = (current_player + 1) % NUM_PLAYERS;
       turn_count++;
-      /*
-                  if (g1->start[current_move.c] ==
-         board->current_positions[current_move.c]) { winner = current_move.c;
-                      free(current_player_ptr);
-                      free(other_player_ptr);
-                      break;
-                      }
-      */
+  
     } else {
-      printf("Invalid move by player %s — they lose!\n",
-             players[current_player].get_player_name());
+      printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
       winner = (current_player + 1) % NUM_PLAYERS;
       free(current_player_ptr);
       free(other_player_ptr);
@@ -315,3 +302,5 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+

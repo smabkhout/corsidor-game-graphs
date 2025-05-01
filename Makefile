@@ -10,14 +10,14 @@ LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 
 all: build
 
-build: server client
+build: server client install
 
 build_tests: alltests
 
 %.o: src/%.c 
 	$(CC) $< $(CFLAGS) -c
 
-libPlayer1.so: player1.o strategie3.o board.o graph.o
+libPlayer1.so: player1.o strategie3.o board.o graph.o move2.o
 	gcc -shared -fPIC $(CFLAGS) $^ -o $@
 
 libPlayer2.so: player2.o move2.o strategies.o board.o graph.o
@@ -47,6 +47,6 @@ install: build build_tests
 	cp server libPlayer1.so libPlayer2.so alltests install/
 
 clean:
-	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda *.so
+	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda install/*.so install/server
 
 .PHONY: client install test clean build build_tests

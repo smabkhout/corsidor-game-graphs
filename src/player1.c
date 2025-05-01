@@ -1,79 +1,125 @@
 #include "graph.h"
 #include "player.h"
 #include "board.h"
+#include "move2.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include<time.h>
 #include <string.h>
 #include <gsl/gsl_spmatrix.h>
-#define NO_VERTEX ((vertex_t)(-1))
 
 
-//enum graph_type_t type;
-static struct board_t *board = NULL;  
-static unsigned int player_id;
-//static vertex_t previous_position;
-//static int has_played = 0;
-
-
-char const* get_player_name()
-{
-  srand(time(NULL));
-  char *names[] = {"adam", "rafiq"};
-  return names[0];
-}
-
-
-
-void initialize(unsigned int id, struct graph_t* graph) {
-  board = board_init();
-  // board->graph = malloc(sizeof(struct graph_t));
-  board->graph = graph;
-    if (!board->graph) {
-        fprintf(stderr, "Erreur allocation du graph\n");
-        exit(EXIT_FAILURE);
+/*int s_p(struct graph_t* g, vertex_t start, vertex_t goal) {
+    int* visited = calloc(g->num_vertices, sizeof(int));
+    int* dist = malloc(g->num_vertices * sizeof(int));
+    for (vertex_t i = 0; i < g->num_vertices; i++) {
+        dist[i] = INT_MAX;
     }
+    dist[start] = 0;
 
-    // copy_graph(board->graph, graph); 
-  player_id = id;
-  printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
+    for (vertex_t i = 0; i < g->num_vertices; i++) {
+        int u = -1;
+        for (vertex_t j = 0; j < g->num_vertices; j++) {
+            if (!visited[j] && (u == -1 || dist[j] < dist[u])) {
+                u = j;
+            }
+        }
 
-}
+        if (dist[u] == INT_MAX || u == goal)
+            break;
 
+        visited[u] = 1;
 
-/*struct move_t play(const struct move_t previous_move) {
-    vertex_t my_pos = graph1->start[player_id];
-    vertex_t opp_pos = graph1->start[(player_id + 1) % 2];
-
-    if (previous_move.t == MOVE && previous_move.c != player_id) {
-        opp_pos = previous_move.m;
-    }
-
-    enum dir_t prev_dir = NO_EDGE;
-    if (has_played) {
-        prev_dir = get_direction(previous_position, my_pos, graph1);
-    } else {
-        prev_dir = 3; // hadi bach ymchi l 'Est (E=3) comme premier move
-    }
-
-    struct move_t move = find_best_move(graph1, my_pos, opp_pos, prev_dir, player_id);
-
-    if (gsl_spmatrix_uint_get(graph1->t, my_pos, opp_pos) > 0) {
-        for (vertex_t jump = 0; jump < graph1->num_vertices; jump++) {
-            if (gsl_spmatrix_uint_get(graph1->t, opp_pos, jump) > 0 &&
-                jump != my_pos && jump != opp_pos) {
-                move = make_move_move(player_id, jump);
-                break;
+        for (vertex_t v = 0; v < g->num_vertices; v++) {
+            if (gsl_spmatrix_uint_get(g->t, u, v) > 0 && !visited[v]) {
+                int alt = dist[u] + 1;
+                if (alt < dist[v]) {
+                    dist[v] = alt;
+                }
             }
         }
     }
-    if (move.t == MOVE) {
-        previous_position = my_pos;         
-        graph1->start[player_id] = move.m;  
-        has_played = 1;                     
-    }
-    return move;
+
+    int result = dist[goal];
+    free(visited);
+    free(dist);
+    return result == INT_MAX ? -1 : result;
 }*/
+
+
+static struct board_t *board = NULL;
+static unsigned int player_id;
+static vertex_t initial_position;
+static int visited_objectives[256] = {0};
+static vertex_t my_last_position = (vertex_t)-1;
+
+int s_p(struct graph_t* g, vertex_t start, vertex_t goal) {
+    int* visited = calloc(g->num_vertices, sizeof(int));
+    int* dist = malloc(g->num_vertices * sizeof(int));
+    if (!visited || !dist) {
+        fprintf(stderr, "Erreur d'allocation mémoire dans s_p\n");
+        exit(EXIT_FAILURE);
+    }
+
+    for (vertex_t i = 0; i < g->num_vertices; i++) {
+        dist[i] = INT_MAX;
+    }
+    dist[start] = 0;
+
+    for (vertex_t i = 0; i < g->num_vertices; i++) {
+        int u = -1;
+        for (vertex_t j = 0; j < g->num_vertices; j++) {
+            if (!visited[j] && (u == -1 || dist[j] < dist[(vertex_t)u])) {
+                u = j;
+            }
+        }
+
+        if (u == -1) break; 
+        if (dist[(vertex_t)u] == INT_MAX || (vertex_t)u == goal)
+            break;
+
+        visited[(vertex_t)u] = 1;
+
+        for (vertex_t v = 0; v < g->num_vertices; v++) {
+            if (gsl_spmatrix_uint_get(g->t, (vertex_t)u, v) > 0 && !visited[v]) {
+                int alt = dist[(vertex_t)u] + 1;
+                if (alt < dist[v]) {
+                    dist[v] = alt;
+                }
+            }
+        }
+    }
+
+    int result = dist[goal];
+    free(visited);
+    free(dist);
+    return result == INT_MAX ? -1 : result;
+}
+
+
+int all_objectives_visited(struct graph_t *g) {
+    for (unsigned int i = 0; i < g->num_objectives; ++i) {
+        if (!visited_objectives[g->objectives[i]])
+            return 0;
+    }
+    return 1;
+}
+
+vertex_t get_next_closest_objective(struct graph_t *g, vertex_t current) {
+    int min_dist = INT_MAX;
+    vertex_t closest = current;
+    for (unsigned int i = 0; i < g->num_objectives; ++i) {
+        vertex_t obj = g->objectives[i];
+        if (!visited_objectives[obj]) {
+            int dist = s_p(g, current, obj);
+            if (dist >= 0 && dist < min_dist) {
+                min_dist = dist;
+                closest = obj;
+            }
+        }
+    }
+    return closest;
+}
 
 struct move_t make_move_no_type() {
     struct move_t move;
@@ -85,69 +131,148 @@ struct move_t make_move_no_type() {
     return move;
 }
 
+char const* get_player_name() {
+    return "Jennie";
+}
 
+void initialize(unsigned int id, struct graph_t *graph) {
+    player_id = id;
+    board = board_init();
+    board->graph = malloc(sizeof(struct graph_t));
+    copy_graph(board->graph, graph);
+    initial_position = graph->start[id];
+    board->current_positions[0] = graph->start[0];
+    board->current_positions[1] = graph->start[1];
+    my_last_position = initial_position;
+}
+
+const struct axial_t blackpink[7] = {
+    {0, 0},  // No edge
+    {1, -1}, // NW
+    {1, 0},  // NE
+    {0, 1},  // E
+    {-1, 1}, // SE
+    {-1, 0}, // SW
+    {0, -1}  // W
+};
 struct move_t play(const struct move_t previous_move) {
-    static int steps = 0;
-    static enum dir_t dir = E; // Par défaut vers l'est
-    vertex_t my_pos = board->graph->start[player_id];
-    vertex_t opp_pos = board->graph->start[(player_id + 1) % NUM_PLAYERS];
-
-    if (previous_move.t == MOVE && previous_move.c != player_id) {
-        opp_pos = previous_move.m;
+    if (previous_move.t == MOVE) {
+        board->current_positions[previous_move.c] = previous_move.m;
     }
 
-    vertex_t neighbors[8];
-    int count = get_neighbors(board->graph, my_pos, neighbors, 8);
+    printf("Jennie DEBUG -- position = %u, last_position = %u\n",
+           board->current_positions[player_id], my_last_position);
 
-    for (int i = 0; i < count; i++) {
-        vertex_t to = neighbors[i];
-        enum dir_t d = gsl_spmatrix_uint_get(board->graph->t, my_pos, to);
-        if (d == dir && to != opp_pos && steps < 3) {
-            steps++;
-            board->graph->start[player_id] = to;
-            return make_move_move(player_id, to);
+    struct graph_t *g = board->graph;
+    vertex_t my_pos = board->current_positions[player_id];
+    vertex_t last_pos = my_last_position;
+    vertex_t opp_pos = board->current_positions[(player_id + 1) % 2];
+
+    if (previous_move.t == WALL) {
+        struct player_tt dummy = {
+            .position = opp_pos,
+            .last_position = opp_pos,
+            .walls = 10,
+            .c = (player_id + 1) % 2
+        };
+        place_wall(g, &dummy, previous_move);
+        printf("Mur adverse détecté : entre %u-%u et %u-%u\n",
+               previous_move.e[0].fr, previous_move.e[0].to,
+               previous_move.e[1].fr, previous_move.e[1].to);
+    }
+
+    if (my_pos == initial_position && all_objectives_visited(g)) {
+        printf("Bingooooo. Jennie did it and won\n");
+        return make_move_no_type();
+    }
+
+    for (unsigned int i = 0; i < g->num_objectives; ++i) {
+        if (my_pos == g->objectives[i]) {
+            visited_objectives[my_pos] = 1;
+            break;
         }
     }
 
-    enum dir_t left = (dir + 5) % 6;
-    enum dir_t right = (dir + 1) % 6;
-    for (int i = 0; i < count; i++) {
-        vertex_t to = neighbors[i];
-        enum dir_t d = gsl_spmatrix_uint_get(board->graph->t, my_pos, to);
-        if ((d == left || d == right) && to != opp_pos) {
-            dir = d; 
-            steps = 1;
-            board->graph->start[player_id] = to;
-            return make_move_move(player_id, to);
+    vertex_t target = all_objectives_visited(g) ? initial_position : get_next_closest_objective(g, my_pos);
+
+    struct player_tt player = {
+        .position = my_pos,
+        .last_position = last_pos,
+        .walls = 10,
+        .c = player_id
+    };
+
+    struct move_t best_move = {.t = NO_TYPE};
+    int best_dist = INT_MAX;
+    struct move_t options[100];
+    int nb = availableMoves(options, g, &player, opp_pos);
+
+    for (int i = 0; i < nb; ++i) {
+        struct move_t move = options[i];
+        struct player_tt p_sim = player;
+        if (!apply_move(g, &p_sim, move, opp_pos)) continue;
+        int dist = s_p(g, p_sim.position, target);
+        if (dist >= 0 && dist < best_dist) {
+            best_move = move;
+            best_dist = dist;
+        }
+    }
+    if (best_move.t == NO_TYPE && player.walls > 0) {
+        vertex_t adv_pos = opp_pos;
+        vertex_t adv_target = get_next_closest_objective(g, adv_pos);
+        int dist_before = s_p(g, adv_pos, adv_target);
+        int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+        int l, c;
+        index_to_axial(adv_pos, m, &l, &c);
+
+        for (int d = 1; d < 7; ++d) {
+            int l1 = l + blackpink[d].l;
+            int c1 = c + blackpink[d].c;
+            if (!in_hexagon_T(l1, c1, m, 0, 0)) continue;
+
+            vertex_t to = axial_to_index(l1, c1, m);
+            struct move_t wall = {
+                .t = WALL,
+                .c = player_id,
+                .e[0].fr = adv_pos,
+                .e[0].to = to,
+                .e[1].fr = adv_pos,
+                .e[1].to = to
+            };
+
+            if (valid_wall(g, &player, wall)) {
+                struct graph_t g_copy;
+                copy_graph(&g_copy, g);
+                place_wall(&g_copy, &player, wall);
+                int dist_after = s_p(&g_copy, adv_pos, adv_target);
+
+                if (dist_after > dist_before &&
+                    path_to_objective_exists(&g_copy, adv_pos, g->objectives, g->num_objectives)) {
+                    best_move = wall;
+                    printf("Jennie pose un mur entre les sommets %u-%u et %u-%u\n",
+                           wall.e[0].fr, wall.e[0].to, wall.e[1].fr, wall.e[1].to);
+                    free(g_copy.t->data);
+                    gsl_spmatrix_uint_free(g_copy.t);
+                    break;
+                }
+
+                free(g_copy.t->data);
+                gsl_spmatrix_uint_free(g_copy.t);
+            }
         }
     }
 
-    return make_move_no_type();
-}
-
-
-
-
-/*struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
-
-    move.t = NO_TYPE;
-    move.c = previous_move.c == NO_COLOR ? BLACK : (previous_move.c + 1) % 2;
-    move.m = 0; 
-    move.e[0].fr = move.e[0].to = 0;
-    move.e[1].fr = move.e[1].to = 0;
-
-    printf("👻 Player %d plays a NO_TYPE move (mock behavior)\n", move.c);
-
-    if (board != NULL) {
-        add_move_to_board(board, move);
-    } else {
-        printf("Board non initialisé dans play()\n");
+    add_move_to_board(board, best_move);
+    if (best_move.t == MOVE) {
+        my_last_position = board->current_positions[player_id];
+        board->current_positions[player_id] = best_move.m;
     }
 
-    return move;
+    printf("DEBUG PLAY Jennie: from %u (last %u) to %u\n",
+           my_pos, my_last_position, best_move.m);
+
+    return best_move;
 }
-*/
 
 
 void finalize() {
