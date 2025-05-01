@@ -135,7 +135,7 @@ char const* get_player_name() {
     return "Jennie";
 }
 
-void initialize(unsigned int id, struct graph_t *graph) {
+/*void initialize(unsigned int id, struct graph_t *graph) {
     player_id = id;
     board = board_init();
     board->graph = malloc(sizeof(struct graph_t));
@@ -144,7 +144,26 @@ void initialize(unsigned int id, struct graph_t *graph) {
     board->current_positions[0] = graph->start[0];
     board->current_positions[1] = graph->start[1];
     my_last_position = initial_position;
-}
+}*/
+
+void initialize(unsigned int id, struct graph_t* graph) {
+    board = board_init();
+    // board->graph = malloc(sizeof(struct graph_t));
+    board->graph = graph;
+      if (!board->graph) {
+          fprintf(stderr, "Erreur allocation du graph\n");
+          exit(EXIT_FAILURE);
+      }
+  
+      // copy_graph(board->graph, graph); 
+    player_id = id;
+    initial_position = graph->start[id];
+    board->current_positions[0] = graph->start[0];
+    board->current_positions[1] = graph->start[1];
+    my_last_position = initial_position;
+    printf("Player %d initialized on graph with %u vertices and %u edges , and with %u objectives\n", id , board->graph-> num_vertices , board->graph->num_edges , board->graph->num_objectives);
+  
+  }
 
 const struct axial_t blackpink[7] = {
     {0, 0},  // No edge
@@ -217,6 +236,7 @@ struct move_t play(const struct move_t previous_move) {
             best_dist = dist;
         }
     }
+
     if (best_move.t == NO_TYPE && player.walls > 0) {
         vertex_t adv_pos = opp_pos;
         vertex_t adv_target = get_next_closest_objective(g, adv_pos);
@@ -249,13 +269,15 @@ struct move_t play(const struct move_t previous_move) {
                 if (dist_after > dist_before &&
                     path_to_objective_exists(&g_copy, adv_pos, g->objectives, g->num_objectives)) {
                     best_move = wall;
-                    printf("Jennie pose un mur entre les sommets %u-%u et %u-%u\n",
+                    printf("Jennie pose un mur entre %u-%u et %u-%u\n",
                            wall.e[0].fr, wall.e[0].to, wall.e[1].fr, wall.e[1].to);
+                    free(g_copy.objectives);
                     free(g_copy.t->data);
                     gsl_spmatrix_uint_free(g_copy.t);
                     break;
                 }
 
+                free(g_copy.objectives);
                 free(g_copy.t->data);
                 gsl_spmatrix_uint_free(g_copy.t);
             }
@@ -263,16 +285,21 @@ struct move_t play(const struct move_t previous_move) {
     }
 
     add_move_to_board(board, best_move);
+
     if (best_move.t == MOVE) {
         my_last_position = board->current_positions[player_id];
         board->current_positions[player_id] = best_move.m;
+        printf(" Jennie se déplace de %u à %u\n", my_pos, best_move.m);
+    } else if (best_move.t == WALL) {
+        printf(" Mur validé pour Jennie\n");
+    } else {
+        printf(" Aucun coup trouvé — Jennie passe\n");
     }
-
-    printf("DEBUG PLAY Jennie: from %u (last %u) to %u\n",
-           my_pos, my_last_position, best_move.m);
 
     return best_move;
 }
+
+
 
 
 void finalize() {
