@@ -9,8 +9,6 @@
 
 
 
-
-
 struct move_t create_move(enum player_color_t color, enum move_type_t type, vertex_t vertex, struct edge_t edges[2]) {
     struct move_t move;
     move.c = color;

@@ -28,4 +28,5 @@ struct move_t make_move_move(enum player_color_t color, vertex_t dest);
 int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist, vertex_t opponent_pos, vertex_t* result);
 void get_side_dir_30(enum dir_t dir, enum dir_t* d1, enum dir_t* d2);
 struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t opponent, enum dir_t prev_dir, enum player_color_t color);
+int get_neighbors(struct graph_t* graph, vertex_t v, vertex_t* out, int max_out);
 #endif // _CORS_BOARD_H_

@@ -192,3 +192,14 @@ struct move_t make_move_move(enum player_color_t color, vertex_t dest) {
     return move;
 }
 
+
+int get_neighbors(struct graph_t* graph, vertex_t v, vertex_t* out, int max_out) {
+    if (v >= graph->num_vertices) return 0;
+    int count = 0;
+    for (vertex_t i = 0; i < graph->num_vertices && count < max_out; i++) {
+        if (gsl_spmatrix_uint_get(graph->t, v, i) != 0) {
+            out[count++] = i;
+        }
+    }
+    return count;
+}
