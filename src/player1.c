@@ -74,15 +74,7 @@ void initialize(unsigned int id, struct graph_t* graph) {
     }
     return move;
 }*/
-int get_neighbors(struct graph_t* graph, vertex_t v, vertex_t* out, int max_out) {
-    int count = 0;
-    for (vertex_t i = 0; i < graph->num_vertices && count < max_out; i++) {
-        if (gsl_spmatrix_uint_get(graph->t, v, i) != 0) {
-            out[count++] = i;
-        }
-    }
-    return count;
-}
+
 struct move_t make_move_no_type() {
     struct move_t move;
     move.t = NO_TYPE;
