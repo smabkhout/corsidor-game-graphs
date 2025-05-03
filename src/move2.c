@@ -270,20 +270,21 @@ struct move_t make_move_moove(enum player_color_t color, vertex_t dest) {
     return move;
 }
 
-struct move_t* make_wall_move(enum player_color_t color, vertex_t fr, vertex_t to) {
+struct move_t* make_wall_move(enum player_color_t color,vertex_t fr1, vertex_t to1,vertex_t fr2, vertex_t to2) {
     struct move_t* move = malloc(sizeof(struct move_t));
     if (!move) {
-        fprintf(stderr, "Erreur d'allocation mémoire pour le mur\n");
-        exit(EXIT_FAILURE);
+      fprintf(stderr, "Erreur d'allocation mémoire pour le mur\n");
+      exit(EXIT_FAILURE);
     }
     move->t = WALL;
     move->c = color;
-    move->e[0].fr = fr;
-    move->e[0].to = to;
-    move->e[1].fr = fr;
-    move->e[1].to = to;
+    move->e[0].fr = fr1;
+    move->e[0].to = to1;
+    move->e[1].fr = fr2;
+    move->e[1].to = to2;
     return move;
 }
+
 
 //
 
@@ -304,7 +305,7 @@ int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_
 
 
 
-int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
+/*int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   (void) opponent;
   for (vertex_t i = 0; i < graph->num_vertices; i++) {
@@ -330,12 +331,12 @@ int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_t
     }
   }
   return nb_moves;
-}
+}*/
 
 int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   nb_moves += availableMovess(moves, graph, p, opponent);
-  //nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
+//  nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
   return nb_moves;
 }
 

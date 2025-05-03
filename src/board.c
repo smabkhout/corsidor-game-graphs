@@ -180,9 +180,6 @@ struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t oppon
 }
 
 
-enum dir_t get_direction(vertex_t from, vertex_t to, struct graph_t* graph) {
-    return gsl_spmatrix_uint_get(graph->t, from, to);
-}
 
 struct move_t make_move_move(enum player_color_t color, vertex_t dest) {
     struct move_t move;
