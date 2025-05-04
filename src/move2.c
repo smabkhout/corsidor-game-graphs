@@ -386,6 +386,7 @@ int main(){
   p.position = 6;
   p.last_position = 0;
   p.c = 0;
+  
   int result2 = valid_move(g, &p, 30, 21);
   printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
 }
