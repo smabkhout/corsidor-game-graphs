@@ -185,7 +185,7 @@ struct move_t play(const struct move_t previous_move) {
   int min_distance = INT_MAX;
   int obj_index;
   for (int i = 0; i < numberOfObjectives; ++i) {
-    if (!visited_objectives[i] && distances_to_objectives[i] < min_distance) {
+    if (!visited_objectives[i] && distances_to_objectives[i] < min_distance && distances_to_objectives[i] != -1) {
       obj_index = i;
       min_distance = distances_to_objectives[i];
     }
@@ -219,10 +219,34 @@ struct move_t play(const struct move_t previous_move) {
   }
   */
   int length = min_distance;
-  if (length == -1) {
-    puts("No valid path to an objective");
+  if (length == -1  || length ==INT_MAX) {
+    /*puts("No valid path to an objective");
     move.t = NO_TYPE;
-    return move;
+    return move;*/
+          struct move_t availableMovees[128] ;
+          struct player_tt p;
+          p.position = my_pos;
+          p.last_position = my_last_pos ;
+          p.c = player_id;
+          //id of player
+
+          int result = availableMoves(availableMovees, board->graph, &p, opp_pos);
+          /*
+          for (int i = 0 ; i<result ; i++){
+            printf(" moves disponible %d \n " ,availableMovees[i].m  ) ; 
+          }
+          */
+           // puts("\n") ; 
+          for (int i = 0 ; i < result ; i++){
+            printf(" moves disponible %d \n " ,availableMovees[i].m  ) ; 
+            availableMovees[i].t = MOVE ;
+            availableMovees[i].c = player_id ;
+            if (availableMovees[i].m != my_pos){
+                my_last_pos = my_pos ; 
+                my_pos = availableMovees[i].m ;
+                return availableMovees[i];
+            }
+          }
   } /*else if (!length) {
       puts("Player is already in objective");
       move.t = NO_TYPE;
@@ -258,3 +282,5 @@ void finalize() {
     board = NULL;
   }
 }
+
+
