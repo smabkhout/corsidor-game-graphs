@@ -59,6 +59,9 @@ void initialize(unsigned int id, struct graph_t *graph) {
          board->graph->num_objectives);
 
   home = board->graph->start[player_id];
+  opp_pos = board->graph->start[(player_id + 1) % NUM_PLAYERS];
+  my_pos = board->graph->start[player_id];
+  my_last_pos= board->graph->start[player_id];
 }
 
 int get_neighbors(struct graph_t *graph, vertex_t v, vertex_t *out,
@@ -81,49 +84,25 @@ struct move_t make_move_no_type() {
   return move;
 }
 
-struct move_t play(const struct move_t previous_move) {
 
-  // int num_ofObjective = numberOfObjectives;
-  if (my_pos == (unsigned int)-1)
-    my_pos = board->graph->start[player_id];
-  if (opp_pos == (unsigned int)-1)
-    opp_pos = board->graph->start[(player_id + 1) % NUM_PLAYERS];
+
+struct move_t play(const struct move_t previous_move) {
 
   if (previous_move.t == MOVE && previous_move.c != player_id) {
     opp_pos = previous_move.m;
   }
+  if (previous_move.t == WALL && previous_move.c != player_id) {
 
-  /*
-  // si board ->size_moves <4 ; fait un move aleatoire
-  if (board->size_moves < 4) {
-      while(1){
-      struct move_t move;
-      move.t = MOVE;
-      move.c = player_id;
-      move.m = rand() % board->graph->num_vertices;
-      struct player_tt p;
-      p.position = my_pos;
-      p.last_position = board->moves[board->size_moves - 4].m;
-      p.c = player_id;
-      if (valid_move(board->graph, &p, move.m, my_pos)) {
-          return move;
-      }
-
-      }
-  } else { */
-  /*
-struct move_t *moove = malloc(sizeof(struct move_t));
-struct move_t availbel[128];
-struct player_tt p;
-p.position = my_pos;
-p.last_position = board->moves[board->size_moves - 4].m;
-p.c = player_id;
-//id of player
-
-int count = availableMoves(availbel, board->graph, &p, opp_pos);
-int score=0 ;
-
-*/
+    unsigned int* temp = gsl_spmatrix_uint_ptr(board->graph->t, previous_move.e[0].fr, previous_move.e[0].to);
+    *temp = 7;
+    unsigned int* temp1 = gsl_spmatrix_uint_ptr(board->graph->t, previous_move.e[1].fr, previous_move.e[1].to);
+    *temp1 = 7;
+    unsigned int* temp3 = gsl_spmatrix_uint_ptr(board->graph->t, previous_move.e[0].to, previous_move.e[0].fr);
+    *temp3= 7;
+    unsigned int* temp4 = gsl_spmatrix_uint_ptr(board->graph->t, previous_move.e[1].to, previous_move.e[1].fr);
+    *temp4 = 7;
+  }
+  
   for (int i = 0; i < numberOfObjectives; i++) {
     if (my_pos == board->graph->objectives[i]) {
       visited_objectives[i] = 1;
@@ -135,7 +114,7 @@ int score=0 ;
     if (visited_objectives[i] == 0)
       all_objectives_are_visited = 0;
   }
-      if (all_objectives_are_visited){
+  if (all_objectives_are_visited){
           if (return_toHome){
           struct move_t availableMovees[128] ;
           struct player_tt p;
@@ -172,7 +151,7 @@ int score=0 ;
           printf("returning to home : %d\n" , home ) ;
           printf("position of the other player %d :\n" , opp_pos); 
           vertex_t objectif = home;
-          int result =shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile,my_last_pos) +1 ;
+          int result =shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile,my_last_pos)+1 ;
           printf("resultat %d  " , result) ;
           for (int i =0 ;i<result ; i++){
              printf(" %d;" , lile[i]);
@@ -193,46 +172,7 @@ int score=0 ;
 
       }
 
-     
 
-      /*
-  if (all_objectives_are_visited) { // on retourne a la position initiale
-    vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
-    int length = shortest_path_length(board->graph, my_pos, home, opp_pos, path,
-                                      my_last_pos);
-
-    struct move_t move;
-    move.c = player_id;
-    move.t = MOVE;
-    if (length == -1) {
-        puts("AAAAAA");
-        printf("%d\n", home);
-      puts("No valid path to an objective");
-      move.t = NO_TYPE;
-      free(path);
-      return move;
-    } else {
-      printf("Player %d found this path using dijkstra :\n", player_id);
-      for (vertex_t v = 0; path[v] != (unsigned int)-1; ++v) {
-        printf("%d, ", path[v]);
-      }
-      printf("\n");
-      move.m = path[1];
-      my_last_pos = my_pos;
-      my_pos = move.m;
-      free(path);
-      return move;
-    }
-  } */
-
-  /*
-      struct move_t move;
-      vertex_t *path = malloc(board->graph->num_vertices * sizeof(vertex_t));
-      path[0] = 0;
-      path[1] = 0;
-       int start ;
-       int taille = 100000;
-  */
 
   // calculate all distances to non-visited objectives
   vertex_t **paths = malloc(sizeof(vertex_t *) * numberOfObjectives);
@@ -318,28 +258,6 @@ int score=0 ;
       return *moove;
       */
 }
-
-// }
-
-/*struct move_t play(const struct move_t previous_move) {
-    struct move_t move;
-
-    move.t = NO_TYPE;
-    move.c = previous_move.c == NO_COLOR ? BLACK : (previous_move.c + 1) % 2;
-    move.m = 0;
-    move.e[0].fr = move.e[0].to = 0;
-    move.e[1].fr = move.e[1].to = 0;
-
-    printf("👻 Player %d plays a NO_TYPE move (mock behavior)\n", move.c);
-
-    if (board != NULL) {
-        add_move_to_board(board, move);
-    } else {
-        printf("Board non initialisé dans play()\n");
-    }
-
-    return move;
-}*/
 
 void finalize() {
   if (visited_objectives) {
