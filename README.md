@@ -23,3 +23,10 @@ make test → lance les tests
 make install → installe server, .so, et alltests
 
 make clean → nettoie tout
+
+Clang-format rules :
+
+find . -name '*.c' -o -name '*.h' | xargs clang-format -i 
+( on fait . si on veut appliquer clang-format sur les fichier sur le dépôt actuel sinon on met le chemin des autres fichiers qu'on veut tester)
+
+

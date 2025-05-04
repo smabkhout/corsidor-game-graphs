@@ -34,23 +34,6 @@ void index_to_axial(int index, int m, int *l, int *c) {
     }
   }
 }
-/*void test_index_axial_inverse(int m) {
-  int total = 0;
-  for (int l = 1 - m; l < m; ++l) {
-    for (int c = 1 - m; c < m; ++c) {
-      if (in_hexagon_T(l, c, m, 0, 0)) {
-        int index = axial_to_index(l, c, m);
-        int l2, c2;
-        index_to_axial(index, m, &l2, &c2);
-        // Vérification : aller-retour (l,c) -> index -> (l2,c2)
-        assert(l == l2);
-        assert(c == c2);
-        ++total;
-      }
-    }
-  }
-  printf("✔️  Tous les %d tests index <-> axial ont réussi pour m = %d\n", total, m);
-  }*/
 //recois en entre ligne + colone et revoie la direction 
 int direction_axial(int dl, int dc) {
   for (int d = 1; d < 7; ++d) {
@@ -60,25 +43,12 @@ int direction_axial(int dl, int dc) {
   return 0;
 }
 
-/*void test_direction_axial() {
-  // Tests valides
-  assert(direction_axial(1, -1) == 1);   // NW
-  assert(direction_axial(1, 0) == 2);    // NE
-  assert(direction_axial(0, 1) == 3);    // E
-  assert(direction_axial(-1, 1) == 4);   // SE
-  assert(direction_axial(-1, 0) == 5);   // SW
-  assert(direction_axial(0, -1) == 6);   // W
-
-  // Cas invalide : aucun vecteur de direction
-  assert(direction_axial(0, 0) == 0);
-  assert(direction_axial(2, -1) == 0);
-  assert(direction_axial(-1, -1) == 0);
-
-  printf("✔️  Tous les tests de direction_axial sont passés avec succès.\n");
-  }*/
-
 // Renvoie vrai si le déplacement est possible selon les règles
 int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t opponent_pos) {
+
+ // printf("DEBUG VALID_MOVE: from %u (last %u) to %u, opponent at %u\n", p->position, p->last_position, target, opponent_pos);
+
+
   if (p->position == target || opponent_pos == target)
     return 0; // Interdit de rester sur place
   
@@ -300,20 +270,21 @@ struct move_t make_move_moove(enum player_color_t color, vertex_t dest) {
     return move;
 }
 
-struct move_t* make_wall_move(enum player_color_t color, vertex_t fr, vertex_t to) {
+struct move_t* make_wall_move(enum player_color_t color,vertex_t fr1, vertex_t to1,vertex_t fr2, vertex_t to2) {
     struct move_t* move = malloc(sizeof(struct move_t));
     if (!move) {
-        fprintf(stderr, "Erreur d'allocation mémoire pour le mur\n");
-        exit(EXIT_FAILURE);
+      fprintf(stderr, "Erreur d'allocation mémoire pour le mur\n");
+      exit(EXIT_FAILURE);
     }
     move->t = WALL;
     move->c = color;
-    move->e[0].fr = fr;
-    move->e[0].to = to;
-    move->e[1].fr = fr;
-    move->e[1].to = to;
+    move->e[0].fr = fr1;
+    move->e[0].to = to1;
+    move->e[1].fr = fr2;
+    move->e[1].to = to2;
     return move;
 }
+
 
 //
 
@@ -334,7 +305,7 @@ int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_
 
 
 
-int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
+/*int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   (void) opponent;
   for (vertex_t i = 0; i < graph->num_vertices; i++) {
@@ -360,12 +331,12 @@ int availableWalls(struct move_t moves[], struct graph_t *graph, struct player_t
     }
   }
   return nb_moves;
-}
+}*/
 
 int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p ,vertex_t opponent) {
   int nb_moves = 0;
   nb_moves += availableMovess(moves, graph, p, opponent);
-  //nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
+//  nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
   return nb_moves;
 }
 
@@ -405,83 +376,5 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
         };
       }
     }
-
-    // Facultatif : pour éviter boucle infinie si bloqué (sécurité)
-    // Tu peux ajouter un compteur max essais si tu veux
   }
 }
-
-/*
-//test availableMoves
-int test_availableMoves() {
-  int m = 5;
-  struct graph_t* g = createGraph(m, TRIANGULAR);
-  struct player_tt p;
-  p.last_position = 0;   // déplacement précédent depuis (0,0)
-  p.position = 1;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
-  p.walls = 10;
-  p.c = 0;
-
-  vertex_t opp = 60;
-
-  struct move_t moves[1069];
-  int nb = availableMoves(moves, g, &p, opp);
-  
-  printf("Nombre de déplacements possibles : %d\n", nb);
-  for (int i = 0; i < nb; ++i) {
-    if (moves[i].t == MOVE)
-      printf("Move: %u ,",  moves[i].m);
-    else
-      printf("Wall: %u ,",  moves[i].e[0].fr);
-  }
-  
-  graph_free(g);
-  
-  return nb;
-}
-
-int main()  {
-  test_availableMoves();
-}
-*/
-
-/*
-int main() {
-  srand(time(NULL));
-  int m = 12;
-  struct graph_t* g = createGraph(m, HOLEY);
-  vertex_t opp = 7;
-
-  struct player_tt p;
-  p.last_position = 187;   // déplacement précédent depuis (0,0)
-  p.position = 188;// jusqu’à (0,1) → vecteur = (0,1), direction EAST
-  p.walls = 10;
-  p.c = 0;
-  g->start[p.c] = p.position;
-
-  // On teste un mouvement en ligne droite (EAST) à distance 1, 2, 3
- 
-  printf("position du joueur %d: \n", p.position );
-
-
-  // struct move_t move1 = generate_random_valid_move(g, &p, opp);
-  if(apply_move(g, &p, move1,opp))
-    printf("nouvelle position du joueur %d: \n", p.position );
-  else
-    printf("marche pas \n");
-  *//*
-  struct move_t moves[1069];
-  int nb = availableMoves(moves, g, &p, opp);
-  
-  printf("Nombre de déplacements possibles : %d\n", nb);
-  for (int i = 0; i < nb; ++i) {
-    printf(" %u ,",  moves[i].m);
-  }
-  printf("\n");
-  print_hex_grid(g);
-
-  
-    
-  graph_free(g);
-  return 0;
-}*/

@@ -2,6 +2,7 @@
 #include "graph_test.h"
 #include "move_test.h"
 #include "move2_test.h"
+#include "test_player.h"
 
 int main(){
     /*
@@ -22,6 +23,12 @@ int main(){
     test_valid_move();
     */
     test_dijkstra2();
+    test_neighbors_basic();
+    test_max_out_zero();
+    test_no_neighbors();
+    test_limit_max_out();
+    test_invalid_vertex();
+    printf("\tTest neighbors passed\n");
 
     return 0;
 }
