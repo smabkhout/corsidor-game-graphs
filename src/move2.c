@@ -123,7 +123,7 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
       vertex_t to = axial_to_index(l, c, m);
 
       int exists = gsl_spmatrix_uint_get(g->t, from, to);
-      if (exists == 0 || exists == 7) // pas d’arête ou mur
+      if (exists == 0 || exists == 7 || ((from == opponent_pos) && d==3 )) // pas d’arête ou mur
         break;
 
       if (to == target) {
@@ -377,4 +377,23 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
       }
     }
   }
+}
+
+
+int main(){
+  //test valid_move 
+  struct graph_t *g = createGraph(5, TRIANGULAR);
+  struct player_tt p;
+  p.position = 1;
+  p.last_position = 0;
+  p.c = 0;
+  vertex_t opponent_pos = 2;
+  vertex_t target = 3;
+  int result = valid_move(g, &p, target, opponent_pos);
+  printf("Valid move from %u to %u: %d\n", p.position, target, result);
+  p.position = 6;
+  p.last_position = 0;
+  p.c = 0;
+  int result2 = valid_move(g, &p, 30, 21);
+  printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
 }
