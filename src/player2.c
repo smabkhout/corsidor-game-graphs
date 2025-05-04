@@ -247,30 +247,13 @@ struct move_t play(const struct move_t previous_move) {
                 return availableMovees[i];
             }
           }
-  } /*else if (!length) {
-      puts("Player is already in objective");
-      move.t = NO_TYPE;
-      free(path);
-      return move;
-  }*/
-  else {
-    my_last_pos = my_pos;
-    my_pos = move.m;
-    return move;
-  }
-  /*
-  for (int i = 0; i < count; i++) {
-      struct move_t move;
-      move = availbel[i];
-      if ( length > score) {
-          score = length;
-          *moove = move;
-          }
-      free(path);
-      }
-      moove->c = player_id;
-      return *moove;
-      */
+  } 
+
+  my_last_pos = my_pos;
+  my_pos = move.m;
+  return move;
+  
+
 }
 
 void finalize() {
