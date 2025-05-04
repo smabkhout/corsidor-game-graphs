@@ -32,110 +32,6 @@ struct game_state applyy_move(const struct game_state *state,
 #include <limits.h>
 #include <stdbool.h>
 
-int normalized_shortest_path(struct game_state *state, int color) {
-  vertex_t current_pos = state->previous_moves[color].m;
-  vertex_t *objectives = state->graph->objectives;
-  unsigned int num_obj = state->graph->num_objectives;
-
-  // Vérifier si déjà sur un objectif
-  for (unsigned int i = 0; i < num_obj; i++) {
-    if (current_pos == objectives[i]) {
-      return 0; // Distance minimale
-    }
-  }
-
-  // Implémentation BFS pour trouver le plus court chemin
-  int *distances = malloc(state->graph->num_vertices * sizeof(int));
-  bool *visited = malloc(state->graph->num_vertices * sizeof(bool));
-
-  for (vertex_t v = 0; v < state->graph->num_vertices; v++) {
-    distances[v] = INT_MAX;
-    visited[v] = false;
-  }
-
-  vertex_t *queue = malloc(state->graph->num_vertices * sizeof(vertex_t));
-  size_t front = 0, back = 0;
-
-  distances[current_pos] = 0;
-  visited[current_pos] = true;
-  queue[back++] = current_pos;
-
-  int shortest_path = INT_MAX;
-
-  while (front < back) {
-    vertex_t u = queue[front++];
-
-    // Vérifier si c'est un objectif
-    for (unsigned int i = 0; i < num_obj; i++) {
-      if (u == objectives[i]) {
-        shortest_path = distances[u];
-        front = back; // Sortir de la boucle
-        break;
-      }
-    }
-
-    // Parcourir les voisins
-    for (size_t k = 0; k < state->graph->t->nz; k++) {
-      vertex_t row = state->graph->t->i[k];
-      vertex_t col = state->graph->t->p[k];
-      unsigned int val = state->graph->t->data[k];
-
-      if (row == u && val != WALL_DIR && !visited[col]) {
-        visited[col] = true;
-        distances[col] = distances[u] + 1;
-        queue[back++] = col;
-      }
-    }
-  }
-
-  free(distances);
-  free(visited);
-  free(queue);
-
-  // Normalisation entre 0 et 100 (0 = sur objectif, 100 = inaccessible)
-  if (shortest_path == INT_MAX) {
-    return 100; // Aucun chemin trouvé
-  }
-
-  // Normalisation basée sur la taille du graphe
-  int max_possible = state->graph->num_vertices / 2;
-  return (shortest_path * 100) / max_possible;
-}
-int harmonic_potential(struct game_state *state, int color) {
-  vertex_t current_pos = state->previous_moves[color].m;
-  (void) current_pos;
-  vertex_t opp_pos = state->previous_moves[1 - color].m;
-  vertex_t *objectives = state->graph->objectives;
-  (void) objectives;
-  unsigned int num_obj = state->graph->num_objectives;
-
-  // Calcul de la distance moyenne aux objectifs
-  int sum_dist = 0;
-  int reachable_obj = 0;
-
-  for (unsigned int i = 0; i < num_obj; i++) {
-    int dist = normalized_shortest_path(state, color);
-    if (dist < 100) { // Seulement si l'objectif est atteignable
-      sum_dist += dist;
-      reachable_obj++;
-    }
-  }
-
-  if (reachable_obj == 0)
-    return -50; // Aucun objectif atteignable
-
-  int avg_dist = sum_dist / reachable_obj;
-
-  // Calcul similaire pour l'adversaire
-  struct game_state opp_state = *state;
-  opp_state.previous_moves[color].m = opp_pos;
-  int opp_avg_dist = harmonic_potential(&opp_state, 1 - color);
-
-  // Potentiel harmonique: différence entre nos distances et celles de
-  // l'adversaire
-  return opp_avg_dist - avg_dist;
-}
-
 #include <limits.h>
 #include <stdbool.h>
 
@@ -164,7 +60,8 @@ vertex_t min_distance_vertex(struct distance_node *nodes, size_t num_vertices) {
 
 // Fonction principale Dijkstra
 int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
-                         vertex_t opponent_pos, vertex_t *path, vertex_t last_pos) {
+                         vertex_t opponent_pos, vertex_t *path,
+                         vertex_t last_pos) {
   if (start == objective)
     return 0;
   int path_length = 0;
@@ -233,7 +130,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     }
 
     nodes[u].visited = true;
-    vertex_t* neighbors = malloc(sizeof(vertex_t)*6*3);
+    vertex_t *neighbors = malloc(sizeof(vertex_t) * 6 * 3);
     int count = 0;
     // Parcourir tous les voisins de u
     for (vertex_t v = 0; v < n; ++v) {
@@ -254,7 +151,8 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
       return 0;
     }
 
-    // s'assurer que dijkstra maintenant va prioriser les sauts de distance 3 si c'est possible
+    // s'assurer que dijkstra maintenant va prioriser les sauts de distance 3 si
+    // c'est possible
     for (int wanted_jump = 3; wanted_jump >= 1; --wanted_jump) {
       for (int i = 0; i < count; ++i) {
         vertex_t v = neighbors[i];
@@ -268,7 +166,8 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
         p.last_position = (u == start) ? last_pos : prev[u];
         int jump_distance = valid_move(g, &p, v, opponent_pos);
 
-        if (jump_distance == wanted_jump) { // 🎯 on regarde seulement ceux du bon saut
+        if (jump_distance ==
+            wanted_jump) { // 🎯 on regarde seulement ceux du bon saut
           if (nodes[u].distance + 1 < nodes[v].distance) {
             nodes[v].distance = nodes[u].distance + 1;
             ++nodes[v].num_moves; // distance en termes de sauts
@@ -319,7 +218,8 @@ int player_shortest_path_length(struct graph_t *g, struct player_tt *p,
 
   for (size_t i = 0; i < nb_obj; ++i) {
     int length =
-        shortest_path_length(g, p->position, objectives[i], opponent_pos, path, 0); // 0 just for the current error
+        shortest_path_length(g, p->position, objectives[i], opponent_pos, path,
+                             0); // 0 just for the current error
     if (length != -1 && length < min_length) {
       min_length = length;
     }
@@ -351,7 +251,13 @@ int evaluate(struct game_state *state, int color) {
   */
   // Calculer la distance entre le joueur et l'objectif
   vertex_t *vertex = malloc(100 * sizeof(vertex_t));
-   return shortest_path_length(state->graph , state->previous_moves[color].m ,state->graph->objectives[0], state->previous_moves[1-color].m ,vertex, 0) - shortest_path_length(state->graph , state->previous_moves[1-color].m ,state->graph->objectives[0], state->previous_moves[color].m ,vertex, 0); // 0 just for the current error
+  return shortest_path_length(state->graph, state->previous_moves[color].m,
+                              state->graph->objectives[0],
+                              state->previous_moves[1 - color].m, vertex, 0) -
+         shortest_path_length(state->graph, state->previous_moves[1 - color].m,
+                              state->graph->objectives[0],
+                              state->previous_moves[color].m, vertex,
+                              0); // 0 just for the current error
 }
 /*
 struct scored_move negamax(struct game_state *state, int depth, int alpha, int
@@ -546,7 +452,7 @@ struct scored_move minMax(struct game_state *state, int depth,
                           enum player_color_t maximizingPlayer) {
   enum player_color_t self = maximizingPlayer;
   enum player_color_t opponent = 1 - self;
-  (void) opponent;
+  (void)opponent;
   if (depth == 0 || is_game_over(state)) {
     int score = evaluate(state, self); // Score du point de vue du MAX
     return (struct scored_move){.move = state->previous_moves[self],
@@ -685,56 +591,51 @@ void test_evaluation_functions() {
   printf("\n");
 
   // === Test de la fonction de chemin le plus court ===
-  printf("\n--- Test du chemin le plus court ---\n"); 
+  printf("\n--- Test du chemin le plus court ---\n");
   vertex_t *path = malloc(graph->num_vertices * sizeof(vertex_t));
   graph->objectives[0] = 3;
   graph->start[0] = state.previous_moves[0].m;
-  graph->start[1] =8  ;
-  state.previous_moves[1].m = 8 ; 
-   state.previous_positions[1] = 7;
+  graph->start[1] = 8;
+  state.previous_moves[1].m = 8;
+  state.previous_positions[1] = 7;
   printf("previous position  : %d\n", state.previous_positions[0]);
   printf("previous position  : %d\n", state.previous_positions[1]);
   printf("previous move  : %d\n", state.previous_moves[0].m);
   printf("previous move  : %d\n", state.previous_moves[1].m);
   print_hex_grid(graph);
 
-  int length = shortest_path_length(graph, state.previous_moves[0].m,
-                                     graph->objectives[0],
-                                     state.previous_moves[1].m, path, 0); // 0 just for the current error
+  int length = shortest_path_length(
+      graph, state.previous_moves[0].m, graph->objectives[0],
+      state.previous_moves[1].m, path, 0); // 0 just for the current error
   printf(" Distance obtenue : %d\n", length);
-  //print path 
+  // print path
   for (int i = 0; path[i] != (unsigned int)-1; ++i) {
     printf("%d, ", path[i]);
   }
   printf("\n");
 
-
-  //pareil pour l'autre joueur (path )
-  vertex_t *path2 = malloc(graph->num_vertices * sizeof(vertex_t)); 
+  // pareil pour l'autre joueur (path )
+  vertex_t *path2 = malloc(graph->num_vertices * sizeof(vertex_t));
   graph->objectives[0] = 26;
   graph->start[0] = state.previous_moves[1].m;
   graph->start[1] = 0;
   state.previous_moves[0].m = 0;
-  state.previous_positions[0] = 1;  
+  state.previous_positions[0] = 1;
   printf("previous position  : %d\n", state.previous_positions[0]);
   printf("previous position  : %d\n", state.previous_positions[1]);
   printf("previous move  : %d\n", state.previous_moves[0].m);
   printf("previous move  : %d\n", state.previous_moves[1].m);
   print_hex_grid(graph);
   length = shortest_path_length(graph, state.previous_moves[1].m,
-                                 graph->objectives[0],
-                                 state.previous_moves[0].m, path2, 0);  // 0 just for the current error
+                                graph->objectives[0], state.previous_moves[0].m,
+                                path2, 0); // 0 just for the current error
   printf(" Distance obtenue : %d\n", length);
-  //print path
+  // print path
   for (int i = 0; path2[i] != (unsigned int)-1; ++i) {
     printf("%d, ", path2[i]);
   }
   printf("\n");
 
-
-  
-
-  
   // assert(length == 2); // Le chemin le plus court est de longueur 2
 
   // === Test de la fonction d'évaluation ===
@@ -818,8 +719,6 @@ void test_evaluation_functions() {
 
   printf("=== Tests terminés ===\n");
 }
-
-
 
 // Fonction pour initialiser un joueur
 void init_player(struct player_tt *p, vertex_t pos, vertex_t last_pos,
