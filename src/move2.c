@@ -379,7 +379,7 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
   }
 }
 
-
+/*
 int main(){
   //test valid_move 
   struct graph_t *g = createGraph(5, TRIANGULAR);
@@ -397,3 +397,4 @@ int main(){
   int result2 = valid_move(g, &p, 30, 21);
   printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
 }
+*/
