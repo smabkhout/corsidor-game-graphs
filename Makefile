@@ -10,7 +10,7 @@ LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 
 all: build
 
-build: server client install
+build: server client 
 
 build_tests: alltests
 
