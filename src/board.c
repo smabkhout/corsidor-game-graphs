@@ -110,25 +110,32 @@ int is_invalid(struct move_t move, struct board_t* board) {
 
     return 1; 
 }
-
 int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist, vertex_t opponent_pos, vertex_t* result) {
+    if (from >= graph->num_vertices)
+        return 0;
+
     vertex_t current = from;
+
     for (int i = 0; i < dist; i++) {
         int found = 0;
+
         for (vertex_t v = 0; v < graph->num_vertices; v++) {
             if (gsl_spmatrix_uint_get(graph->t, current, v) == dir) {
-                if (v == opponent_pos) return 0; 
+                if (v == opponent_pos)
+                    return 0;
                 current = v;
                 found = 1;
                 break;
             }
         }
-        if (!found) return 0; 
-    }
-    *result = current;
-    return 1;
-}
 
+        if (!found)
+            return 0;
+    }
+
+    *result = current;
+    return 1; 
+}
 
 
 static const enum dir_t directions[] = {NW, NE, E, SE, SW, W};

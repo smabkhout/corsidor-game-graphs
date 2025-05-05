@@ -29,7 +29,7 @@ void test_neighbors_basic() {
     assert((out[0] == 1 && out[1] == 2) || (out[0] == 2 && out[1] == 1));
 
     graph_free(g);
-    printf("test_neighbors_basic ✅\n");
+    printf("test_neighbors_basic \n");
 }
 
 void test_max_out_zero() {
@@ -42,7 +42,7 @@ void test_max_out_zero() {
     assert(count == 0);
 
     graph_free(g);
-    printf("test_max_out_zero ✅\n");
+    printf("test_max_out_zero \n");
 }
 
 void test_no_neighbors() {
@@ -54,7 +54,7 @@ void test_no_neighbors() {
     assert(count == 0);
 
     graph_free(g);
-    printf("test_no_neighbors ✅\n");
+    printf("test_no_neighbors \n");
 }
 
 void test_limit_max_out() {
@@ -70,7 +70,7 @@ void test_limit_max_out() {
     assert(out[0] != out[1]);
 
     graph_free(g);
-    printf("test_limit_max_out ✅\n");
+    printf("test_limit_max_out \n");
 }
 
 void test_invalid_vertex() {
@@ -81,20 +81,122 @@ void test_invalid_vertex() {
     assert(count == 0); 
 
     graph_free(g);
-    printf("test_invalid_vertex ✅\n");
+    printf("test_invalid_vertex \n");
 }
 
-/*void test_play(){
-    struct graph_t *g = createGraph(5, TRIANGULAR);
-    struct move_t prev = { .t = MOVE, .c = 0 };
-    initialize(0, g); 
-    struct move_t m = play(prev);
-    printf("Type de coup : %d\n", m.t);
-    if (m.t == MOVE) {
-        printf("Déplacement vers %u\n", m.m);
-    }
-    finalize();
-    graph_free(g);
-
+int visited_objectives[10] = {0};
+void free_graph(struct graph_t* g) {
+    if (g->t != NULL)
+        gsl_spmatrix_uint_free(g->t);
+    if (g->objectives != NULL)
+        free(g->objectives);
+    g->t = NULL;
+    g->objectives = NULL;
 }
-*/
+
+
+struct graph_t init_graph_example() {
+    struct graph_t g;
+    g.num_vertices = 7;
+    g.t = gsl_spmatrix_uint_alloc(g.num_vertices, g.num_vertices);
+    gsl_spmatrix_uint_set(g.t, 0, 1, E);
+    gsl_spmatrix_uint_set(g.t, 1, 2, E);
+    gsl_spmatrix_uint_set(g.t, 2, 3, E);
+
+    gsl_spmatrix_uint_set(g.t, 0, 5, NW);
+    gsl_spmatrix_uint_set(g.t, 1, 0, W);
+    gsl_spmatrix_uint_set(g.t, 2, 1, W);
+    gsl_spmatrix_uint_set(g.t, 3, 2, W);
+    gsl_spmatrix_uint_set(g.t, 4, 5, W);
+
+    g.objectives = malloc(3 * sizeof(vertex_t));
+    g.objectives[0] = 1;
+    g.objectives[1] = 3;
+    g.objectives[2] = 4;
+    g.num_objectives = 3;
+
+    return g;
+}
+
+
+void test_is_path_clear() {
+    struct graph_t g = init_graph_example();
+    vertex_t result;
+    int ok = is_path_clear(&g, 0, E, 3, 99, &result);
+    assert(ok == 1 && result == 3);
+    ok = is_path_clear(&g, 0, E, 3, 2, &result);
+    assert(ok == 0);
+    ok = is_path_clear(&g, 0, W, 1, 99, &result);
+    assert(ok == 0);
+    printf(" test_is_path_clear OK\n");
+    free_graph(&g);
+}
+
+void test_get_side_dir_30() {
+    enum dir_t d1, d2;
+
+    get_side_dir_30(E, &d1, &d2);
+    assert(d1 == NE && d2 == SE);
+
+    get_side_dir_30(NW, &d1, &d2);
+    assert(d1 == W && d2 == NE);
+
+    get_side_dir_30(NO_EDGE, &d1, &d2);
+    assert(d1 == NO_EDGE && d2 == NO_EDGE);
+
+    printf(" test_get_side_dir_30 OK\n");
+}
+
+void test_find_best_move() {
+    struct graph_t g = init_graph_example();
+    struct move_t m = find_best_move(&g, 0, 99, E, BLACK);
+    assert(m.t == MOVE && m.m == 3);
+    m = find_best_move(&g, 0, 2, E, BLACK);
+    assert(m.t == MOVE && (m.m == 2 || m.m == 1));
+    m = find_best_move(&g, 0, 1, NO_EDGE, BLACK);
+    assert(m.t == MOVE); 
+    printf(" test_find_best_move OK\n");
+    free_graph(&g);
+}
+
+/*void test_get_next_closest_objective() {
+    struct graph_t g = init_graph_example();
+    g.objectives[0] = 3;
+    g.objectives[1] = 4;
+    g.num_objectives = 2;
+
+    visited_objectives[3] = 0;
+    visited_objectives[4] = 0;
+    vertex_t next = get_next_closest_objective(&g, 0);
+    assert(next == 3);
+
+    visited_objectives[3] = 1;
+    next = get_next_closest_objective(&g, 0);
+    assert(next == 4);
+
+    visited_objectives[4] = 1;
+    next = get_next_closest_objective(&g, 0);
+    assert(next == 0);  // renvoie position courante
+
+    printf("test_get_next_closest_objective OK\n");
+    free_graph(&g);
+}
+
+
+void test_all_objectives_visited() {
+    struct graph_t g = init_graph_example();
+    g.objectives[0] = 1;
+    g.objectives[1] = 2;
+    g.num_objectives = 2;
+    visited_objectives[1] = 1;
+    visited_objectives[2] = 1;
+    assert(all_objectives_visited(&g) == 1);
+    visited_objectives[2] = 0;
+    assert(all_objectives_visited(&g) == 0);
+    g.num_objectives = 0;
+    assert(all_objectives_visited(&g) == 1); // aucun
+    printf(" test_all_objectives_visited OK\n");
+    free_graph(&g);
+}*/
+
+

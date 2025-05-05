@@ -30,5 +30,15 @@ int main(){
     test_invalid_vertex();
     printf("\tTest neighbors passed\n");
 
+    test_is_path_clear();
+    test_get_side_dir_30();
+    test_find_best_move();
+    //test_get_next_closest_objective();
+   // test_all_objectives_visited();
+
+    printf("\tTest first player strategy\n");
+
+
+
     return 0;
 }
