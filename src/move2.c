@@ -95,20 +95,28 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target,
     dl_prev /= max_abs;
     dc_prev /= max_abs;
   }
-
   int prev_dir = direction_axial(dl_prev, dc_prev);
+  if (dl_prev == 0 && dc_prev == 0){
+    prev_dir = 0; // Aucun déplacement précédent valide
+
+  }
   /*
     if (prev_dir == 0)
       return 0; // Aucun déplacement précédent valide
   */
   // Vérifier les directions possibles
   for (int dir = 1; dir < 7; ++dir) {
+
     int max_dist = 1;
+    if (prev_dir==0){
+      max_dist = 1; // Premier mouvement
+    }
+    else {
     if (dir == prev_dir)
       max_dist = 3;
     else if ((dir == (prev_dir % 6) + 1) || (dir == (prev_dir + 4) % 6 + 1))
       max_dist = 2; // directions adjacentes (±30°)
-
+    }
     int l = l1;
     int c = c1;
 
@@ -371,16 +379,28 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
   }
 }
 
-/*
+
 int main(){
   //test valid_move
-  struct graph_t *g = createGraph(5, TRIANGULAR);
+  struct graph_t *g = createGraph(6, TRIANGULAR);
+  g->num_objectives = 1 ; 
+  g->objectives[0] = 29;
   struct player_tt p;
-  p.position = 1;
-  p.last_position = 0;
+  p.position = 50;
+  p.last_position = 50;
   p.c = 0;
-  vertex_t opponent_pos = 2;
-  vertex_t target = 3;
+  vertex_t opponent_pos = 0;
+  vertex_t target = 29;
+  int *path = malloc(g->num_vertices * sizeof(int));
+  int dist = shortest_path_length(g, p.position, target, opponent_pos, path,
+                                  p.last_position);
+                          
+  printf("Shortest path length from %u to %u: %d\n", p.position, target, dist);
+  printf("Path: ");
+  for (int i = 0; i < dist+1; ++i) {
+    printf("%u ", path[i]);
+  }
+  printf("\n");
   int result = valid_move(g, &p, target, opponent_pos);
   printf("Valid move from %u to %u: %d\n", p.position, target, result);
   p.position = 6;
@@ -390,4 +410,3 @@ int main(){
   int result2 = valid_move(g, &p, 30, 21);
   printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
 }
-*/
