@@ -317,6 +317,11 @@ struct move_t play(const struct move_t previous_move) {
         continue;
       free(paths[i]);
     }
+    for (int i = 0; i < numberOfObjectives; ++i) {
+      if (visited_objectives_opp[i])
+        continue;
+      free(opp_paths[i]);
+    }
     free(paths);
     free(distances_to_objectives);
     free(opp_paths);
