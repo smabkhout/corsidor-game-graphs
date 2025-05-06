@@ -234,7 +234,7 @@ int main(int argc, char *argv[]) {
     last_positions[current_player] = current_positions[current_player];
     current_positions[current_player] = move.m;
     if (!valid_move(board->graph, current_player_ptr, move.m,
-                    moves_act[other_player].m)) {
+                    moves_act[other_player].m)&& move.t == MOVE) {
       int id = move.c;
       if (id != current_player) {
         printf("Player %s with id %d returned a move with id: %d\n",
@@ -256,7 +256,9 @@ int main(int argc, char *argv[]) {
     // board->graph->start[current_player] = players[current_player].pos_actuel;
     if (affichage)
       print_hex_grid(board->graph);
-
+    if (move.t==WALL){
+        printf("the player %s put a wal from %d to %d and from %d to %d " ,players[current_player].get_player_name(), move.e[0].fr ,move.e[0].to , move.e[1].fr , move.e[1].to  );
+    }
     printf("Turn %d: Player %s plays %s from %u to vertex %u, his id is: %d\n",
            turn_count, players[current_player].get_player_name(),
            move_type_to_string(move.t), players[current_player].pos_actuel,
