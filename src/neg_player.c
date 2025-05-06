@@ -333,102 +333,127 @@ struct move_t play(const struct move_t previous_move) {
     assert(valid_wall(board->graph, p, wall));
     free(p);
     */
-   
-    unsigned int *temp  = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
-    *temp               = 7;
-    unsigned int *temp1 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to);
-    *temp1              = 7;
-    unsigned int *temp3 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].to, wall.e[0].fr);
-    *temp3              = 7;
-    unsigned int *temp4 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
-    *temp4              = 7;
+
+    // now we need to check whether there is a path to all objectives or not in order not to cut the
+    // road for the opponent
+    int blocked = 0;
+
+    unsigned int *temp      = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
+    unsigned int  old_temp  = *temp;
+    *temp                   = 7;
+    unsigned int *temp1     = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to);
+    unsigned int  old_temp1 = *temp1;
+    *temp1                  = 7;
+    unsigned int *temp3     = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].to, wall.e[0].fr);
+    unsigned int  old_temp3 = *temp3;
+    *temp3                  = 7;
+    unsigned int *temp4     = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
+    unsigned int  old_temp4 = *temp4;
+    *temp4                  = 7;
 
     for (int i = 0; i < numberOfObjectives; ++i) {
-      if (visited_objectives[i])
-        continue;
-      free(paths[i]);
+      vertex_t *opp_path = malloc(board->graph->num_vertices * sizeof(vertex_t));
+      int       distance = shortest_path_length(board->graph, opp_pos, board->graph->objectives[i],
+                                                my_pos, opp_path, opp_las_pos);
+      free(opp_path);
+      if (distance == -1) {
+        blocked = 1;
+        break;
+      }
     }
-    for (int i = 0; i < numberOfObjectives; ++i) {
-      if (visited_objectives_opp[i])
-        continue;
-      free(opp_paths[i]);
-    }
-    free(paths);
-    free(distances_to_objectives);
-    free(opp_paths);
-    free(opp_distances_to_objectives);
 
-    return wall;
-  } else {
-    struct move_t move;
-    move.c = player_id;
-    move.t = MOVE;
-    move.m = paths[obj_index][1];
-
-    printf("Player %d found this path using dijkstra :\n", player_id);
-    for (vertex_t v = 0; paths[obj_index][v] != (unsigned int)-1; ++v) {
-      printf("%d, ", paths[obj_index][v]);
+    if (!blocked) {
+      for (int i = 0; i < numberOfObjectives; ++i) {
+        if (visited_objectives[i])
+          continue;
+        free(paths[i]);
+      }
+      for (int i = 0; i < numberOfObjectives; ++i) {
+        if (visited_objectives_opp[i])
+          continue;
+        free(opp_paths[i]);
+      }
+      free(paths);
+      free(distances_to_objectives);
+      free(opp_paths);
+      free(opp_distances_to_objectives);
+      return wall;
+    } else {  // we return the graph to its original state and continue
+      *temp  = old_temp;
+      *temp1 = old_temp1;
+      *temp3 = old_temp3;
+      *temp4 = old_temp4;
     }
-    printf("\n");
+  }
 
-    for (int i = 0; i < numberOfObjectives; ++i) {
-      if (visited_objectives[i])
-        continue;
-      free(paths[i]);
-    }
-    for (int i = 0; i < numberOfObjectives; ++i) {
-      if (visited_objectives_opp[i])
-        continue;
-      free(opp_paths[i]);
-    }
-    free(paths);
-    free(distances_to_objectives);
-    free(opp_paths);
-    free(opp_distances_to_objectives);
+  struct move_t move;
+  move.c = player_id;
+  move.t = MOVE;
+  move.m = paths[obj_index][1];
 
+  printf("Player %d found this path using dijkstra :\n", player_id);
+  for (vertex_t v = 0; paths[obj_index][v] != (unsigned int)-1; ++v) {
+    printf("%d, ", paths[obj_index][v]);
+  }
+  printf("\n");
+
+  for (int i = 0; i < numberOfObjectives; ++i) {
+    if (visited_objectives[i])
+      continue;
+    free(paths[i]);
+  }
+  for (int i = 0; i < numberOfObjectives; ++i) {
+    if (visited_objectives_opp[i])
+      continue;
+    free(opp_paths[i]);
+  }
+  free(paths);
+  free(distances_to_objectives);
+  free(opp_paths);
+  free(opp_distances_to_objectives);
+
+  /*
+  for (int i = 0 ; i<num_ofObjective ; i++){
+      int t = shortest_path_length(board->graph, my_pos,
+  board->graph->objectives[0], opp_pos, path, my_last_pos); if (t<taille &&
+  visited_objectives[i]==0 ){ taille = t ; start = i ;
+      }
+  }
+  */
+  int length = min_distance;
+  if (length == -1 || length == INT_MAX) {
+    /*puts("No valid path to an objective");
+    move.t = NO_TYPE;
+    return move;*/
+    struct move_t    availableMovees[128];
+    struct player_tt p;
+    p.position      = my_pos;
+    p.last_position = my_last_pos;
+    p.c             = player_id;
+    // id of player
+
+    int result = availableMoves(availableMovees, board->graph, &p, opp_pos);
     /*
-    for (int i = 0 ; i<num_ofObjective ; i++){
-        int t = shortest_path_length(board->graph, my_pos,
-    board->graph->objectives[0], opp_pos, path, my_last_pos); if (t<taille &&
-    visited_objectives[i]==0 ){ taille = t ; start = i ;
-        }
+    for (int i = 0 ; i<result ; i++){
+      printf(" moves disponible %d \n " ,availableMovees[i].m  ) ;
     }
     */
-    int length = min_distance;
-    if (length == -1 || length == INT_MAX) {
-      /*puts("No valid path to an objective");
-      move.t = NO_TYPE;
-      return move;*/
-      struct move_t    availableMovees[128];
-      struct player_tt p;
-      p.position      = my_pos;
-      p.last_position = my_last_pos;
-      p.c             = player_id;
-      // id of player
-
-      int result = availableMoves(availableMovees, board->graph, &p, opp_pos);
-      /*
-      for (int i = 0 ; i<result ; i++){
-        printf(" moves disponible %d \n " ,availableMovees[i].m  ) ;
-      }
-      */
-      // puts("\n") ;
-      for (int i = 0; i < result; i++) {
-        printf(" moves disponible %d \n ", availableMovees[i].m);
-        availableMovees[i].t = MOVE;
-        availableMovees[i].c = player_id;
-        if (availableMovees[i].m != my_pos) {
-          my_last_pos = my_pos;
-          my_pos      = availableMovees[i].m;
-          return availableMovees[i];
-        }
+    // puts("\n") ;
+    for (int i = 0; i < result; i++) {
+      printf(" moves disponible %d \n ", availableMovees[i].m);
+      availableMovees[i].t = MOVE;
+      availableMovees[i].c = player_id;
+      if (availableMovees[i].m != my_pos) {
+        my_last_pos = my_pos;
+        my_pos      = availableMovees[i].m;
+        return availableMovees[i];
       }
     }
-
-    my_last_pos = my_pos;
-    my_pos      = move.m;
-    return move;
   }
+
+  my_last_pos = my_pos;
+  my_pos      = move.m;
+  return move;
 }
 
 void finalize() {
