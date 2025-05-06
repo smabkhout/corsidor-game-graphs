@@ -10,17 +10,17 @@
 
 /* Possible directions of the graph */
 enum dir_t {
-  NO_EDGE = 0,
-  NW = 1,
-  NE = 2,
-  E = 3,
-  SE = 4,
-  SW = 5,
-  W = 6,
+  NO_EDGE   = 0,
+  NW        = 1,
+  NE        = 2,
+  E         = 3,
+  SE        = 4,
+  SW        = 5,
+  W         = 6,
   FIRST_DIR = NW,
-  LAST_DIR = W,
-  NUM_DIRS = 6,
-  WALL_DIR = 7,
+  LAST_DIR  = W,
+  NUM_DIRS  = 6,
+  WALL_DIR  = 7,
 };
 
 /* A function to determine the opposite direction of a direction `d` */
@@ -38,17 +38,17 @@ enum graph_type_t { TRIANGULAR = 0, CYCLIC = 1, HOLEY = 2 };
 
 /* The representation of a graph */
 struct graph_t {
-  enum graph_type_t type;     // The type of the graph
-  unsigned int num_vertices;  // Number of vertices in the graph
-  unsigned int num_edges;     // Number of edges in the graph
-  gsl_spmatrix_uint* t;  // Sparse matrix of size num_vertices*num_vertices,
-                         // t[i][j] > 0 means there is an edge from i to j
-                         // t[i][j] == E means that j is EAST of i
-                         // t[i][j] == W means that j is WEST of i
-                         // and so on
-  vertex_t start[NUM_PLAYERS];  // Starting vertices of both players
-  unsigned int num_objectives;  // Number of objectives in the graph
-  vertex_t* objectives;         // Objectives of the graph
+  enum graph_type_t  type;          // The type of the graph
+  unsigned int       num_vertices;  // Number of vertices in the graph
+  unsigned int       num_edges;     // Number of edges in the graph
+  gsl_spmatrix_uint* t;             // Sparse matrix of size num_vertices*num_vertices,
+                                    // t[i][j] > 0 means there is an edge from i to j
+                                    // t[i][j] == E means that j is EAST of i
+                                    // t[i][j] == W means that j is WEST of i
+                                    // and so on
+  vertex_t     start[NUM_PLAYERS];  // Starting vertices of both players
+  unsigned int num_objectives;      // Number of objectives in the graph
+  vertex_t*    objectives;          // Objectives of the graph
 };
 
 #endif  // _CORS_GRAPH_H_
