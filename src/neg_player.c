@@ -22,6 +22,7 @@ vertex_t opp_las_pos = -1;
 // static int has_played = 0;
 int numberOfObjectives;
 int *visited_objectives = NULL;
+int *visited_objectives_opp = NULL;
 vertex_t home;
 int return_toHome;
 
@@ -44,6 +45,8 @@ char const *get_player_name() {
 void initialize(unsigned int id, struct graph_t *graph) {
   numberOfObjectives = graph->num_objectives;
   visited_objectives = malloc(sizeof(int) * numberOfObjectives);
+  visited_objectives_opp =
+      malloc(sizeof(int) * numberOfObjectives);
   for (int i = 0; i < numberOfObjectives; i++) {
     visited_objectives[i] = 0;
   }
@@ -97,6 +100,11 @@ struct move_t play(const struct move_t previous_move) {
   for (int i = 0; i < numberOfObjectives; i++) {
     if (my_pos == board->graph->objectives[i]) {
       visited_objectives[i] = 1;
+    }
+  }
+  for (int i = 0; i < numberOfObjectives; i++) {
+    if (opp_pos == board->graph->objectives[i]) {
+      visited_objectives_opp[i] = 1;
     }
   }
 
@@ -187,7 +195,7 @@ struct move_t play(const struct move_t previous_move) {
   int p_count = 0;
   // calculate all distances to non-visited objectives for the opponent
   for (int i = 0; i < numberOfObjectives; ++i) {
-    if (visited_objectives[i]) {
+    if (visited_objectives_opp[i]) {
       opp_paths[i] = NULL;
       opp_distances_to_objectives[i] = -1;
       continue;
