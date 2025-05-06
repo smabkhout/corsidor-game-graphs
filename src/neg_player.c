@@ -38,7 +38,7 @@ const struct axial_t direec[7] = {
 
 char const *get_player_name() {
   srand(time(NULL));
-  char *names[] = {"adam", "rafiq"};
+  char *names[] = {"3aaazi", "rafiq"};
   return names[0];
 }
 
@@ -48,6 +48,10 @@ void initialize(unsigned int id, struct graph_t *graph) {
   visited_objectives_opp = malloc(sizeof(int) * numberOfObjectives);
   for (int i = 0; i < numberOfObjectives; i++) {
     visited_objectives[i] = 0;
+  }
+
+  for (int i = 0; i < numberOfObjectives; i++) {
+    visited_objectives_opp[i] = 0;
   }
   player_id = id;
   home      = graph->start[player_id];
@@ -149,9 +153,19 @@ struct move_t play(const struct move_t previous_move) {
     printf("returning to home : %d\n", home);
     printf("position of the other player %d :\n", opp_pos);
     vertex_t objectif = home;
-    int      result =
+    vertex_t temp     = opp_pos;
+    // cas particulier si l'adversaire est dans home quand le joueur essaie de revenir
+    if (objectif == opp_pos) {                   // à change apres par place wall
+      opp_pos = board->graph->num_vertices + 1;  // aller vers le sommet d'indice precedent
+    }
+    int result =
         shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) + 1;
-    printf("resultat %d  ", result);
+    if (result == 1 && objectif == temp) {
+      opp_pos = temp;
+      objectif -= 1;
+      result = shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) + 1;
+    }
+    printf("resultat : %d  ", result);
     for (int i = 0; i < result; i++) {
       printf(" %d;", lile[i]);
     }
@@ -215,15 +229,26 @@ struct move_t play(const struct move_t previous_move) {
   int min_distance_opp = INT_MAX;
   int obj_index_opp;
   for (int i = 0; i < numberOfObjectives; ++i) {
-    if (!visited_objectives[i] && opp_distances_to_objectives[i] < min_distance_opp &&
+    //print all variables in if for debug 
+    printf("visited_objectives_opp[%d] : %d \n", i, visited_objectives_opp[i]);
+    printf("opp_distances_to_objectives[%d] : %d \n", i, opp_distances_to_objectives[i]);
+    printf("min_distance_opp : %d \n", min_distance_opp);
+    printf("min_distance : %d \n", min_distance);
+    if (!visited_objectives_opp[i] && opp_distances_to_objectives[i] < min_distance_opp &&
         opp_distances_to_objectives[i] != -1) {
+      printf("distances to objectives for the opponent %d : %d \n",
+             opp_distances_to_objectives[i], i);
+      
       obj_index_opp    = i;
       min_distance_opp = opp_distances_to_objectives[i];
     }
   }
+  printf("my position : %d \n", my_pos);
+  printf("opponent position : %d \n", opp_pos);
+
   puts("the distances me to objectifes and opp to objectives :\n");
-  printf("me : %d \n", min_distance);
-  printf("opp : %d \n", min_distance_opp);
+  printf("my distance to the nearest objective : %d \n", min_distance);
+  printf("opp distance to the objective  : %d \n", min_distance_opp);
   if (min_distance_opp < min_distance) {
     // place a wall to stop him
     struct move_t wall;
@@ -261,6 +286,19 @@ struct move_t play(const struct move_t previous_move) {
     wall.e[0].to  = to1;
     wall.e[1].to  = to2;
     wall.m        = my_pos;
+    unsigned int *temp =
+        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
+    *temp = 7;
+    unsigned int *temp1 =
+        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to );
+    *temp1 = 7;
+    unsigned int *temp3 =
+        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].to,wall.e[0].fr);
+    *temp3 = 7;
+    unsigned int *temp4 =
+        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
+    *temp4 = 7;
+
     return wall;
   } else {
     struct move_t move;
@@ -332,6 +370,7 @@ struct move_t play(const struct move_t previous_move) {
 void finalize() {
   if (visited_objectives) {
     free(visited_objectives);
+    free(visited_objectives_opp);
   }
   if (board) {
     board_free(board);
