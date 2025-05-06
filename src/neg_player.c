@@ -25,6 +25,8 @@ int     *visited_objectives     = NULL;
 int     *visited_objectives_opp = NULL;
 vertex_t home;
 int      return_toHome;
+int      m                                                         = 0;
+int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
 
 const struct axial_t direec[7] = {
     {0, 0},   // No edge
@@ -43,9 +45,34 @@ char const *get_player_name() {
 }
 
 void initialize(unsigned int id, struct graph_t *graph) {
+  // Retrouver m
+  // int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+  // Choix de la fonction selon le type
+  switch (graph->type) {
+    case TRIANGULAR:
+      // Retrouver m depuis le nombre de sommets
+      m          = (int)((3 + sqrt(12 * graph->num_vertices - 3)) / 6);
+      in_hexagon = in_hexagon_T;
+      break;
+    case CYCLIC:
+      // Retrouver m depuis le nombre de sommets
+      m          = (int)((graph->num_vertices + 18) / 12);
+      in_hexagon = in_hexagon_C;
+      break;
+    case HOLEY:
+      // Retrouver m depuis le nombre de sommets
+      m          = (int)((-54 + sqrt(24 * graph->num_vertices + 4068)) / 4);
+      in_hexagon = in_hexagon_H;
+      break;
+    default:
+      puts("Invalid graph type");
+      return;
+  }
+
   numberOfObjectives     = graph->num_objectives;
   visited_objectives     = malloc(sizeof(int) * numberOfObjectives);
   visited_objectives_opp = malloc(sizeof(int) * numberOfObjectives);
+  return_toHome          = 0;
   for (int i = 0; i < numberOfObjectives; i++) {
     visited_objectives[i] = 0;
   }
@@ -102,8 +129,6 @@ struct move_t play(const struct move_t previous_move) {
     if (my_pos == board->graph->objectives[i]) {
       visited_objectives[i] = 1;
     }
-  }
-  for (int i = 0; i < numberOfObjectives; i++) {
     if (opp_pos == board->graph->objectives[i]) {
       visited_objectives_opp[i] = 1;
     }
@@ -246,7 +271,7 @@ struct move_t play(const struct move_t previous_move) {
   printf("my position : %d \n", my_pos);
   printf("opponent position : %d \n", opp_pos);
 
-  puts("the distances me to objectifes and opp to objectives :\n");
+  puts("the distances me to objectives and opp to objectives :\n");
   printf("my distance to the nearest objective : %d \n", min_distance);
   printf("opp distance to the objective  : %d \n", min_distance_opp);
   if (min_distance_opp < min_distance) {
@@ -256,12 +281,14 @@ struct move_t play(const struct move_t previous_move) {
     wall.c = player_id;
 
     // Convertir les index en coordonnées axiales
+    // opponent pos
     int l0 = 0;
     int c0 = 0;
+    // opponent next_pos (based on his shortest path)
     int l1 = 0;
     int c1 = 0;
-    index_to_axial(opp_pos, 5, &l0, &c0);
-    index_to_axial(opp_paths[obj_index_opp][1], 5, &l1, &c1);
+    index_to_axial(opp_pos, m, &l0, &c0);
+    index_to_axial(opp_paths[obj_index_opp][1], m, &l1, &c1);
 
     int dl_prev = l1 - l0;
     int dc_prev = c1 - c0;
@@ -274,18 +301,39 @@ struct move_t play(const struct move_t previous_move) {
       dc_prev /= max_abs;
     }
 
-    int      dir        = direction_axial(dl_prev, dc_prev);
-    int      l1_1       = l0 + direec[dir].l;
-    int      c1_1       = c0 + direec[dir].c;
-    int      l2_2       = l0 + direec[(dir + 1) % 6].l;
-    int      c2_2       = c0 + direec[(dir + 1) % 6].c;
-    vertex_t to1        = axial_to_index(l1_1, c1_1, 5);
-    vertex_t to2        = axial_to_index(l2_2, c2_2, 5);
-    wall.e[0].fr        = opp_pos;
-    wall.e[1].fr        = opp_pos;
-    wall.e[0].to        = to1;
-    wall.e[1].to        = to2;
-    wall.m              = my_pos;
+    int dir = direction_axial(dl_prev, dc_prev);
+    // the first vertex to cut is (l0,c0) to (l1,c1)
+    int l1_1 = l0 + direec[dir].l;
+    int c1_1 = c0 + direec[dir].c;
+    // the second one is either through the next direction or through the previous one
+    int next_direction = next_dir(dir);
+    int l2_2           = l0 + direec[next_direction].l;
+    int c2_2           = c0 + direec[next_direction].c;
+
+    if (!in_hexagon(l2_2, c2_2, m, 0, 0)) {
+      // on simule une fonction prev_dir
+      next_direction = (dir == 0) ? 0 : (dir == 6) ? FIRST_DIR : (dir + 1);
+      l2_2           = l1_1 + direec[next_direction].l;
+      c2_2           = l1_1 + direec[next_direction].c;
+    }
+
+    vertex_t to1 = axial_to_index(l1_1, c1_1, m);
+    vertex_t to2 = axial_to_index(l2_2, c2_2, m);
+    wall.e[0].fr = opp_pos;
+    wall.e[1].fr = opp_pos;
+    wall.e[0].to = to1;
+    wall.e[1].to = to2;
+    wall.m       = my_pos;
+
+    /*
+    // just for testing before putting a wall
+    struct player_tt *p = malloc(sizeof(struct player_tt));
+    p->walls            = 50;
+    printf("The wall is being built from %d to : %d and %d.\n", opp_pos, to1, to2);
+    assert(valid_wall(board->graph, p, wall));
+    free(p);
+    */
+   
     unsigned int *temp  = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
     *temp               = 7;
     unsigned int *temp1 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to);
@@ -294,6 +342,21 @@ struct move_t play(const struct move_t previous_move) {
     *temp3              = 7;
     unsigned int *temp4 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
     *temp4              = 7;
+
+    for (int i = 0; i < numberOfObjectives; ++i) {
+      if (visited_objectives[i])
+        continue;
+      free(paths[i]);
+    }
+    for (int i = 0; i < numberOfObjectives; ++i) {
+      if (visited_objectives_opp[i])
+        continue;
+      free(opp_paths[i]);
+    }
+    free(paths);
+    free(distances_to_objectives);
+    free(opp_paths);
+    free(opp_distances_to_objectives);
 
     return wall;
   } else {
