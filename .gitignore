@@ -6,3 +6,7 @@
 *.out
 install/*
 .vscode/*
+*.aux
+*.log
+*.pdf
+*.xml
