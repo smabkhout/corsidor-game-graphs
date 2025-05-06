@@ -373,3 +373,50 @@ void print_hex_grid(struct graph_t *g) {
     printf("\n");
   }
 }
+
+
+void graph_to_dot(const struct graph_t* g, const char* filename) {
+    FILE* f = fopen(filename, "w");
+    if (!f) {
+        perror("fopen");
+        return;
+    }
+
+    fprintf(f, "graph G {\n");
+    fprintf(f, "  node [shape=circle];\n");
+
+    // Affichage des sommets
+    for (vertex_t i = 0; i < g->num_vertices; ++i) {
+        int is_player = 0;
+        for (int p = 0; p < NUM_PLAYERS; ++p) {
+            if (g->start[p] == i) {
+                is_player = 1;
+                break;
+            }
+        }
+
+        if (is_player)
+            fprintf(f, "  %zu [style=filled, fillcolor=lightblue];\n", i);
+        else
+            fprintf(f, "  %zu;\n", i);
+    }
+
+    // Affichage des arêtes
+    for (vertex_t i = 0; i < g->num_vertices; ++i) {
+        for (vertex_t j = i + 1; j < g->num_vertices; ++j) {
+            unsigned int val = gsl_spmatrix_uint_get(g->t, i, j);
+            if (val != 0) {
+                if (val == 7) {
+                    // Mur : rouge, en pointillés
+                    fprintf(f, "  %zu -- %zu [color=red, style=dashed];\n", i, j);
+                } else {
+                    // Arête normale
+                    fprintf(f, "  %zu -- %zu;\n", i, j);
+                }
+            }
+        }
+    }
+
+    fprintf(f, "}\n");
+    fclose(f);
+}

@@ -291,6 +291,8 @@ int main(int argc, char *argv[]) {
     free(other_player_ptr);
   }
 
+  graph_to_dot(board->graph, "graph.dot");
+
   if (winner >= 0) {
     printf("\n🎉 Player %s wins the game!\n", players[winner].get_player_name());
   } else {

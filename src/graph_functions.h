@@ -47,3 +47,5 @@ int is_objective_or_player(int l, int c, int m, struct graph_t *g);
 void graph_free(struct graph_t *g);
 
 void print_hex_grid(struct graph_t *g);
+
+void graph_to_dot(const struct graph_t* g, const char* filename);
