@@ -374,7 +374,6 @@ void print_hex_grid(struct graph_t *g) {
   }
 }
 
-
 // fonction qui prend en entre l'indice du vertice et revoie la ligne et colone
 // dans le graph
 void index_to_axial(int index, int m, int *l, int *c) {
@@ -388,7 +387,6 @@ void index_to_axial(int index, int m, int *l, int *c) {
     }
   }
 }
-
 
 void graph_to_dot(const struct graph_t *g, const char *filename) {
   int m                                                              = 0;
