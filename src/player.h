@@ -39,4 +39,4 @@ struct move_t play(const struct move_t previous_move);
  */
 void finalize();
 
-#endif // _CORS_PLAYER_H_
+#endif  // _CORS_PLAYER_H_
