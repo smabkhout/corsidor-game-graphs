@@ -7,13 +7,12 @@
 #include <math.h>
 #include "graph.h"
 
-
 // Coordonnées axiales pour pavage hexagonal : (0, 0) en centre, (0, 1) vecteur
 // déplacement East, (1, 0) vecteur déplacement North East, (1, -1) vecteur
 // déplacement North West,
 struct axial_t {
-  int l; // ligne
-  int c; // colonne
+  int l;  // ligne
+  int c;  // colonne
 };
 
 // Conversion coordonnées (l, c) -> index dans le graphe
@@ -40,7 +39,7 @@ void graph_print_matrix(const struct graph_t *g);
 // Affichage pour debug
 void graph_print(struct graph_t *graph);
 
-void copy_graph(struct graph_t* dest, const struct graph_t* src);
+void copy_graph(struct graph_t *dest, const struct graph_t *src);
 
 int is_objective_or_player(int l, int c, int m, struct graph_t *g);
 
@@ -48,3 +47,5 @@ int is_objective_or_player(int l, int c, int m, struct graph_t *g);
 void graph_free(struct graph_t *g);
 
 void print_hex_grid(struct graph_t *g);
+
+void graph_to_dot(const struct graph_t* g, const char* filename);

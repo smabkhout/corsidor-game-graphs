@@ -37,12 +37,12 @@ int main() {
   test_find_best_move();
   // test_get_next_closest_objective();
   // test_all_objectives_visited();
- // test_shortest_path_no_wall();
-    // test_shortest_path_with_wall();
-    // test_player_on_objective();
-    // test_multiple_objectives();
-    // test_large_graph();
-    // test_evaluation_functions();
+  // test_shortest_path_no_wall();
+  // test_shortest_path_with_wall();
+  // test_player_on_objective();
+  // test_multiple_objectives();
+  // test_large_graph();
+  // test_evaluation_functions();
 
   printf("\tTest first player strategy\n");
 
