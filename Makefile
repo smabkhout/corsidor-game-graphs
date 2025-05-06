@@ -1,69 +1,53 @@
-GSL_PATH
-    ? = / net / ens / renault / save / gsl - 2.6 / install GSL_LIBDIR =
-            $(shell[-e $(GSL_PATH) / lib] && echo $(GSL_PATH) / lib || echo $(GSL_PATH) / lib64)
-                CFLAGS = -std = c99 - Wall - Wextra - Werror =
-                                    implicit - function - declaration - Werror =
-                                        incompatible - pointer - types - fPIC - g3 - O0 -
-                                        I$(GSL_PATH) / include - Isrc LDFLAGS =
-                                            -lm - lgsl - lgslcblas - ldl - L$(GSL_PATH) / lib -
-                                            L$(GSL_PATH) / lib64 - Wl,
-    --rpath = ${GSL_PATH} / lib
+GSL_PATH ?= /net/ens/renault/save/gsl-2.6/install
+GSL_LIBDIR = $(shell [ -e $(GSL_PATH)/lib ] && \
+        echo $(GSL_PATH)/lib || \
+        echo $(GSL_PATH)/lib64)
+CFLAGS = -std=c99 -Wall -Wextra -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -fPIC -g3 -O0 -I$(GSL_PATH)/include -Isrc
+LDFLAGS = -lm -lgsl -lgslcblas -ldl \
+	-L$(GSL_PATH)/lib -L$(GSL_PATH)/lib64 \
+	-Wl,--rpath=${GSL_PATH}/lib
 
-                                all
-    : build
 
-                      build : server client
+all: build
 
-                                  build_tests : alltests
+build: server client 
 
-                                                %.o : src /
-                                                %.c $(CC) $ <
-              $(CFLAGS) -
-                  c
+build_tests: alltests
 
-                      libPlayer1.so : player1.o strategie3.o board.o graph.o move2.o gcc -
-                  shared - fPIC                                                      $(CFLAGS) $ ^
-          -o                                                                         $ @
+%.o: src/%.c 
+	$(CC) $< $(CFLAGS) -c
 
-              libPlayer4.so : player2.o move2.o strategies.o board.o graph.o gcc -
-              shared - fPIC                                                  $(CFLAGS) $ ^
-          -o                                                                 $ @
+libPlayer1.so: player1.o strategie3.o board.o graph.o move2.o
+	gcc -shared -fPIC $(CFLAGS) $^ -o $@
 
-              libPlayer3.so : player3.o move2.o strategie3.o board.o graph.o gcc -
-              shared - fPIC                                                  $ ^
-          -o                                                                 $ @
+libPlayer4.so: player2.o move2.o strategies.o board.o graph.o
+	gcc -shared -fPIC $(CFLAGS) $^ -o $@
 
-              libPlayer2.so : neg_player.o move2.o strategies.o board.o graph.o gcc -
-              shared - fPIC                                                     $ ^
-          -o                                                                    $ @
+libPlayer3.so: player3.o move2.o strategie3.o board.o graph.o
+	gcc -shared -fPIC $^ -o $@
 
-           server : server.o graph.o move2.o board.o gcc $ ^
-          $(LDFLAGS) -
-              o $ @
+libPlayer2.so: neg_player.o move2.o strategies.o board.o graph.o
+	gcc -shared -fPIC $^ -o $@
 
-              client : libPlayer1.so libPlayer2.so libPlayer3.so libPlayer4
-                           .so
+server: server.o graph.o move2.o board.o
+	gcc $^ $(LDFLAGS) -o $@
 
-                               alltests
-    : graph.o strategie3.o strategies.o move2.o board.o $(CC)-- coverage $(CFLAGS) -
-              c test / graph_test.c - o graph_test.o $(CC)-- coverage $(CFLAGS) -
-              c test / strategie3_test.c - o strategie3_test.o $(CC)-- coverage $(CFLAGS) -
-              c test / move2_test.c - o move2_test.o $(CC)-- coverage $(CFLAGS) -
-              c test / test_player.c - o test_player.o $(CC)-- coverage $(CFLAGS) -
-              c test / alltests.c - o alltests.o $(CC) - ftest -
-              coverage $(CFLAGS) board.o graph.o move2.o strategies.o strategie3.o test_player
-                  .o graph_test.o strategie3_test.o move2_test.o alltests.o $(LDFLAGS) -
-              lgcov -
-              o $ @
+client: libPlayer1.so libPlayer2.so	libPlayer3.so libPlayer4.so 
 
-                  test : alltests./
-                  alltests
+alltests: graph.o strategie3.o strategies.o move2.o board.o
+	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
+	$(CC) --coverage $(CFLAGS) -c test/strategie3_test.c -o strategie3_test.o
+	$(CC) --coverage $(CFLAGS) -c test/move2_test.c -o move2_test.o
+	$(CC) --coverage $(CFLAGS) -c test/test_player.c -o test_player.o
+	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
+	$(CC) -ftest-coverage $(CFLAGS) board.o graph.o move2.o strategies.o strategie3.o test_player.o graph_test.o strategie3_test.o move2_test.o alltests.o $(LDFLAGS) -lgcov -o $@
 
-                                  install
-    : build build_tests cp server libPlayer1.so libPlayer2.so libPlayer3.so libPlayer4.so alltests
-                                                                            install /
 
-                  clean
-    : @rm - f * ~src/*~ test/*~ server alltests *.o *.gcno *.gcda install/*.so install/server
+test: alltests
+	./alltests
 
-.PHONY: client install test clean build build_tests
+install: build build_tests
+	cp server libPlayer1.so libPlayer2.so libPlayer3.so libPlayer4.so alltests install/
+
+clean:
+	@rm -f *~ src/*~ test/*~ server alltests *.o *.gcno *.gcda install/*.so install/server
