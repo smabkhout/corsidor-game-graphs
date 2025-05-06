@@ -375,48 +375,100 @@ void print_hex_grid(struct graph_t *g) {
 }
 
 
-void graph_to_dot(const struct graph_t* g, const char* filename) {
-    FILE* f = fopen(filename, "w");
-    if (!f) {
-        perror("fopen");
+// fonction qui prend en entre l'indice du vertice et revoie la ligne et colone
+// dans le graph
+void index_to_axial(int index, int m, int *l, int *c) {
+  for (int i = 1 - m; i < m; ++i) {
+    for (int j = 1 - m; j < m; ++j) {
+      if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i, j, m) == index)) {
+        *l = i;
+        *c = j;
         return;
+      }
     }
+  }
+}
 
-    fprintf(f, "graph G {\n");
-    fprintf(f, "  node [shape=circle];\n");
 
-    // Affichage des sommets
-    for (vertex_t i = 0; i < g->num_vertices; ++i) {
-        int is_player = 0;
-        for (int p = 0; p < NUM_PLAYERS; ++p) {
-            if (g->start[p] == i) {
-                is_player = 1;
-                break;
-            }
-        }
+void graph_to_dot(const struct graph_t *g, const char *filename) {
+  int m                                                              = 0;
+  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
 
-        if (is_player)
-            fprintf(f, "  %zu [style=filled, fillcolor=lightblue];\n", i);
+  switch (g->type) {
+    case TRIANGULAR:
+      m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
+      in_hexagon = in_hexagon_T;
+      break;
+    case CYCLIC:
+      m          = (int)((g->num_vertices + 18) / 12);
+      in_hexagon = in_hexagon_C;
+      break;
+    case HOLEY:
+      m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
+      in_hexagon = in_hexagon_H;
+      break;
+    default:
+      puts("Invalid graph type");
+      return;
+  }
+
+  int l_origin = 0, c_origin = 0;
+
+  FILE *f = fopen(filename, "w");
+  if (!f) {
+    perror("fopen");
+    return;
+  }
+
+  fprintf(f, "graph G {\n");
+  fprintf(f, "  node [shape=circle, fixedsize=true, width=0.4];\n");
+  fprintf(f, "  graph [layout=neato, splines=true, overlap=false];\n");
+
+  // Affichage des sommets
+  for (size_t i = 0; i < g->num_vertices; ++i) {
+    int l, c;
+    index_to_axial(i, m, &l, &c);
+
+    if (!in_hexagon(l, c, m, l_origin, c_origin))
+      continue;
+
+    double x = c * 1.0;
+    double y = -l * sqrt(3.0) / 2.0 + (c % 2) * (sqrt(3.0) / 4.0);
+
+    int is_player = 0;
+    for (int p = 0; p < NUM_PLAYERS; ++p)
+      if (g->start[p] == i)
+        is_player = 1;
+
+    if (is_player)
+      fprintf(f, "  %zu [style=filled, fillcolor=lightblue, pos=\"%lf,%lf!\"];\n", i, x, y);
+    else
+      fprintf(f, "  %zu [pos=\"%lf,%lf!\"];\n", i, x, y);
+  }
+
+  // Affichage des arêtes
+  for (size_t i = 0; i < g->num_vertices; ++i) {
+    int l1, c1;
+    index_to_axial(i, m, &l1, &c1);
+    if (!in_hexagon(l1, c1, m, l_origin, c_origin))
+      continue;
+
+    for (size_t j = i + 1; j < g->num_vertices; ++j) {
+      int l2, c2;
+      index_to_axial(j, m, &l2, &c2);
+      if (!in_hexagon(l2, c2, m, l_origin, c_origin))
+        continue;
+
+      unsigned int val = gsl_spmatrix_uint_get(g->t, i, j);
+      if (val != 0) {
+        if (val == 7)
+          fprintf(f, "  %zu -- %zu [color=red, style=dashed];\n", i, j);
         else
-            fprintf(f, "  %zu;\n", i);
+          fprintf(f, "  %zu -- %zu;\n", i, j);
+      }
     }
+  }
 
-    // Affichage des arêtes
-    for (vertex_t i = 0; i < g->num_vertices; ++i) {
-        for (vertex_t j = i + 1; j < g->num_vertices; ++j) {
-            unsigned int val = gsl_spmatrix_uint_get(g->t, i, j);
-            if (val != 0) {
-                if (val == 7) {
-                    // Mur : rouge, en pointillés
-                    fprintf(f, "  %zu -- %zu [color=red, style=dashed];\n", i, j);
-                } else {
-                    // Arête normale
-                    fprintf(f, "  %zu -- %zu;\n", i, j);
-                }
-            }
-        }
-    }
-
-    fprintf(f, "}\n");
-    fclose(f);
+  fprintf(f, "}\n");
+  fclose(f);
 }

@@ -48,4 +48,6 @@ void graph_free(struct graph_t *g);
 
 void print_hex_grid(struct graph_t *g);
 
-void graph_to_dot(const struct graph_t* g, const char* filename);
+void index_to_axial(int index, int m, int *l, int *c);
+
+void graph_to_dot(const struct graph_t *g, const char *filename);
