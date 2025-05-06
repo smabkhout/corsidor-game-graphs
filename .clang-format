@@ -1,4 +1,14 @@
-# choose your own style !
-# e.g: BasedOnStyle: GNU
----
-{}
+BasedOnStyle: Google
+IndentWidth: 2
+TabWidth: 2
+UseTab: Never
+BreakBeforeBraces: Attach
+AllowShortIfStatementsOnASingleLine: false
+AllowShortFunctionsOnASingleLine: Inline
+AlignAfterOpenBracket: Align
+AlignConsecutiveAssignments: true
+AlignConsecutiveDeclarations: true
+ColumnLimit: 100
+SpaceBeforeParens: ControlStatements
+PointerAlignment: Left
+SortIncludes: false
