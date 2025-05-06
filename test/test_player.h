@@ -1,5 +1,5 @@
 
-#include "move_functions.h"
+#include "strategie3.h"
 #include "graph_functions.h"
 #include "player.h"
 #include "move.h"

@@ -1,4 +1,4 @@
-#include "move_functions.h"
+#include "strategie3.h"
 #include <stdio.h>
 #include <gsl/gsl_spmatrix.h>
 #include <gsl/gsl_spmatrix_uint.h>
@@ -6,6 +6,8 @@
 #include <math.h>
 
 #define NUM_DIRECTIONS 6
+
+
 
 
 
@@ -324,7 +326,26 @@ vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos){
     return closest_objective;
 }
 
+struct move_t try_place_wall(struct graph_t* graph, vertex_t pos_enemy, vertex_t next_enemy, enum player_color_t my_color){
+    struct move_t move;
+    move.t = WALL;
+    move.c = my_color;
+    struct edge_t wall[2];
+    wall[0].fr = pos_enemy;
+    wall[0].to = next_enemy;
+    wall[1].fr = pos_enemy + 1; 
+    wall[1].to = next_enemy + 1;
 
+    if (can_place_wall(graph, wall)) {
+        move.e[0] = wall[0];
+        move.e[1] = wall[1];
+        printf("🧱 Player %d places a wall between %d-%d and %d-%d\n", my_color, wall[0].fr, wall[0].to, wall[1].fr, wall[1].to);
+        return move;
+    }
+
+    move.t = MOVE; 
+    return move;
+}
 
 
 

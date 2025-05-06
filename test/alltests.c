@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include "graph_test.h"
-#include "move_test.h"
+#include "strategie3_test.h"
 #include "move2_test.h"
 #include "test_player.h"
 
 int main(){
-    /*
     test_create_Graph();
     test_create_move();
     test_is_empty_vertice() ;
@@ -21,7 +20,7 @@ int main(){
     test_direction_axial();
     test_valid_wall();
     test_valid_move();
-    */
+
     test_dijkstra2();
     test_neighbors_basic();
     test_max_out_zero();

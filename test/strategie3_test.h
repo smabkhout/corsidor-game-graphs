@@ -1,6 +1,6 @@
 #ifndef _CORS_MOVE_TEST_H_
 #define _CORS_MOVE_TEST_H_
-#include "move_functions.h"
+#include "strategie3.h"
 #include "graph_functions.h"
 
 

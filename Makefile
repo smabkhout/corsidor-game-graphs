@@ -33,11 +33,11 @@ client: libPlayer1.so libPlayer2.so	libPlayer3.so
 
 alltests: graph.o strategie3.o strategies.o move2.o board.o
 	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
-	$(CC) --coverage $(CFLAGS) -c test/move_test.c -o move_test.o
+	$(CC) --coverage $(CFLAGS) -c test/strategie3_test.c -o strategie3_test.o
 	$(CC) --coverage $(CFLAGS) -c test/move2_test.c -o move2_test.o
 	$(CC) --coverage $(CFLAGS) -c test/test_player.c -o test_player.o
 	$(CC) --coverage $(CFLAGS) -c test/alltests.c -o alltests.o
-	$(CC) -ftest-coverage $(CFLAGS) board.o graph.o move2.o strategies.o strategie3.o test_player.o graph_test.o move_test.o move2_test.o alltests.o $(LDFLAGS) -lgcov -o $@
+	$(CC) -ftest-coverage $(CFLAGS) board.o graph.o move2.o strategies.o strategie3.o test_player.o graph_test.o strategie3_test.o move2_test.o alltests.o $(LDFLAGS) -lgcov -o $@
 
 
 test: alltests

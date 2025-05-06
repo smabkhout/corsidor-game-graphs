@@ -1,7 +1,7 @@
 #ifndef _CORS_BOARD_H_
 #define _CORS_BOARD_H_
 #include "graph_functions.h"
-#include "move_functions.h"
+#include "strategie3.h"
 
 
 

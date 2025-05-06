@@ -1,4 +1,4 @@
-#include "move_test.h"
+#include "strategie3_test.h"
 #include <stdio.h>
 #include <assert.h>
 #include <gsl/gsl_spmatrix.h>
@@ -131,7 +131,7 @@ void test_next_permutation() {
     assert(next_permutation(arr, n) == 0); // Il n'y a plus de permutation suivante
     printf("test_next_permutation passed.\n");
 }
-/*
+
 void test_TSP() {
     int m = 3; 
     struct graph_t *graph = createGraph(m, TRIANGULAR);
@@ -150,7 +150,8 @@ void test_TSP() {
     }
 
     int best_order[graph->num_objectives];
-    int min_distance = TSP(graph, best_order);
+    int obj_visited[graph->num_objectives];
+    int min_distance = TSP(graph, best_order,obj_visited);
     printf("Meilleure permutation: ");
     for (unsigned int i = 0; i < graph->num_objectives; i++) {
         printf("%d ", best_order[i]);
@@ -158,11 +159,11 @@ void test_TSP() {
     printf("\n");
     assert(min_distance >= 0);  
     
-   // assert(best_order[0] == 0);
-   // assert(best_order[1] == 1);
-    //assert(best_order[2] == 2);
-    graph_free(graph);
-}*/
+   assert(best_order[0] == 0);
+   assert(best_order[1] == 1);
+   assert(best_order[2] == 2);
+   graph_free(graph);
+}
 
 void test_find_closest_objective() {
     struct graph_t graph;
