@@ -11,7 +11,7 @@ struct player_tt {
   vertex_t            last_position;  // pour déduire la direction
 };
 
-void           index_to_axial(int index, int m, int *l, int *c);
+// void           index_to_axial(int index, int m, int *l, int *c);
 int            direction_axial(int dl, int dc);
 int            valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t opp);
 int            valid_wall(struct graph_t *g, struct player_tt *p, struct move_t move);

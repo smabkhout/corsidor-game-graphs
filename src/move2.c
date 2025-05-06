@@ -19,19 +19,6 @@ const struct axial_t direc[7] = {
     {-1, 0},  // SW
     {0, -1}   // W
 };
-// fonction qui prend en entre l'indice du vertice et revoie la ligne et colone
-// dans le graph
-void index_to_axial(int index, int m, int *l, int *c) {
-  for (int i = 1 - m; i < m; ++i) {
-    for (int j = 1 - m; j < m; ++j) {
-      if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i, j, m) == index)) {
-        *l = i;
-        *c = j;
-        return;
-      }
-    }
-  }
-}
 // recois en entre ligne + colone et revoie la direction
 int direction_axial(int dl, int dc) {
   for (int d = 1; d < 7; ++d) {
