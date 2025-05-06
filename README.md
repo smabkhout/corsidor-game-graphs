@@ -1,4 +1,4 @@
-# Sujet de programmation impérative
+#Sujet de programmation impérative
 
 La page du sujet :
 
@@ -28,5 +28,3 @@ Clang-format rules :
 
 find . -name '*.c' -o -name '*.h' | xargs clang-format -i 
 ( on fait . si on veut appliquer clang-format sur les fichier sur le dépôt actuel sinon on met le chemin des autres fichiers qu'on veut tester)
-
-
