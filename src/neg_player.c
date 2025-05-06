@@ -229,16 +229,16 @@ struct move_t play(const struct move_t previous_move) {
   int min_distance_opp = INT_MAX;
   int obj_index_opp;
   for (int i = 0; i < numberOfObjectives; ++i) {
-    //print all variables in if for debug 
+    // print all variables in if for debug
     printf("visited_objectives_opp[%d] : %d \n", i, visited_objectives_opp[i]);
     printf("opp_distances_to_objectives[%d] : %d \n", i, opp_distances_to_objectives[i]);
     printf("min_distance_opp : %d \n", min_distance_opp);
     printf("min_distance : %d \n", min_distance);
     if (!visited_objectives_opp[i] && opp_distances_to_objectives[i] < min_distance_opp &&
         opp_distances_to_objectives[i] != -1) {
-      printf("distances to objectives for the opponent %d : %d \n",
-             opp_distances_to_objectives[i], i);
-      
+      printf("distances to objectives for the opponent %d : %d \n", opp_distances_to_objectives[i],
+             i);
+
       obj_index_opp    = i;
       min_distance_opp = opp_distances_to_objectives[i];
     }
@@ -274,30 +274,26 @@ struct move_t play(const struct move_t previous_move) {
       dc_prev /= max_abs;
     }
 
-    int      dir  = direction_axial(dl_prev, dc_prev);
-    int      l1_1 = l0 + direec[dir].l;
-    int      c1_1 = c0 + direec[dir].c;
-    int      l2_2 = l0 + direec[(dir + 1) % 6].l;
-    int      c2_2 = c0 + direec[(dir + 1) % 6].c;
-    vertex_t to1  = axial_to_index(l1_1, c1_1, 5);
-    vertex_t to2  = axial_to_index(l2_2, c2_2, 5);
-    wall.e[0].fr  = opp_pos;
-    wall.e[1].fr  = opp_pos;
-    wall.e[0].to  = to1;
-    wall.e[1].to  = to2;
-    wall.m        = my_pos;
-    unsigned int *temp =
-        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
-    *temp = 7;
-    unsigned int *temp1 =
-        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to );
-    *temp1 = 7;
-    unsigned int *temp3 =
-        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].to,wall.e[0].fr);
-    *temp3 = 7;
-    unsigned int *temp4 =
-        gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
-    *temp4 = 7;
+    int      dir        = direction_axial(dl_prev, dc_prev);
+    int      l1_1       = l0 + direec[dir].l;
+    int      c1_1       = c0 + direec[dir].c;
+    int      l2_2       = l0 + direec[(dir + 1) % 6].l;
+    int      c2_2       = c0 + direec[(dir + 1) % 6].c;
+    vertex_t to1        = axial_to_index(l1_1, c1_1, 5);
+    vertex_t to2        = axial_to_index(l2_2, c2_2, 5);
+    wall.e[0].fr        = opp_pos;
+    wall.e[1].fr        = opp_pos;
+    wall.e[0].to        = to1;
+    wall.e[1].to        = to2;
+    wall.m              = my_pos;
+    unsigned int *temp  = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
+    *temp               = 7;
+    unsigned int *temp1 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to);
+    *temp1              = 7;
+    unsigned int *temp3 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].to, wall.e[0].fr);
+    *temp3              = 7;
+    unsigned int *temp4 = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
+    *temp4              = 7;
 
     return wall;
   } else {
