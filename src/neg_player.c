@@ -31,14 +31,14 @@ const struct axial_t direec[7] = {
     {1, 0},  // NE
     {0, 1},  // E
     {-1, 1}, // SE
-    {-1, 0}, // SW
-    {0, -1}  // W
+    {-1,0}, // SW
+    {0,-1}  // W
 };
 
 char const *get_player_name() {
   srand(time(NULL));
   char *names[] = {"adam", "rafiq"};
-  return names[1];
+  return names[0];
 }
 
 void initialize(unsigned int id, struct graph_t *graph) {
@@ -220,7 +220,9 @@ struct move_t play(const struct move_t previous_move) {
       min_distance_opp = opp_distances_to_objectives[i];
     }
   }
-
+    puts("the distances me to objectifes and opp to objectives :\n");
+    printf("me : %d \n" , min_distance);
+    printf("opp : %d \n" , min_distance_opp);
   if (min_distance_opp < min_distance) {
     // place a wall to stop him
     struct move_t wall;
@@ -232,8 +234,8 @@ struct move_t play(const struct move_t previous_move) {
     int c0 = 0;
     int l1 = 0;
     int c1 = 0;
-    index_to_axial(opp_pos, board->graph->num_vertices, &l0, &c0);
-    index_to_axial(opp_paths[obj_index_opp][1], board->graph->num_vertices, &l1,
+    index_to_axial(opp_pos, 5, &l0, &c0);
+    index_to_axial(opp_paths[obj_index_opp][1], 5, &l1,
                    &c1);
 
     int dl_prev = l1 - l0;
@@ -252,15 +254,16 @@ struct move_t play(const struct move_t previous_move) {
     int c1_1 = c0 + direec[dir].c;
     int l2_2 = l0 + direec[(dir + 1) % 6].l;
     int c2_2 = c0 + direec[(dir + 1) % 6].c;
-    vertex_t to1 = axial_to_index(l1_1, c1_1, board->graph->num_vertices);
-    vertex_t to2 = axial_to_index(l2_2, c2_2, board->graph->num_vertices);
+    vertex_t to1 = axial_to_index(l1_1, c1_1, 5);
+    vertex_t to2 = axial_to_index(l2_2, c2_2,5);
     wall.e[0].fr = opp_pos;
     wall.e[1].fr = opp_pos;
     wall.e[0].to = to1;
     wall.e[1].to = to2;
+    wall.m = my_pos;
     return wall;
   }
-
+  else{  
   struct move_t move;
   move.c = player_id;
   move.t = MOVE;
@@ -279,6 +282,8 @@ struct move_t play(const struct move_t previous_move) {
   }
   free(paths);
   free(distances_to_objectives);
+  free(opp_paths);
+  free(opp_distances_to_objectives);
 
   /*
   for (int i = 0 ; i<num_ofObjective ; i++){
@@ -322,6 +327,7 @@ struct move_t play(const struct move_t previous_move) {
   my_last_pos = my_pos;
   my_pos = move.m;
   return move;
+  }
 }
 
 void finalize() {
