@@ -141,10 +141,22 @@ struct move_t play(const struct move_t previous_move) {
     printf("returning to home : %d\n", home);
     printf("position of the other player %d :\n", opp_pos);
     vertex_t objectif = home;
+    vertex_t temp = opp_pos;
+    // cas particulier si l'adversaire est dans home quand le joueur essaie de revenir
+    if (objectif == opp_pos) { // à change apres par place wall
+      opp_pos = board->graph->num_vertices + 1; // aller vers le sommet d'indice precedent
+    }
     int result = shortest_path_length(board->graph, my_pos, objectif, opp_pos,
                                       lile, my_last_pos) +
                  1;
-    printf("resultat %d  ", result);
+    if (result == 1 && objectif == temp) {
+      opp_pos = temp;
+      objectif -= 1;
+      result = shortest_path_length(board->graph, my_pos, objectif, opp_pos,
+                                      lile, my_last_pos) +
+                 1;
+    }
+    printf("resultat : %d  ", result);
     for (int i = 0; i < result; i++) {
       printf(" %d;", lile[i]);
     }

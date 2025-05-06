@@ -120,6 +120,9 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target,
     int l = l1;
     int c = c1;
 
+    vertex_t route[4] = {0}; // stock à chaque fois le parcours du joueur lors du saut
+    int count = 0;
+
     for (int d = 1; d <= max_dist; ++d) {
       l += direc[dir].l;
       c += direc[dir].c;
@@ -128,13 +131,26 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target,
         break;
 
       vertex_t from = axial_to_index(l - direc[dir].l, c - direc[dir].c, m);
+      route[count++] = from;
       vertex_t to = axial_to_index(l, c, m);
+      route[count++] = to;
 
       int exists = gsl_spmatrix_uint_get(g->t, from, to);
-      if (exists == 0 || exists == 7 ||
-          ((from == opponent_pos) && d == 3)) // pas d’arête ou mur
+      if (exists == 0 || exists == 7) // pas d’arête ou mur
         break;
-
+      if (max_dist == 3 && d == 3) {
+        for (int i = 0; i<4; ++i) { // on verifie si l'adversaire est dans l'une des positions sur lesquelles il veut sauter
+          printf("%d, ", route[i]);
+          if (route[i] == opponent_pos) {
+            return 0;
+          }
+        }
+      }
+      printf("\n");
+      route[0] = 0;
+      route[1] = 0;
+      route[2] = 0;
+      route[3] = 0;
       if (to == target) {
         return d; // Mouvement autorisé et on retourne la distance du saut
       }
@@ -378,8 +394,8 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
     }
   }
 }
-/*
 
+/*
 int main(){
   //test valid_move
   struct graph_t *g = createGraph(6, TRIANGULAR);
@@ -392,6 +408,7 @@ int main(){
   vertex_t opponent_pos = 0;
   vertex_t target = 29;
   int *path = malloc(g->num_vertices * sizeof(int));
+  print_hex_grid(g);
   int dist = shortest_path_length(g, p.position, target, opponent_pos, path,
                                   p.last_position);
                           
@@ -407,7 +424,7 @@ int main(){
   p.last_position = 0;
   p.c = 0;
   
-  int result2 = valid_move(g, &p, 30, 21);
+  int result2 = valid_move(g, &p, 30, 13);
   printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
 }
 */
