@@ -140,17 +140,17 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target,
         break;
       if (max_dist == 3 && d == 3) {
         for (int i = 0; i<4; ++i) { // on verifie si l'adversaire est dans l'une des positions sur lesquelles il veut sauter
-          printf("%d, ", route[i]);
+          //printf("%d, ", route[i]);
           if (route[i] == opponent_pos) {
             return 0;
           }
         }
       }
-      printf("\n");
-      route[0] = 0;
-      route[1] = 0;
-      route[2] = 0;
-      route[3] = 0;
+      //printf("\n");
+      //route[0] = 0;
+      //route[1] = 0;
+      //route[2] = 0;
+      //route[3] = 0;
       if (to == target) {
         return d; // Mouvement autorisé et on retourne la distance du saut
       }
@@ -396,16 +396,16 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
 }
 
 /*
-int main(){
+void  test_humping_over_opp(){
   //test valid_move
   struct graph_t *g = createGraph(6, TRIANGULAR);
   g->num_objectives = 1 ; 
   g->objectives[0] = 29;
   struct player_tt p;
-  p.position = 50;
-  p.last_position = 50;
+  p.position = 58;
+  p.last_position = 67;
   p.c = 0;
-  vertex_t opponent_pos = 0;
+  vertex_t opponent_pos = 48;
   vertex_t target = 29;
   int *path = malloc(g->num_vertices * sizeof(int));
   print_hex_grid(g);
@@ -420,11 +420,18 @@ int main(){
   printf("\n");
   int result = valid_move(g, &p, target, opponent_pos);
   printf("Valid move from %u to %u: %d\n", p.position, target, result);
-  p.position = 6;
-  p.last_position = 0;
+  p.position = 58;
+  p.last_position = 67;
   p.c = 0;
   
-  int result2 = valid_move(g, &p, 30, 13);
+  int result2 = valid_move(g, &p, 38, 48);
   printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
 }
+
+int main() {
+  srand(time(NULL));
+  test_humping_over_opp();
+  return 0;
+}
 */
+
