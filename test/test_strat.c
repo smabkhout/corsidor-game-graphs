@@ -2,21 +2,21 @@
 
 /*void test_evaluation_functions() {
     printf("=== Test des fonctions d'évaluation ===\n");
-  
+
     // Initialisation du graphe
     int m = 5;
     struct graph_t *graph = createGraph(m, TRIANGULAR);
-  
+
     // Configuration des objectifs
     graph->num_objectives = 1;
     graph->objectives = malloc(3 * sizeof(vertex_t));
     graph->objectives[0] = axial_to_index(2, 0, m); // Objectif nord-ouest
     printf("Objectif défini à l'index : %d\n", graph->objectives[0]);
-  
+
     // Initialisation de l'état du jeu
     struct game_state state;
     state.graph = graph;
-  
+
     // Position des joueurs
     state.previous_moves[0] =
         (struct move_t){.m = axial_to_index(2, -1, m), .t = MOVE, .c = 0};
@@ -27,7 +27,7 @@
     state.graph->start[0] = state.previous_moves[0].m;
     state.graph->start[1] = state.previous_moves[1].m;
     print_hex_grid(state.graph);
-  
+
     // === Test de la fonction available moves  ===
     printf("\n--- Test des déplacements disponibles ---\n");
     struct player_tt *player = malloc(sizeof(struct player_tt));
@@ -43,7 +43,7 @@
       printf("%u ", legal_moves[i].m);
     }
     printf("\n");
-  
+
     // === Test de la fonction de chemin le plus court ===
     printf("\n--- Test du chemin le plus court ---\n");
     vertex_t *path = malloc(graph->num_vertices * sizeof(vertex_t));
@@ -57,7 +57,7 @@
     printf("previous move  : %d\n", state.previous_moves[0].m);
     printf("previous move  : %d\n", state.previous_moves[1].m);
     print_hex_grid(graph);
-  
+
     int length = shortest_path_length(
         graph, state.previous_moves[0].m, graph->objectives[0],
         state.previous_moves[1].m, path, 0); // 0 just for the current error
@@ -67,7 +67,7 @@
       printf("%d, ", path[i]);
     }
     printf("\n");
-  
+
     // pareil pour l'autre joueur (path )
     vertex_t *path2 = malloc(graph->num_vertices * sizeof(vertex_t));
     graph->objectives[0] = 26;
@@ -89,16 +89,16 @@
       printf("%d, ", path2[i]);
     }
     printf("\n");
-  
+
     // assert(length == 2); // Le chemin le plus court est de longueur 2
-  
+
     // === Test de la fonction d'évaluation ===
     printf("\n--- Évaluation ---\n");
     int eval_p0 = evaluate(&state, 0);
     int eval_p1 = evaluate(&state, 1);
     printf("Évaluation joueur 0 : %d\n", eval_p0);
     printf("Évaluation joueur 1 : %d\n", eval_p1);
-  
+
     // Affichage des déplacements possibles
     struct move_t legafl_moves[1069];
     int num_moves =
@@ -109,12 +109,12 @@
       printf("%u ", legafl_moves[i].m);
     }
     printf("\n");
-  
+
     struct scored_move result_negamax = negamax_ab(&state, 5, -1, 1, 1);
     struct scored_move result_naive = negamax_naive(&state, 4, 1);
     struct scored_move result_minmax = minMax(&state, 1, 1);
     struct scored_move result_minmaxi = minMaxi(&state, 3, 1, 1);
-  
+
     printf("\nRésultats :\n");
     printf("Negamax Alpha-Beta : Type = %s, Dest = %d, Score = %d\n",
            result_negamax.move.t == MOVE ? "MOVE" : "WALL", result_negamax.move.m,
@@ -128,11 +128,11 @@
     printf("MinMaxi           : Type = %s, Dest = %d, Score = %d\n",
            result_minmaxi.move.t == MOVE ? "MOVE" : "WALL", result_minmaxi.move.m,
            result_minmaxi.score);
-  
+
     // === Simulation de jeu (exemple avec MinMaxi jusqu'à l'arrivée à l'objectif)
     // ===
     printf("\n--- Simulation jusqu'à objectif pour joueur 0 ---\n");
-  
+
     // Réinitialisation de la position
     state.previous_moves[0].m = 1;
     state.previous_moves[0].t = MOVE;
@@ -142,25 +142,25 @@
     state.previous_moves[1].c = 1;
     state.previous_positions[0] = 0;
     state.previous_positions[1] = axial_to_index(0, -1, m);
-  
+
     // Vérification du dernier coup
     int valid = (result_minmaxi.move.t == MOVE)
                     ? valid_move(graph, player, result_minmaxi.move.m,
                                  state.previous_moves[1].m)
                     : valid_wall(graph, player, result_minmaxi.move);
-  
+
     printf("Coup %s valide : %s\n",
            result_minmaxi.move.t == MOVE ? "MOVE" : "WALL",
            valid ? "OUI" : "NON");
-  
+
     // === Nettoyage ===
     // free(graph->objectives);
     // graph_free(graph);
     // free(player);
-  
+
     printf("=== Tests terminés ===\n");
   }
-  
+
   // Fonction pour initialiser un joueur
   void init_player(struct player_tt *p, vertex_t pos, vertex_t last_pos,
                    enum player_color_t color, int walls) {
@@ -169,7 +169,7 @@
     p->c = color;
     p->walls = walls;
   }
-  
+
   // Test 1 : Chemin direct sans mur
   void test_shortest_path_no_wall() {
     printf("=== Test 1 : Chemin direct sans mur ===\n");
@@ -188,9 +188,9 @@
     }
     printf("\n");
     free(path);
-  
+
     graph_free(g);
     printf("✔️ Test réussi.\n\n");
   }
-  
+
 */
