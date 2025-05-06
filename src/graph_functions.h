@@ -42,6 +42,8 @@ void graph_print(struct graph_t *graph);
 
 void copy_graph(struct graph_t* dest, const struct graph_t* src);
 
+int is_objective_or_player(int l, int c, int m, struct graph_t *g);
+
 // Libération du graphe
 void graph_free(struct graph_t *g);
 

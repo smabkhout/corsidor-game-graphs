@@ -5,8 +5,11 @@
 #include "test_player.h"
 
 int main(){
+    test_graph_generate_triangular();
     test_create_Graph();
     test_create_move();
+    test_in_hexagon_T();
+    test_objectives();
     test_is_empty_vertice() ;
     test_is_connected();
     test_is_valid_move() ;
