@@ -231,8 +231,7 @@ int main(int argc, char *argv[]) {
     moves_act[current_player]                   = move;
     last_positions[current_player]              = current_positions[current_player];
     current_positions[current_player]           = move.m;
-    if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m) &&
-        move.t == MOVE) {
+    if (move.t == MOVE && !valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
       int id = move.c;
       if (id != current_player) {
         printf("Player %s with id %d returned a move with id: %d\n",
