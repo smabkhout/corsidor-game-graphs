@@ -40,7 +40,7 @@ void load_player(struct player_t *player, char *lib) {
   assert_dlsym();
   player->initialize = (void (*)(unsigned int, struct graph_t *))dlsym(library, "initialize");
   assert_dlsym();
-  player->play = (struct move_t (*)(const struct move_t))dlsym(library, "play");
+  player->play = (struct move_t(*)(const struct move_t))dlsym(library, "play");
   assert_dlsym();
   player->finalize = (void (*)(void))dlsym(library, "finalize");
   assert_dlsym();
