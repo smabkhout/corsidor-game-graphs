@@ -10,6 +10,8 @@
 #include <limits.h>
 #include <stdbool.h>
 
+
+
 struct game_state {
   struct graph_t *graph;
   struct move_t   previous_moves[2];  // dernier coup pour chaque joueur
@@ -184,198 +186,117 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
   return (result == INT_MAX) ? -1 : result;
 }
 
-// Fonction wrapper pour un joueur
-int player_shortest_path_length(struct graph_t *g, struct player_tt *p, const vertex_t *objectives,
-                                size_t nb_obj, vertex_t opponent_pos, vertex_t *path) {
-  int min_length = INT_MAX;
 
-  for (size_t i = 0; i < nb_obj; ++i) {
-    int length = shortest_path_length(g, p->position, objectives[i], opponent_pos, path,
-                                      0);  // 0 just for the current error
-    if (length != -1 && length < min_length) {
-      min_length = length;
-    }
-  }
-
-  return (min_length == INT_MAX) ? -1 : min_length;
+int shortest_path_player(vertex_t start, vertex_t objective, vertex_t opponent_pos,
+                         struct graph_t *g , vertex_t last_pos) {
+  vertex_t path[128];
+  return shortest_path_length(g, start, objective, opponent_pos, path, last_pos);
 }
 
+
+
 int evaluate(struct game_state *state, int color) {
-  vertex_t *vertex = malloc(100 * sizeof(vertex_t));
-  return shortest_path_length(state->graph, state->previous_moves[color].m,
-                              state->graph->objectives[0], state->previous_moves[1 - color].m,
-                              vertex, 0) -
-         shortest_path_length(state->graph, state->previous_moves[1 - color].m,
-                              state->graph->objectives[0], state->previous_moves[color].m, vertex,
-                              0);
+  return shortest_path_player(state->previous_moves[color].m,
+                          state->graph->objectives[0], state->previous_moves[1 - color].m,
+                          state->graph, state->previous_positions[color]) - shortest_path_player(state->previous_moves[1 - color].m,state->graph->objectives[0], state->previous_moves[color].m,state->graph, state->previous_positions[1 - color]); ; 
 }
 
 int is_game_over(struct game_state *state) {
-  for (int i = 0; i < 2; i++) {
-    if (state->previous_moves[i].m == state->graph->objectives[0]) {
-      return 1;  // Jeu terminé
-    }
-  }
+
   return 0;  // Jeu non terminé
 }
+//application de l'algorithme MinMax
+#include <limits.h> // Pour INT_MAX et INT_MIN
 
-struct scored_move negamax_ab(struct game_state *state, int depth, int alpha, int beta, int color) {
-  if (depth == 0 || is_game_over(state)) {
-    int score = evaluate(state, color);
-    return (struct scored_move){.score = score};
-  }
+#define MAX_COLOR 0
+#define MIN_COLOR 1
 
-  int self     = (color == 1) ? 0 : 1;
-  int opponent = 1 - self;
+struct scored_move minmax(struct game_state *state, int depth, int color) {
+    // Cas de base : profondeur 0 → évaluation
+    if (depth == 0) {
+        struct move_t move;
+        move.t = MOVE;
+        move.m = state->previous_moves[color].m;
+        move.c = color;
 
-  struct move_t    legal_moves[128];
-  struct player_tt player = {.position      = state->previous_moves[self].m,
-                             .last_position = state->previous_positions[self],
-                             .c             = self};
-  int              num_moves =
-      availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
+        struct scored_move scored_move;
+        scored_move.score = evaluate(state, color);
+        scored_move.move  = move;
 
-  struct scored_move best = {.score = -1000000};
-
-  for (int i = 0; i < num_moves; i++) {
-    struct game_state  next   = applyy_move(state, legal_moves[i]);
-    struct scored_move result = negamax_ab(&next, depth - 1, -beta, -alpha, -color);
-    int                score  = -result.score;
-
-    if (score > best.score) {
-      best.score = score;
-      best.move  = legal_moves[i];
+        return scored_move;
     }
 
-    if (score > alpha)
-      alpha = score;
+    struct scored_move best_move;
 
-    if (alpha >= beta)
-      break;  // Coupure alpha-bêta
-  }
-
-  return best;
-}
-
-struct scored_move negamax_naive(struct game_state *state, int depth, int color) {
-  if (depth == 0 || is_game_over(state)) {
-    int score = evaluate(state, color);  // Supposé relatif au joueur color
-    return (struct scored_move){.score = score};
-  }
-
-  int self     = (color == 1) ? 0 : 1;
-  int opponent = 1 - self;
-
-  struct move_t    legal_moves[128];
-  struct player_tt player = {.position      = state->previous_moves[self].m,
-                             .last_position = state->previous_positions[self],
-                             .c             = self};
-  int              num_moves =
-      availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
-
-  struct scored_move best = {.score = -1000000};
-
-  for (int i = 0; i < num_moves; i++) {
-    struct game_state  next   = applyy_move(state, legal_moves[i]);
-    struct scored_move result = negamax_naive(&next, depth - 1, -color);
-    int                score  = -result.score;  // NegaMax : inversion du signe
-
-    if (score > best.score) {
-      best.score = score;
-      best.move  = legal_moves[i];
-    }
-  }
-
-  return best;
-}
-
-struct scored_move minMax(struct game_state *state, int depth,
-                          enum player_color_t maximizingPlayer) {
-  enum player_color_t self     = maximizingPlayer;
-  enum player_color_t opponent = 1 - self;
-  (void)opponent;
-  if (depth == 0 || is_game_over(state)) {
-    int score = evaluate(state, self);  // Score du point de vue du MAX
-    return (struct scored_move){.move = state->previous_moves[self], .score = score};
-  }
-
-  struct move_t    legal_moves[128];
-  struct player_tt player = {.position      = state->previous_moves[self].m,
-                             .last_position = state->previous_positions[self],
-                             .c             = self};
-  int num_moves = availableMoves(legal_moves, state->graph, &player, state->previous_moves[self].m);
-
-  struct scored_move best;
-  if (!maximizingPlayer) {
-    best.score = -1000000;
-  } else {
-    best.score = 1000000;
-  }
-
-  for (int i = 0; i < num_moves; i++) {
-    struct game_state next = applyy_move(state, legal_moves[i]);
-    // test print
-    // printf("move a traitee %d\n" ,legal_moves[i].m) ;
-    struct scored_move result = minMax(&next, depth - 1, 1 - maximizingPlayer);
-    // printf("score %d \n" , result.score) ;
-    if (maximizingPlayer) {
-      if (result.score > best.score) {
-        best.score = result.score;
-        best.move  = legal_moves[i];
-      }
+    // Initialisation du meilleur score selon le joueur
+    if (color == MAX_COLOR) {
+        best_move.score = INT_MIN;
     } else {
-      if (result.score < best.score) {
-        best.score = result.score;
-        best.move  = legal_moves[i];
-      }
+        best_move.score = INT_MAX;
     }
-    // print old score and new if it's updated
-  }
 
-  return best;
+    // Préparation du joueur courant
+    struct move_t possible_moves[128];
+    struct player_tt p;
+    p.position      = state->previous_moves[color].m;
+    p.c             = color;
+    p.last_position = state->previous_positions[color];
+
+    // Génération des coups disponibles
+    int nb_moves = availableMovess(possible_moves, state->graph, &p, state->previous_moves[1 - color].m);
+
+    for (int i = 0; i < nb_moves; ++i) {
+        struct move_t move = possible_moves[i];
+
+        // Appliquer le coup → nouvel état
+        struct game_state new_state = applyy_move(state, move);
+
+        // Appel récursif minmax
+        int score = minmax(&new_state, depth - 1, 1 - color).score;
+
+        // Mise à jour du meilleur coup
+        if ((color == MAX_COLOR && score > best_move.score) ||
+            (color == MIN_COLOR && score < best_move.score)) {
+            best_move.score = score;
+            best_move.move  = move;
+        }
+    }
+
+    return best_move;
 }
 
-#define INF 1000000
-struct scored_move minMaxi(struct game_state *state, int depth, int maximizingPlayer,
-                           int originalMaxPlayer) {
-  // Déterminer les identités des joueurs
-  int current_player = maximizingPlayer ? originalMaxPlayer : (1 + originalMaxPlayer) % 2;
-  int opponent       = (1 + originalMaxPlayer) % 2;
 
-  // Condition d'arrêt : profondeur nulle ou jeu terminé
-  if (depth == 0 || is_game_over(state)) {
-    int score = evaluate(state,
-                         originalMaxPlayer);  // Évaluation toujours du point de vue du joueur MAX
-    return (struct scored_move){.move = state->previous_moves[originalMaxPlayer], .score = score};
-  }
 
-  // Génération des coups légaux
-  struct move_t    legal_moves[128];
-  struct player_tt player = {
-      .position      = state->previous_moves[current_player].m,
-      .last_position = state->previous_positions[current_player],
-      .c             = current_player,
-  };
+//test MINMAX
+/*
+void test_minmax() {
+  struct game_state state;
+  struct graph_t   *g = createGraph(5, TRIANGULAR);
+  g->num_objectives = 1;
+  g->objectives     = malloc(sizeof(vertex_t) * 1);
+  g->objectives[0]  = 29;
+  state.graph       = g;
+  state.previous_moves[0].m = 1;
+  g->start[0] = 1;
+  g->start[1] = 54;
+  state.previous_moves[1].m = 54;
+  state.previous_positions[0] = 0;
+  state.previous_positions[1] = 60;
+  state.previous_moves[0].c = 0;
+  state.previous_moves[1].c = 1;
+  printf("WHITE: %d\n", WHITE);
+  printf("BLACK: %d\n", BLACK);
+  
+  struct scored_move best_move2 = minmax(&state, 4, 0);
 
-  int num_moves =
-      availableMoves(legal_moves, state->graph, &player, state->previous_moves[opponent].m);
+  printf("Best move: %d\n", best_move2.move.m);
 
-  // Initialisation du meilleur coup
-  struct scored_move best_move = {.score = maximizingPlayer ? INT_MIN : INT_MAX};
+  print_hex_grid(g);
 
-  // Exploration récursive des coups
-  for (int i = 0; i < num_moves; i++) {
-    struct game_state next_state = applyy_move(state, legal_moves[i]);
-    // players 1 ou 2
-    struct scored_move current_result =
-        minMaxi(&next_state, depth - 1, !maximizingPlayer, originalMaxPlayer);
-    // Mise à jour du meilleur coup
-    if ((maximizingPlayer && current_result.score > best_move.score) ||
-        (!maximizingPlayer && current_result.score < best_move.score)) {
-      best_move.score = current_result.score;
-      best_move.move  = legal_moves[i];
-    }
-  }
-
-  return best_move;
 }
+
+int main() {
+  srand(time(NULL));
+  test_minmax();
+  return 0;
+}*/
