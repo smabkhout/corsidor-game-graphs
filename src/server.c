@@ -101,6 +101,26 @@ int player_to_start() {
   return rand() % NUM_PLAYERS;
 }
 
+/*int player_has_visited_all_objectives(int player_id, vertex_t current_pos,struct graph_t *g,
+struct board_t *b) { if (current_pos != g->start[player_id]) return 0;
+
+
+  for (unsigned int i = 0; i < g->num_objectives; ++i) {
+      vertex_t obj = g->objectives[i];
+      int found = 0;
+      for (int j = 0; j < b->size_moves; ++j) {
+          if (b->moves[j].c == player_id && b->moves[j].t == MOVE && b->moves[j].m == obj) {
+              found = 1;
+              break;
+          }
+      }
+      if (!found) return 0;
+
+  }
+
+  return 1;
+}*/
+
 int main(int argc, char *argv[]) {
   int   size_mesh  = -1;
   char *type_graph = NULL;
@@ -147,13 +167,13 @@ int main(int argc, char *argv[]) {
   }
 
   enum graph_type_t g_type;
-  //verifier si le type de graphe est valide
+  // verifier si le type de graphe est valide
   if (type_graph == NULL) {
-    fprintf(stderr, "⚠️  Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
-    g_type = TRIANGULAR;
+    fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    g_type     = TRIANGULAR;
     type_graph = "TRIANGULAR";
   } else if (size_mesh < 0) {
-    fprintf(stderr, "⚠️  Taille de la maille non spécifiée, je tombe sur 3\n");
+    fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
     size_mesh = 3;
   }
   switch (type_graph[0]) {
@@ -193,8 +213,7 @@ int main(int argc, char *argv[]) {
       */
     default:
     unknown:
-      fprintf(stderr, "⚠️  Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n",
-              type_graph);
+      fprintf(stderr, "Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n", type_graph);
       g_type = TRIANGULAR;
   }
 
@@ -283,6 +302,7 @@ int main(int argc, char *argv[]) {
     moves_act[current_player]                   = move;
     last_positions[current_player]              = current_positions[current_player];
     current_positions[current_player]           = move.m;
+
     if (move.t == MOVE &&
         !valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
       int id = move.c;
@@ -293,7 +313,7 @@ int main(int argc, char *argv[]) {
       if (affichage)
         print_hex_grid(board->graph);
       printf(
-          "🤖 Player %s executed an illegal move of type %s. Did they even "
+          "Player %s executed an illegal move of type %s. Did they even "
           "read the rules? RIP\n",
           players[current_player].get_player_name(), move_type_to_string(move.t));
       printf("from %d to %d ", last_positions[current_player], move.m);
@@ -346,9 +366,9 @@ int main(int argc, char *argv[]) {
   graph_to_dot(board->graph, "graph.dot");
 
   if (winner >= 0) {
-    printf("\n🎉 Player %s wins the game!\n", players[winner].get_player_name());
+    printf("\nPlayer %s wins the game!\n", players[winner].get_player_name());
   } else {
-    printf("\n⏱️  Game ended in a draw (max turns reached)\n");
+    printf("\nGame ended in a draw (max turns reached)\n");
   }
   printf("----------The END----------\n");
 
