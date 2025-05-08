@@ -12,16 +12,7 @@
 
 
 
-struct game_state {
-  struct graph_t *graph;
-  struct move_t   previous_moves[2];  // dernier coup pour chaque joueur
-  vertex_t        previous_positions[2];
-};
 
-struct scored_move {
-  int           score;
-  struct move_t move;
-};
 
 // Fonction pour appliquer un mouvement à l'état du jeu
 
