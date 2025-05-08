@@ -60,29 +60,10 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     return 0;
   int path_length = 0;
 
-  int m                                                              = 0;
-  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
-  // Choix de la fonction selon le type
-  switch (g->type) {
-    case TRIANGULAR:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
-      in_hexagon = in_hexagon_T;
-      break;
-    case CYCLIC:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((g->num_vertices + 18) / 12);
-      in_hexagon = in_hexagon_C;
-      break;
-    case HOLEY:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
-      in_hexagon = in_hexagon_H;
-      break;
-    default:
-      puts("Invalid graph type");
-      return 0;
-  }
+  int               m          = 0;
+  in_hexagon_func_t in_hexagon = NULL;
+
+  resolve_graph_type_or_default(g, &m, &in_hexagon);
 
   vertex_t n = 3 * (m * m) - 3 * m + 1;
   // Initialisation des nœuds

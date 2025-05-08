@@ -51,3 +51,7 @@ void print_hex_grid(struct graph_t *g);
 void index_to_axial(int index, int m, int *l, int *c);
 
 void graph_to_dot(const struct graph_t *g, const char *filename);
+
+typedef int (*in_hexagon_func_t)(int l, int c, int m, int l_origin, int c_origin);
+
+void resolve_graph_type_or_default(struct graph_t *g, int *m, in_hexagon_func_t *in_hexagon);

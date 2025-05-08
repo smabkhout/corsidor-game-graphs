@@ -48,26 +48,7 @@ void initialize(unsigned int id, struct graph_t *graph) {
   // Retrouver m
   // int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
   // Choix de la fonction selon le type
-  switch (graph->type) {
-    case TRIANGULAR:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((3 + sqrt(12 * graph->num_vertices - 3)) / 6);
-      in_hexagon = in_hexagon_T;
-      break;
-    case CYCLIC:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((graph->num_vertices + 18) / 12);
-      in_hexagon = in_hexagon_C;
-      break;
-    case HOLEY:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((-54 + sqrt(24 * graph->num_vertices + 4068)) / 4);
-      in_hexagon = in_hexagon_H;
-      break;
-    default:
-      puts("Invalid graph type");
-      return;
-  }
+  resolve_graph_type_or_default(graph, &m, &in_hexagon);
 
   numberOfObjectives     = graph->num_objectives;
   visited_objectives     = malloc(sizeof(int) * numberOfObjectives);

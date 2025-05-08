@@ -38,29 +38,13 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
 
   // Retrouver m
   // int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
-  int m                                                              = 0;
-  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
+
+  int               m          = 0;
+  in_hexagon_func_t in_hexagon = NULL;
+
   // Choix de la fonction selon le type
-  switch (g->type) {
-    case TRIANGULAR:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
-      in_hexagon = in_hexagon_T;
-      break;
-    case CYCLIC:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((g->num_vertices + 18) / 12);
-      in_hexagon = in_hexagon_C;
-      break;
-    case HOLEY:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
-      in_hexagon = in_hexagon_H;
-      break;
-    default:
-      puts("Invalid graph type");
-      return 0;
-  }
+  resolve_graph_type_or_default(g, &m, &in_hexagon);
+
   // Convertir les index en coordonnées axiales
   int l0 = 0;
   int c0 = 0;
