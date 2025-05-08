@@ -147,7 +147,15 @@ int main(int argc, char *argv[]) {
   }
 
   enum graph_type_t g_type;
-
+  //verifier si le type de graphe est valide
+  if (type_graph == NULL) {
+    fprintf(stderr, "⚠️  Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    g_type = TRIANGULAR;
+    type_graph = "TRIANGULAR";
+  } else if (size_mesh < 0) {
+    fprintf(stderr, "⚠️  Taille de la maille non spécifiée, je tombe sur 3\n");
+    size_mesh = 3;
+  }
   switch (type_graph[0]) {
     case 'T':
       if (strcmp(type_graph, "TR") == 0 || strcmp(type_graph, "TRIANGULAR") == 0)
