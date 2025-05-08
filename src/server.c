@@ -146,7 +146,51 @@ int main(int argc, char *argv[]) {
     exit(EXIT_FAILURE);
   }
 
-  printf("Type de graphe: %s\n", type_graph);
+  enum graph_type_t g_type;
+
+  switch (type_graph[0]) {
+    case 'T':
+      if (strcmp(type_graph, "TR") == 0 || strcmp(type_graph, "TRIANGULAR") == 0)
+        g_type = TRIANGULAR;
+      else {
+        goto unknown;
+      }
+      break;
+
+    case 'C':
+    case 'c':
+      if (strcmp(type_graph, "CY") == 0 || strcmp(type_graph, "CYCLIC") == 0)
+        g_type = CYCLIC;
+      else {
+        goto unknown;
+      }
+      break;
+
+    case 'H':
+    case 'h':
+      if (strcmp(type_graph, "HO") == 0 || strcmp(type_graph, "HOLEY") == 0)
+        g_type = HOLEY;
+      else {
+        goto unknown;
+      }
+      break;
+      /*
+          case 'S': case 's':
+            if (strcmp(type_graph, "S") == 0
+             || strcmp(type_graph, "SPAN") == 0)
+              g_type = SPAN;
+            else
+              goto unknown;
+            break;
+      */
+    default:
+    unknown:
+      fprintf(stderr, "⚠️  Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n",
+              type_graph);
+      g_type = TRIANGULAR;
+  }
+
+  printf("Type de graphe: %s (enum=%d)\n", type_graph, g_type);
   printf("Taille de la maille: %d\n", size_mesh);
   first_step(argc, argv);
 
@@ -164,8 +208,8 @@ int main(int argc, char *argv[]) {
   int current_player = start_player;
   int other_player   = (start_player + 1) % NUM_PLAYERS;
 
-  struct graph_t *g1 = createGraph(size_mesh, TRIANGULAR);
-  struct graph_t *g2 = createGraph(size_mesh, TRIANGULAR);
+  struct graph_t *g1 = createGraph(size_mesh, g_type);
+  struct graph_t *g2 = createGraph(size_mesh, g_type);
 
   struct graph_t *graphs[2] = {g1, g2};
   // struct graph_t *globalGraph = g1;
