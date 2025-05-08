@@ -19,7 +19,6 @@ struct distance_node {
   int      num_moves;
 };
 
-
 struct game_state {
   struct graph_t *graph;
   struct move_t   previous_moves[2];  // dernier coup pour chaque joueur
@@ -31,10 +30,10 @@ struct scored_move {
   struct move_t move;
 };
 
-vertex_t min_distance_vertex(struct distance_node *nodes, size_t num_vertices);
-int      shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
-                              vertex_t opponent_pos, vertex_t *path, vertex_t last_pos);
+vertex_t          min_distance_vertex(struct distance_node *nodes, size_t num_vertices);
+int               shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
+                                       vertex_t opponent_pos, vertex_t *path, vertex_t last_pos);
 struct game_state applyy_move(const struct game_state *state, struct move_t move);
-//int evaluate(struct game_state *state, int color);
+// int evaluate(struct game_state *state, int color);
 
-//struct scored_move minmax(struct game_state *state, int depth, int color);
+// struct scored_move minmax(struct game_state *state, int depth, int color);

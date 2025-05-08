@@ -312,8 +312,8 @@ struct move_t try_place_wall(struct graph_t* graph, vertex_t pos_enemy, vertex_t
   if (can_place_wall(graph, wall)) {
     move.e[0] = wall[0];
     move.e[1] = wall[1];
-    printf("🧱 Player %d places a wall between %d-%d and %d-%d\n", my_color, wall[0].fr, wall[0].to,
-           wall[1].fr, wall[1].to);
+    printf("🧱 Player %d places a wall between %d-%d and %d-%d\n", my_color, wall[0].fr,
+           wall[0].to, wall[1].fr, wall[1].to);
     return move;
   }
 

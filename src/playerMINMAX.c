@@ -139,8 +139,6 @@ int evaluate(struct game_state *state, int color) {
 
     if (!visited_objectives_opp[i] && opp_distances_to_objectives[i] < min_distance_opp &&
         opp_distances_to_objectives[i] != -1) {
-     
-
       obj_index_opp    = i;
       min_distance_opp = opp_distances_to_objectives[i];
     }
@@ -279,15 +277,15 @@ struct move_t play(const struct move_t previous_move) {
 
     return move;
   }
-    struct scored_move best_move;
-    struct game_state state;
-    state.graph = board->graph;
-    state.previous_moves[0].m = my_pos;
-    state.previous_moves[1].m = opp_pos;
-    state.previous_positions[0] = my_last_pos;
-    state.previous_positions[1] = opp_las_pos;
-    best_move = minmax(&state, 4, player_id);
-    struct move_t move = best_move.move;  
+  struct scored_move best_move;
+  struct game_state  state;
+  state.graph                 = board->graph;
+  state.previous_moves[0].m   = my_pos;
+  state.previous_moves[1].m   = opp_pos;
+  state.previous_positions[0] = my_last_pos;
+  state.previous_positions[1] = opp_las_pos;
+  best_move                   = minmax(&state, 4, player_id);
+  struct move_t move          = best_move.move;
 }
 
 void finalize() {
