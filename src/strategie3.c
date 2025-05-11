@@ -93,7 +93,8 @@ int distance_minimal(int d[], int visited[], unsigned int n) {
 }
 
 void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_vertices],
-              int prev[graph->num_vertices], int next[graph->num_vertices]) {
+              int prev[graph->num_vertices], int next[graph->num_vertices],
+              vertex_t pos_other_player) {
   int visited[graph->num_vertices];
   for (unsigned int i = 0; i < graph->num_vertices; i++) {
     d[i]       = INT_MAX;
@@ -111,7 +112,8 @@ void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_ve
     for (unsigned int j = 0; j < graph->num_vertices; j++) {
       int dir   = gsl_spmatrix_uint_get(graph->t, index_min, j);
       int poids = 1;
-      if (dir > 0 && dir != 7 && d[index_min] + poids < d[j] && !visited[j]) {
+      if (dir > 0 && dir != 7 && d[index_min] + poids < d[j] && !visited[j] &&
+          can_move(graph, index_min, j, pos_other_player)) {
         d[j]    = d[index_min] + poids;
         prev[j] = index_min;
       }
@@ -134,7 +136,8 @@ void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_ve
 
 // calculer les distances entre les objectives
 void calculate_dist_objectives(struct graph_t* graph, int num_objectives,
-                               int distance[num_objectives][num_objectives]) {
+                               int      distance[num_objectives][num_objectives],
+                               vertex_t pos_other_player) {
   for (int i = 0; i < num_objectives; i++) {
     for (int j = 0; j < num_objectives; j++) {
       if (i == j) {
@@ -143,7 +146,8 @@ void calculate_dist_objectives(struct graph_t* graph, int num_objectives,
         int d[graph->num_vertices];
         int prev[graph->num_vertices];
         int next[graph->num_vertices];
-        dijistra(graph, graph->objectives[i], graph->objectives[j], d, prev, next);
+        dijistra(graph, graph->objectives[i], graph->objectives[j], d, prev, next,
+                 pos_other_player);
         distance[i][j] = d[graph->objectives[j]];
       }
     }
@@ -207,9 +211,9 @@ int len(int n, int t[]) {
 }
 
 // probléme du voyageur de Commerce
-int TSP(struct graph_t* graph, int best_order[], int obj_visited[]) {
+int TSP(struct graph_t* graph, int best_order[], int obj_visited[], vertex_t pos_other_player) {
   int d[graph->num_objectives][graph->num_objectives];
-  calculate_dist_objectives(graph, graph->num_objectives, d);
+  calculate_dist_objectives(graph, graph->num_objectives, d, pos_other_player);
 
   int n = graph->num_objectives;
   int remaining[n];
@@ -258,26 +262,8 @@ int TSP(struct graph_t* graph, int best_order[], int obj_visited[]) {
   return min_distance;
 }
 
-/*
-void dijistra_modified( struct graph_t * graph, vertex_t a, vertex_t b, int d[graph->num_vertices],
-int prev[graph->num_vertices],vertex_t opponent_pos){ int visited[graph->num_vertices]; for
-(unsigned int i=0; i<graph->num_vertices; i++){ d[i]=INT_MAX; prev[i]=-1; visited[i]=0;
-    }
-    d[a]=0;
-       visited[index_min] = 1;
-        for (unsigned int j=0;j<graph->num_vertices; j++){
-            int dir=gsl_spmatrix_uint_get(graph->t, index_min, j);
-            int poids =1;
-            if(dir>0 && dir!= 7 && d[index_min]+poids< d[j] && !visited[j] &&
-is_empty_position(j,opponent_pos)){ d[j]=d[index_min]+poids; prev[j]=index_min;
-            }
-            vertex_t* result;
-            if(is_path_clear(graph, index_min, enum dir_t dir, 2, opponent_pos, result))
-
-        }
-}*/
-
-vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos) {
+vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos,
+                                vertex_t pos_other_player) {
   vertex_t*    objectives        = graph->objectives;
   unsigned int num_obj           = graph->num_objectives;
   int          min_distance      = INT_MAX;
@@ -287,7 +273,7 @@ vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos) {
   int          next[graph->num_vertices];
   for (unsigned int i = 0; i < num_obj; i++) {
     vertex_t objective = objectives[i];
-    dijistra(graph, player_pos, objective, distances, prev, next);
+    dijistra(graph, player_pos, objective, distances, prev, next, pos_other_player);
     int obj_distance = distances[objective];
 
     if (obj_distance < min_distance) {
@@ -312,8 +298,8 @@ struct move_t try_place_wall(struct graph_t* graph, vertex_t pos_enemy, vertex_t
   if (can_place_wall(graph, wall)) {
     move.e[0] = wall[0];
     move.e[1] = wall[1];
-    printf("🧱 Player %d places a wall between %d-%d and %d-%d\n", my_color, wall[0].fr,
-           wall[0].to, wall[1].fr, wall[1].to);
+    printf("🧱 Player %d places a wall between %d-%d and %d-%d\n", my_color, wall[0].fr, wall[0].to,
+           wall[1].fr, wall[1].to);
     return move;
   }
 
