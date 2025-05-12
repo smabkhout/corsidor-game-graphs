@@ -74,10 +74,10 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
     int l;
     int c;
     index_to_axial(v, m, &l, &c);
-    if (!in_hexagon(l, c, m, 0, 0)) {
-      nodes[v].vertex = -1;
-      continue;
-    }
+    // if (!in_hexagon(l, c, m, 0, 0)) {
+    //   nodes[v].vertex = -1;
+    //  continue;
+    //}
     nodes[v].vertex    = v;
     nodes[v].distance  = INT_MAX;
     nodes[v].visited   = false;

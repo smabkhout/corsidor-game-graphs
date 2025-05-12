@@ -54,15 +54,8 @@ void initialize(unsigned int id, struct graph_t *graph) {
   visited_objectives     = malloc(sizeof(int) * numberOfObjectives);
   visited_objectives_opp = malloc(sizeof(int) * numberOfObjectives);
   return_toHome          = 0;
-  for (int i = 0; i < numberOfObjectives; i++) {
-    visited_objectives[i] = 0;
-  }
-
-  for (int i = 0; i < numberOfObjectives; i++) {
-    visited_objectives_opp[i] = 0;
-  }
-  player_id = id;
-  home      = graph->start[player_id];
+  player_id              = id;
+  home                   = graph->start[player_id];
 
   board = board_init();
   // board->graph = malloc(sizeof(struct graph_t));
@@ -70,6 +63,28 @@ void initialize(unsigned int id, struct graph_t *graph) {
   if (!board->graph) {
     fprintf(stderr, "Erreur allocation du graph\n");
     exit(EXIT_FAILURE);
+  }
+
+  for (int i = 0; i < numberOfObjectives; i++) {
+    int l = 0;
+    int c = 0;
+    index_to_axial(board->graph->objectives[i], m, &l, &c);
+    if (!in_hexagon(l, c, m, 0, 0)) {
+      visited_objectives[i]     = 1;
+      visited_objectives_opp[i] = 1;
+    }
+    visited_objectives[i] = 0;
+  }
+
+  for (int i = 0; i < numberOfObjectives; i++) {
+    int l = 0;
+    int c = 0;
+    index_to_axial(board->graph->objectives[i], m, &l, &c);
+    if (!in_hexagon(l, c, m, 0, 0)) {
+      visited_objectives[i]     = 1;
+      visited_objectives_opp[i] = 1;
+    }
+    visited_objectives_opp[i] = 0;
   }
 
   // copy_graph(board->graph, graph);
@@ -222,25 +237,34 @@ struct move_t play(const struct move_t previous_move) {
   }
   // find the closest objective for me
   int min_distance = INT_MAX;
-  int obj_index;
+  int obj_index    = -1;
   for (int i = 0; i < numberOfObjectives; ++i) {
+    // printf("visited_objectives[%d] : %d \n", i, visited_objectives[i]);
+    // printf("distances_to_objectives[%d] : %d \n", i, distances_to_objectives[i]);
+    // printf("min_distance : %d \n", min_distance);
     if (!visited_objectives[i] && distances_to_objectives[i] < min_distance &&
         distances_to_objectives[i] != -1) {
       obj_index    = i;
       min_distance = distances_to_objectives[i];
     }
   }
+  if (obj_index < 0) {
+    // no reachable objective? fall back to a safe move:
+    obj_index    = 0;  // pick objective 0
+    min_distance = distances_to_objectives[0];
+    printf("no reachable objective for the player, falling back to obj 0\n");
+  }
 
   // find the closest objective for the opponent
   int min_distance_opp = INT_MAX;
-  int obj_index_opp;
+  int obj_index_opp    = -1;
   for (int i = 0; i < numberOfObjectives; ++i) {
     // print all variables in if for debug
     /*
-    printf("visited_objectives_opp[%d] : %d \n", i, visited_objectives_opp[i]);
-    printf("opp_distances_to_objectives[%d] : %d \n", i, opp_distances_to_objectives[i]);
-    printf("min_distance_opp : %d \n", min_distance_opp);
-    printf("min_distance : %d \n", min_distance);
+        printf("visited_objectives_opp[%d] : %d \n", i, visited_objectives_opp[i]);
+        printf("opp_distances_to_objectives[%d] : %d \n", i, opp_distances_to_objectives[i]);
+        printf("min_distance_opp : %d \n", min_distance_opp);
+        printf("min_distance : %d \n", min_distance);
     */
     if (!visited_objectives_opp[i] && opp_distances_to_objectives[i] < min_distance_opp &&
         opp_distances_to_objectives[i] != -1) {
@@ -251,6 +275,13 @@ struct move_t play(const struct move_t previous_move) {
       obj_index_opp    = i;
       min_distance_opp = opp_distances_to_objectives[i];
     }
+  }
+
+  if (obj_index < 0) {
+    // no reachable objective? fall back to a safe move:
+    obj_index    = 0;  // pick objective 0
+    min_distance = distances_to_objectives[0];
+    printf("no reachable objective for the opponent, falling back to obj 0\n");
   }
   /*
   printf("my position : %d \n", my_pos);
@@ -375,6 +406,7 @@ struct move_t play(const struct move_t previous_move) {
   struct move_t move;
   move.c = player_id;
   move.t = MOVE;
+  printf("objective index : %d \n", obj_index);
   move.m = paths[obj_index][1];
 
   printf("Player %d found this path using dijkstra :\n", player_id);

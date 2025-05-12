@@ -157,8 +157,8 @@ int main(int argc, char *argv[]) {
             argv[0]);
     exit(EXIT_FAILURE);
   }
+  int g_type;
 
-  enum graph_type_t g_type;
   if (type_graph == NULL) {
     fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
     g_type     = TRIANGULAR;
@@ -167,32 +167,55 @@ int main(int argc, char *argv[]) {
     fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
     size_mesh = 3;
   }
+
+  // Valeurs par défaut si pas d’option -t ou -m
+  if (type_graph == NULL) {
+    fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    g_type     = TRIANGULAR;
+    type_graph = "T";
+  }
+  if (size_mesh < 0) {
+    fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
+    size_mesh = 3;
+  }
+
   switch (type_graph[0]) {
     case 'T':
-      if (strcmp(type_graph, "TR") == 0 || strcmp(type_graph, "TRIANGULAR") == 0)
+    case 't':
+      if (strcmp(type_graph, "T") == 0)
         g_type = TRIANGULAR;
-      else {
+      else if (strcmp(type_graph, "TR") == 0)
+        g_type = 4;  // TRIANGULAR_RANDOM
+      else
         goto unknown;
-      }
       break;
 
     case 'C':
     case 'c':
-      if (strcmp(type_graph, "CY") == 0 || strcmp(type_graph, "CYCLIC") == 0)
+      if (strcmp(type_graph, "C") == 0)
         g_type = CYCLIC;
-      else {
+      else
         goto unknown;
-      }
       break;
 
     case 'H':
     case 'h':
-      if (strcmp(type_graph, "HO") == 0 || strcmp(type_graph, "HOLEY") == 0)
+      if (strcmp(type_graph, "H") == 0)
         g_type = HOLEY;
-      else {
+      else if (strcmp(type_graph, "HR") == 0)
+        g_type = 5;  // HOLEY_RANDOM
+      else
         goto unknown;
-      }
       break;
+
+    case 'S':
+    case 's':
+      if (strcmp(type_graph, "S") == 0)
+        g_type = 6;  // SPAN
+      else
+        goto unknown;
+      break;
+
     default:
     unknown:
       fprintf(stderr, "Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n", type_graph);

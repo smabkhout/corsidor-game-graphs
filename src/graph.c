@@ -166,16 +166,21 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   }
   graph->num_edges = 0;
   graph->type      = type;
-
+  int type_graphe  = type;
   // Construction des arêtes en fonction du type de graphe
-  if (type == TRIANGULAR) {
+  if (type_graphe == TRIANGULAR || type_graphe == 4) {
     graph_generate(m, graph, in_hexagon_T);
-  } else if (type == CYCLIC) {
+  } else if (type_graphe == CYCLIC) {
     graph_generate(m, graph, in_hexagon_C);
-  } else if (type == HOLEY) {
+  } else if (type_graphe == HOLEY || type_graphe == 5) {
     graph_generate(m, graph, in_hexagon_H);
+  } else if (type_graphe == 6) {  // SPAN
+    graph_generate(m, graph, in_hexagon_S);
   } else {
-    fprintf(stderr, "⚠️ Unknown graph type (%d) — falling back to TRIANGULAR\n", type);
+    fprintf(
+        stderr,
+        "⚠️ Unknown graph type (%d) while creating the graph — falling back to TRIANGULAR\n",
+        type);
     graph_generate(m, graph, in_hexagon_T);
   }
 
