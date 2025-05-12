@@ -11,6 +11,7 @@ static struct board_t     *board = NULL;
 static int                 obj_visited[5];
 static int                 index_objective;
 static enum player_color_t my_color;
+static vertex_t start_player;
 
 char const *get_player_name() {
   srand(time(NULL));
@@ -22,6 +23,7 @@ void initialize(unsigned int id, struct graph_t *graph) {
   board                        = board_init();
   board->graph                 = graph;
   board->current_positions[id] = graph->start[id];
+  start_player=graph->start[id];
   if (!board->graph) {
     fprintf(stderr, "Erreur allocation du graph\n");
     exit(EXIT_FAILURE);
@@ -85,7 +87,7 @@ struct move_t play(const struct move_t previous_move) {
   }
   vertex_t target = board->graph->objectives[best_order[0]];
   if ((unsigned int)index_objective == board->graph->num_objectives) {
-    target = board->graph->start[my_color];
+    target = start_player;
   }
   int d[board->graph->num_vertices];
   int prev[board->graph->num_vertices];
