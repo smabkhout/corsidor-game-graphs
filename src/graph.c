@@ -148,9 +148,10 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     perror("Failed to allocate memory for graph");
     return NULL;
   }
-  graph->num_vertices = 0;  // just for initialisation
-  unsigned int n      = 3 * (m * m) - 3 * m + 1;
-  graph->t            = gsl_spmatrix_uint_alloc(n, n);
+  graph->num_vertices         = 0;  // just for initialisation
+  unsigned int n              = 3 * (m * m) - 3 * m + 1;
+  int          dernier_sommet = n - 1;
+  graph->t                    = gsl_spmatrix_uint_alloc(n, n);
   // Calcul du nombre de sommets à partir du nombre m
   if (type == TRIANGULAR) {
     if (m < 2)
@@ -194,8 +195,9 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
 
   // Initialiser les positions de départ des joueurs
   graph->start[0] = 0;  // Premier joueur au sommet 0 //à changer au coordonnees axiales
-  graph->start[1] = graph->num_vertices -
-                    1;  // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
+
+  graph->start[1] =
+      dernier_sommet;  // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
   gsl_spmatrix_uint *csr = gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
   gsl_spmatrix_uint_free(graph->t);
   graph->t = csr;
