@@ -55,6 +55,17 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin) {
           ((k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2)));
 }
 
+// Vérifie si (l, c) est bien dans l'hexagone de type span (nouveau type)
+int in_hexagon_S(int l, int c, int m, int l_origin, int c_origin) {
+  l = l - l_origin;
+  c = c - c_origin;
+  if (!((abs(l) <= m - 1) && (abs(c) <= m - 1) && (abs(l + c) <= m - 1)))
+    return 0;
+
+  return ((l == 0) || (l == 1 && c != m - 1) || (l == -1 && c != -m + 1) ||
+          in_hexagon_C(l, c, m, l_origin, c_origin));
+}
+
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin) {
   int m_prime     = m / 3 + 1;  // m du sous hexagone (il y en a 7)
@@ -293,7 +304,7 @@ int is_objective_or_player(int l, int c, int m, struct graph_t *g) {
 void resolve_graph_type_or_default(struct graph_t *g, int *m, in_hexagon_func_t *in_hexagon) {
   switch (g->type) {
     case TRIANGULAR:
-      // case TRIANGULAR_RANDOM:
+    case 4:  // TRIANGULAR_RANDOM
       *m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
       *in_hexagon = in_hexagon_T;
       break;
@@ -302,17 +313,15 @@ void resolve_graph_type_or_default(struct graph_t *g, int *m, in_hexagon_func_t 
       *in_hexagon = in_hexagon_C;
       break;
     case HOLEY:
-      // case HOLEY_RANDOM:
+    case 5:  // HOLEY_RANDOM
       *m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
       *in_hexagon = in_hexagon_H;
       break;
-      /*
-    case SPAN:
-      // assume g->num_vertices is a perfect square
-      *m          = (int)sqrt((double)g->num_vertices);
+
+    case 6:  // SPAN
+      *m          = (int)((g->num_vertices + 35) / 18);
       *in_hexagon = in_hexagon_S;
       break;
-      */
 
     // ─────────────── fallback ───────────────
     default:

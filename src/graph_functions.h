@@ -27,6 +27,9 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin);
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin);
 
+// Vérifie si (l, c) est bien dans l'hexagone de type span (nouveau type)
+int in_hexagon_S(int l, int c, int m, int l_origin, int c_origin);
+
 void graph_generate(int m, struct graph_t *g,
                     int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin));
 
