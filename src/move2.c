@@ -127,26 +127,41 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
 }
 
 int valid_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
-  if (p->walls <= 0)
+  if (p->walls <= 0) {
+    printf("Refusé : plus de murs\n");
     return 0;
+  }
 
   vertex_t fr1 = move.e[0].fr;
   vertex_t fr2 = move.e[1].fr;
-  if (fr1 != fr2)
-    return 0;  // les deux arêtes ne partent pas du même sommet
+  if (fr1 != fr2) {
+    printf("Refusé : les arêtes ne partent pas du même sommet (%u != %u)\n", fr1, fr2);
+    return 0;
+  }
 
   vertex_t to1 = move.e[0].to;
   vertex_t to2 = move.e[1].to;
 
   int dir1 = gsl_spmatrix_uint_get(g->t, fr1, to1);
-  int dir2 = gsl_spmatrix_uint_get(g->t, fr1, to2);
+  int dir2 = gsl_spmatrix_uint_get(g->t, fr2, to2);
 
-  if (dir1 == 0 || dir2 == 0)
-    return 0;  // arêtes inexistantes
+  if (dir1 == 0 || dir2 == 0) {
+    printf("Refusé : arête absente (%u->%u ou %u->%u)\n", fr1, to1, fr1, to2);
+    return 0;
+  }
+
+  if (dir1 == dir2) {
+    printf("Refusé : mêmes directions (%d == %d)\n", dir1, dir2);
+    return 0;
+  }
 
   int diff = abs(dir1 - dir2);
-  if (diff != 1 && diff != 5)
-    return 0;  // pas consécutives
+  if (diff != 1 && diff != 5) {
+    printf(
+        "Refusé : directions %d et %d ne sont pas consécutives fr1=%d et fr2=%d to1=%d to2=%det \n",
+        dir1, dir2, fr1, fr2, to1, to2);
+    return 0;
+  }
 
   return 1;
 }
