@@ -328,6 +328,8 @@ int main(int argc, char *argv[]) {
         printf("Player %s claims victory by returning to start after visiting all objectives!\n",
                players[current_player].get_player_name());
         winner = current_player;
+        free(current_player_ptr);
+        free(other_player_ptr);
         break;
       }
       add_move_to_board(board, move);

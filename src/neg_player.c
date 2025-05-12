@@ -236,25 +236,30 @@ struct move_t play(const struct move_t previous_move) {
   int obj_index_opp;
   for (int i = 0; i < numberOfObjectives; ++i) {
     // print all variables in if for debug
+    /*
     printf("visited_objectives_opp[%d] : %d \n", i, visited_objectives_opp[i]);
     printf("opp_distances_to_objectives[%d] : %d \n", i, opp_distances_to_objectives[i]);
     printf("min_distance_opp : %d \n", min_distance_opp);
     printf("min_distance : %d \n", min_distance);
+    */
     if (!visited_objectives_opp[i] && opp_distances_to_objectives[i] < min_distance_opp &&
         opp_distances_to_objectives[i] != -1) {
-      printf("distances to objectives for the opponent %d : %d \n", opp_distances_to_objectives[i],
-             i);
+      // printf("distances to objectives for the opponent %d : %d \n",
+      // opp_distances_to_objectives[i],
+      //    i);
 
       obj_index_opp    = i;
       min_distance_opp = opp_distances_to_objectives[i];
     }
   }
+  /*
   printf("my position : %d \n", my_pos);
   printf("opponent position : %d \n", opp_pos);
 
   puts("the distances me to objectives and opp to objectives :\n");
   printf("my distance to the nearest objective : %d \n", min_distance);
   printf("opp distance to the objective  : %d \n", min_distance_opp);
+  */
   if (min_distance_opp < min_distance) {
     // place a wall to stop him
     struct move_t wall;
