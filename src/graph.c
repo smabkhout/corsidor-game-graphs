@@ -302,7 +302,8 @@ int is_objective_or_player(int l, int c, int m, struct graph_t *g) {
   return 3;
 }
 void resolve_graph_type_or_default(struct graph_t *g, int *m, in_hexagon_func_t *in_hexagon) {
-  switch (g->type) {
+  int type = g->type;
+  switch (type) {
     case TRIANGULAR:
     case 4:  // TRIANGULAR_RANDOM
       *m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
