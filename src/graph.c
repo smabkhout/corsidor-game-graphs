@@ -178,10 +178,9 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   } else if (type_graphe == 6) {  // SPAN
     graph_generate(m, graph, in_hexagon_S);
   } else {
-    fprintf(
-        stderr,
-        "⚠️ Unknown graph type (%d) while creating the graph — falling back to TRIANGULAR\n",
-        type);
+    fprintf(stderr,
+            "⚠️ Unknown graph type (%d) while creating the graph — falling back to TRIANGULAR\n",
+            type);
     graph_generate(m, graph, in_hexagon_T);
   }
 
