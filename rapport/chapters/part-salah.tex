@@ -14,8 +14,6 @@ Le plateau du jeu Coursidor est modélisé comme un graphe, où chaque case corr
     \item de préparer l’implémentation future d’algorithmes d’exploration plus complexes, comme ceux de plus court chemin (par exemple Dijkstra ou A*), sans nécessiter de réécriture fondamentale.
 \end{itemize}
 
-
-
 \subsection{Pourquoi GSL ?}
 Nous avons choisi d’utiliser les matrices creuses au format compressé (CSR) fournies par la bibliothèque \texttt{GSL} (\texttt{gsl\_spmatrix\_uint}) pour représenter la matrice d’adjacence du graphe. Ce choix s’appuie sur plusieurs avantages essentiels pour notre projet :
 
@@ -25,6 +23,26 @@ Nous avons choisi d’utiliser les matrices creuses au format compressé (CSR) f
     \item GSL fournit des fonctions efficaces pour itérer sur les voisins d’un sommet sans parcourir toute la matrice, ce qui améliore les performances des fonctions de génération et de validation des mouvements.
     \item l’utilisation d’une structure creuse rend explicite la topologie du graphe tout en maintenant une bonne flexibilité pour les manipulations (ajout, blocage, suppression d’arêtes).
 \end{itemize}
+
+Pour illustrer l’intérêt des matrices creuses CSR, nous présentons deux figures côte à côte : à gauche (Figure \ref{fig:matrix-csr}) la matrice d’adjacence creuse de taille $m\times m$, où $m$ désigne le nombre de sommets du graphe, et à droite (Figure \ref{fig:graph-repr}) le graphe correspondant affichant ses $m$ sommets et leurs arêtes. Cette comparaison met en évidence la très faible densité de la matrice (peu d’éléments non nuls), justifiant l’usage d’un format compressé pour économiser significativement l’espace mémoire.
+
+\begin{figure}[!ht]
+  \centering
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{rapport/adjacence_creuse.png}
+    \caption{Matrice d’adjacence creuse CSR}
+    \label{fig:matrix-csr}
+  \end{subfigure}
+  \hfill
+  \begin{subfigure}[b]{0.45\textwidth}
+    \includegraphics[width=\textwidth]{rapport/graphe.png}
+    \caption{Graphe représentant $m$ sommets et leurs arêtes}
+    \label{fig:graph-repr}
+  \end{subfigure}
+  \caption{Comparaison entre la représentation creuse de la matrice d’adjacence et le graphe associé}
+  \label{fig:csr-graph-example}
+\end{figure}
+
 
 Nous avons adopté une codification explicite des arêtes dans la matrice, inspirée de l’énumération suivante :
 
