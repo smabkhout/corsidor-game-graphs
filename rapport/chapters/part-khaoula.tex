@@ -1,3 +1,45 @@
-\section{Part} 
+\section{Protocole de communication joueur-serveur}
 \label{sec:part-khaoula}
-grgrg
+Cette partie décrit le mécanisme de communication entre le serveur de jeu et les joueurs, encapsulés sous forme de bibliothèques dynamiques. Le serveur agit comme chef d’orchestre: il initialise les joueurs, leur transmet les informations de jeu à chaque tour, et recueille les coups proposés. Une interface standard a été définie afin d’assurer une interaction cohérente et contrôlée, tout en garantissant la modularité et la réutilisabilité du code
+\subsection{Chargement des bibliothèques dynamiques}
+Le serveur commence par charger dynamiquement les bibliothèques partagées des deux joueurs à l’aide de \texttt{dlopen}. Ensuite, les fonctions attendues \texttt{\textcolor{blue}{get\_player\_name}}, \texttt{\textcolor{blue}{initialize}}, \texttt{\textcolor{blue}{play}} et \texttt{\textcolor{blue}{finalize}} sont extraites via \texttt{dlsym} comme le montre la figure x. Chaque fonction est vérifiée après chargement afin de prévenir les erreurs de symboles manquants, ce qui permet de s’assurer que tous les joueurs respectent l’interface définie. En cas d’erreur, le serveur arrête proprement l’exécution avec un message explicite.
+
+
+
+\vspace{0.5cm}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  box/.style={rectangle, draw, minimum width=3cm, minimum height=1cm},
+  arrow/.style={-Latex, thick}
+]
+
+\node[box, fill=gray!20] (serveur) {Serveur};
+\node[box, right=5cm of serveur, fill=green!20] (libso) {libPlayer.so};
+
+\draw[arrow] (serveur.east) -- node[above] {\texttt{dlopen}} (libso.west);
+\draw[arrow, bend left=30] (serveur.north east) to node[above] {\texttt{dlsym: play()}} (libso.north west);
+
+\end{tikzpicture}
+\caption{Chargement dynamique d'une bibliothèque joueur par le serveur}
+\label{fig:dlopen}
+\end{figure}
+%\vspace{0.5cm}
+
+\subsection{Déroulement d’un tour de jeu}
+Chaque joueur doit exposer une fonction \texttt{\textcolor{blue}{play}} respectant une signature prédéfinie. Cette fonction reçoit en entrée le dernier coup de l'adversaire et renvoie le coup à jouer (déplacement ou mur).
+\subsubsection{Initialisation du jeu et boucle principale du serveur}
+
+Le serveur commence par analyser les paramètres de ligne de commande : taille du plateau, type de graphe, nombre de tours maximum, etc. Il charge ensuite les bibliothèques des deux joueurs avec dlopen et les fonctions nécessaires via dlsym.
+
+Une fois les bibliothèques chargées, le serveur crée le plateau de jeu, initialise les graphes pour chaque joueur, choisit aléatoirement le joueur qui commence, et envoie les premières informations à chaque joueur via la fonction initialize().
+
+À chaque tour, le serveur agit comme coordinateur entre les deux joueurs. Il transmet au joueur courant le dernier coup effectué par l’adversaire. Le joueur, via sa bibliothèque dynamique, renvoie alors un coup sous la forme d’une structure \texttt{move\_t}, qui peut représenter soit un déplacement, soit un placement de mur. Le serveur procède immédiatement à la vérification de la validité de ce coup, en utilisant les fonctions \texttt{\textcolor{blue}{valid\_move}} ou \texttt{\textcolor{blue}{valid\_wall}} selon le type. Si le coup est conforme aux règles du jeu, il est appliqué au plateau. Dans le cas contraire (coup illégal ou incohérent), le joueur est disqualifié et l’autre joueur remporte automatiquement la partie sans modification, ce qui est expliqué dans la figure ci\_dessus .
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.4\textwidth]{rapport/imageTourDuJeu.png}
+\caption{Échanges entre le serveur et le joueur pendant un tour de jeu.}
+\label{fig:echange-tour}
+\end{figure}
+
