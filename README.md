@@ -24,6 +24,8 @@ make install → installe server, .so, et alltests
 
 make clean → nettoie tout
 
+make rapport → compile le rapport et ouvre le pdf
+
 Clang-format rules :
 
 find . -name '*.c' -o -name '*.h' | xargs clang-format -i 
