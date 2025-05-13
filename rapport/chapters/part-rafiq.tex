@@ -1,2 +1,72 @@
 \section{Part} 
 \label{sec:part-rafiq}
+
+
+
+\subsection*{definition de problème}
+
+\begin{figure}[h!]
+  \centering
+  \begin{minipage}{0.45\textwidth}
+    \includegraphics[width=\linewidth]{image1.png}
+    \caption{Image 1}
+  \end{minipage}
+  \hfill
+  \begin{minipage}{0.45\textwidth}
+    \includegraphics[width=\linewidth]{image2.png}
+    \caption{Image 2}
+  \end{minipage}
+\end{figure}
+
+Le problème présenté consiste à parcourir un graphe hexagonal en visitant un ensemble de points objectifs (représentés en jaune) avant de retourner à sa position de départ, plus rapidement que l’adversaire. Ce défi s’apparente au célèbre problème du voyageur de commerce (TSP), dont l’objectif est de trouver le plus court chemin passant par tous les points donnés. Cependant, cette version s’écarte fortement du TSP classique. D’une part, le graphe est dynamique : à chaque tour, les joueurs peuvent modifier la structure du terrain en plaçant des murs, ce qui supprime des arêtes et modifie en temps réel les chemins accessibles. D’autre part, l’aspect compétitif introduit une dimension stratégique supplémentaire, puisque les décisions de chaque joueur influencent directement le jeu de l’autre. Le problème devient ainsi un TSP dynamique, compétitif et stratégique, où il ne suffit plus de calculer un chemin optimal une fois pour toutes, mais de le réévaluer continuellement en fonction des actions adverses. Cette nature évolutive rend les approches classiques du TSP inadaptées, et impose le recours à des stratégies intelligentes, adaptatives, voire apprenantes.
+
+
+on se trouve donc vers  :
+\begin{itemize}
+    \item Des heuristiques adaptatives (pathfinding + replanification).
+    \item Une analyse en profondeur du coût combiné des déplacements + murs.
+    \item Des stratégies IA comme MinMax avec fonction d’évaluation ou apprentissage supervisé.
+
+
+\end{itemize}
+
+
+\subsection*{strategies }
+\subsubsection*{path finding }
+ Plusieurs algorithmes de pathfinding peuvent être envisagés pour déterminer le chemin optimal à chaque instant : BFS, Dijkstra et A* .Le BFS (Breadth-First Search), bien que très simple et rapide, est peu adapté ici car il explore uniformément tous les nœuds à distance croissante sans tenir compte des coûts, ce qui le rend inefficace dans un graphe où certains chemins peuvent être bien plus longs que d'autres. Le Dijkstra, lui, est une généralisation de BFS qui prend en compte les coûts des arêtes ; il est donc plus pertinent pour calculer des distances exactes dans un graphe pondéré. Toutefois, il reste coûteux en temps car il explore uniformément toutes les options, même les moins prometteuses. En revanche, A* se démarque en utilisant une heuristique (dans notre cas, la distance euclidienne entre la position courante et l'objectif) pour orienter la recherche vers la solution la plus probable. Cela permet de réduire considérablement le nombre de nœuds explorés, tout en garantissant l’optimalité si l’heuristique est admissible. Ainsi, dans un environnement dynamique où le graphe change fréquemment à cause des murs placés par les joueurs, A* est généralement le meilleur choix. Il combine la rigueur de Dijkstra avec l'efficacité d'une approche guidée, ce qui permet de recalculer rapidement des chemins pertinents à chaque tour, sans trop sacrifier la performance.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.7\linewidth]{AstarVSdijkstra.png}
+    \caption{Caption}
+    \label{fig:enter-label}
+\end{figure}
+
+\subsbsubsection*{analyse des performence}
+\begin{itemize}
+    \item Dijkstra a pris 2,478925 secondes, ce qui est relativement long.
+    \item A* a pris seulement 0,047520 secondes, soit environ 52 fois plus rapide.
+\end{itemize}
+
+\subsubsection*{Exemples des players implementer}
+\subsubsubsection*{player 1 : WALL x A* }
+\subsubsubsection*{player 2 : }
+%    analyze comparatives des differentes algorithmes de bases pour la resolution du probleme (il faut mentioner les murs ) \\
+
+    
+  %  -->analuse comparatives , complexiter \\
+
+   % => des exemples de modeles de players implementer  implementer player1 et player 2 , complexiter , correction , terminaison \\
+    
+    %--->resultats des games des players 
+
+\subsubsection*{strategies avancees }
+
+    %concept de MINMAX : fonction d'evaluation (choix statiques ou avec supervised learning ) .
+
+    %analyse comparatives 
+    
+
+
+
+

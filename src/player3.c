@@ -1,6 +1,7 @@
 #include "graph.h"
 #include "player.h"
 #include "board.h"
+#include "strategie3.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <time.h>

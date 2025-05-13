@@ -1,7 +1,6 @@
 #ifndef _CORS_BOARD_H_
 #define _CORS_BOARD_H_
 #include "graph_functions.h"
-#include "strategie3.h"
 
 struct board_t {
   struct move_t*  moves;
