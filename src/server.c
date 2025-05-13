@@ -329,7 +329,6 @@ int main(int argc, char *argv[]) {
     other_player_ptr->last_position    = last_positions[other_player];
 
     struct move_t move = players[current_player].play(moves_act[other_player]);
-
     if (move.t == MOVE) {
       players[current_player].pos_actuel            = move.m;
       graphs[current_player]->start[current_player] = move.m;
@@ -341,7 +340,7 @@ int main(int argc, char *argv[]) {
     current_positions[current_player]        = move.m;
     board->current_positions[current_player] = current_positions[current_player];
 
-    if (move.t == MOVE &&
+    if (move.t == MOVE && moves_act[other_player].t == MOVE &&
         !valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
       int id = move.c;
       if (id != current_player) {
