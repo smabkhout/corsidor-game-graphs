@@ -7,11 +7,11 @@
 \subsection{Pourquoi un graphe ?}
 Le plateau du jeu Coursidor est modélisé comme un graphe, où chaque case correspond à un sommet, et chaque possibilité de déplacement à une arête. Ce choix s’impose naturellement dans un jeu où les déplacements doivent être validés selon des règles de voisinage et de connectivité, notamment en présence d'obstacles (murs).
 
-Représenter le plateau sous forme de graphe nous a permis :
+- Représenter le plateau sous forme de graphe nous a permis :
 \begin{itemize}
-    \item d’implémenter plusieurs types et architectures de plateaux (hexagonal, troué, cyclique) à partir d’une même structure générique ;
-    \item de maintenir un code modulaire et réutilisable, indépendant du type de graphe utilisé ;
-    \item de préparer l’implémentation future d’algorithmes d’exploration plus complexes, comme ceux de plus court chemin (par exemple Dijkstra), sans nécessiter de réécriture fondamentale.
+    \item d’implémenter plusieurs types et architectures de plateaux (hexagonal, troué, cyclique) à partir d’une même structure générique.
+    \item de maintenir un code modulaire et réutilisable, indépendant du type de graphe utilisé.
+    \item de préparer l’implémentation future d’algorithmes d’exploration plus complexes, comme ceux de plus court chemin (par exemple Dijkstra ou A*), sans nécessiter de réécriture fondamentale.
 \end{itemize}
 
 
@@ -56,13 +56,12 @@ Afin de représenter efficacement un plateau hexagonal, nous avons implémenté 
 Le type de données \texttt{axial\_t} est une simple structure contenant deux entiers :
 
 \begin{lstlisting}[language=C]
-    typedef struct {
+    struct axial_t {
         int l; // ligne
         int c; // colonne
-    } axial_t;
+    };
     \end{lstlisting}
     
-
 Ce type est utilisé dans la majorité des fonctions de construction du graphe pour :
 \begin{itemize}
     \item convertir les coordonnées en index de matrice d’adjacence ;
