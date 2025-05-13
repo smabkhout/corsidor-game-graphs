@@ -60,6 +60,7 @@ struct move_t play(const struct move_t previous_move) {
         gsl_spmatrix_uint_ptr(board->graph->t, previous_move.e[1].to, previous_move.e[1].fr);
     *temp4 = 7;
   }
+
   int           best_order[5];
   struct move_t move;
   move.t                = MOVE;
@@ -67,52 +68,77 @@ struct move_t play(const struct move_t previous_move) {
   vertex_t pos_player   = board->current_positions[move.c];
   vertex_t pos_opponent = board->current_positions[(my_color + 1) % NUM_PLAYERS];
   TSP(board->graph, best_order, obj_visited, pos_opponent);
-  printf("la couleur du joueur %d\n", move.c);
-  printf("la position du joueur %d\n ", pos_player);
-  if (gsl_spmatrix_uint_get(board->graph->t, pos_player, pos_opponent) > 0) {
-    enum dir_t dir_to_opponent = gsl_spmatrix_uint_get(board->graph->t, pos_player, pos_opponent);
+  vertex_t target = ((unsigned int)index_objective == board->graph->num_objectives)
+                        ? start_player
+                        : board->graph->objectives[best_order[0]];
 
-    for (vertex_t i = 0; i < board->graph->num_vertices; ++i) {
-      if (gsl_spmatrix_uint_get(board->graph->t, pos_opponent, i) == dir_to_opponent &&
-          i != pos_player && i != pos_opponent) {
-        printf("🤸 Player %d jumps over the opponent to vertex %d\n", my_color, i);
-        move.m       = i;
+  // 🎯 Marquer l’objectif comme atteint si on l’a touché
+  if (move.m == target &&
+      !exist_in_array(best_order[0], board->graph->num_objectives, obj_visited)) {
+    printf("🎯 Objective %d reached!\n", index_objective);
+    obj_visited[index_objective] = best_order[0];
+    index_objective++;
+    TSP(board->graph, best_order, obj_visited, pos_opponent);
+    target = ((unsigned int)index_objective == board->graph->num_objectives)
+                 ? start_player
+                 : board->graph->objectives[best_order[0]];
+  }
+
+  int d[board->graph->num_vertices];
+  int prev[board->graph->num_vertices];
+  int next[board->graph->num_vertices];
+  dijistra(board->graph, pos_player, target, d, prev, next, pos_opponent);
+
+  if (next[pos_player] == -1) {
+    printf("⚠️ Dijkstra a échoué, aucun chemin trouvé depuis %d vers %d !\n", pos_player, target);
+
+    move =
+        find_best_move(board->graph, pos_player, pos_opponent,
+                       gsl_spmatrix_uint_get(board->graph->t, start_player, pos_player), my_color);
+    if (move.t != NO_TYPE && move.m != pos_player) {
+      board->current_positions[my_color] = move.m;
+      add_move_to_board(board, move);
+      return move;
+    }
+    move.t = NO_TYPE;
+    return move;
+  }
+
+  if ((unsigned int)next[pos_player] == pos_opponent) {
+    enum dir_t dir_to_opponent = gsl_spmatrix_uint_get(board->graph->t, pos_player, pos_opponent);
+    for (vertex_t candidate = 0; candidate < board->graph->num_vertices; ++candidate) {
+      if (gsl_spmatrix_uint_get(board->graph->t, pos_opponent, candidate) == dir_to_opponent &&
+          candidate != pos_opponent && candidate != pos_player &&
+          gsl_spmatrix_uint_get(board->graph->t, pos_opponent, candidate) != WALL_DIR) {
+        printf("🤸 Saut utile au-dessus de l’adversaire vers %d\n", candidate);
+        move.m                             = candidate;
+        board->current_positions[my_color] = move.m;
         move.e[0].fr = move.e[0].to = 0;
-        move.e[1].fr = move.e[1].to        = 0;
-        board->current_positions[my_color] = i;
+        move.e[1].fr = move.e[1].to = 0;
         add_move_to_board(board, move);
         return move;
       }
     }
   }
-  vertex_t target = board->graph->objectives[best_order[0]];
-  if ((unsigned int)index_objective == board->graph->num_objectives) {
-    target = start_player;
+
+  move.m = next[pos_player];
+  if (move.m == pos_player) {
+    move.t = NO_TYPE;
+    return move;
   }
-  int d[board->graph->num_vertices];
-  int prev[board->graph->num_vertices];
-  int next[board->graph->num_vertices];
-  dijistra(board->graph, pos_player, target, d, prev, next, pos_opponent);
-  printf("📏 Distance to target (%d): %d\n", target, d[target]);
-  printf("la position de l objective %d\n", board->graph->objectives[0]);
+
   int d_enemy[board->graph->num_vertices];
   int prev_enemy[board->graph->num_vertices];
   int next_enemy[board->graph->num_vertices];
   dijistra(board->graph, pos_opponent, target, d_enemy, prev_enemy, next_enemy, pos_player);
-  move.m = next[pos_player];
-  printf(" le sommet destinataire %d\n", move.m);
-  board->current_positions[move.c] = move.m;
+
+  printf("📏 Distance to target (%d): %d\n", target, d[target]);
+  printf("🎯 Prochain sommet: %d\n", move.m);
+
+  board->current_positions[my_color] = move.m;
   move.e[0].fr = move.e[0].to = 0;
   move.e[1].fr = move.e[1].to = 0;
 
-  printf("👻 Player %d plays  moves \n", move.c);
-  board->current_positions[my_color] = move.m;
-  if (move.m == target) {
-    printf("🎯 Objective %d reached!\n", index_objective);
-    obj_visited[index_objective] = best_order[0];
-    index_objective++;
-    // Tous les objectifs atteints ? Retourner à la case de départ
-  }
   if (d_enemy[target] < d[target]) {
     struct move_t wall_move =
         try_place_wall(board->graph, pos_opponent, next_enemy[pos_opponent], my_color);
@@ -121,12 +147,8 @@ struct move_t play(const struct move_t previous_move) {
       return wall_move;
     }
   }
-  if (board != NULL) {
-    add_move_to_board(board, move);
-  } else {
-    printf("Board non initialisé dans play()\n");
-  }
 
+  add_move_to_board(board, move);
   return move;
 }
 
