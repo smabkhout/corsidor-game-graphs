@@ -7,6 +7,9 @@ LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 	-L$(GSL_PATH)/lib -L$(GSL_PATH)/lib64 \
 	-Wl,--rpath=${GSL_PATH}/lib
 
+rapport: rapport.pdf
+	pdflatex rapport/rapport.tex
+	evince rapport.pdf &
 
 all: build
 
