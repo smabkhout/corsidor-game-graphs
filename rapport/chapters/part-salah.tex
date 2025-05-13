@@ -86,9 +86,9 @@ Le type de données \texttt{axial\_t} est une simple structure contenant deux en
     
 Ce type est utilisé dans la majorité des fonctions de construction du graphe pour :
 \begin{itemize}
-    \item convertir les coordonnées en index de matrice d’adjacence ;
-    \item vérifier l’appartenance à certaines régions du plateau (trou, cyclique, etc.) ;
-    \item déterminer les voisins d’un sommet selon les 6 directions possibles.
+    \item vérifier simplement l’appartenance d’un sommet au graphe à partir de ses coordonnées axiales.
+    \item déterminer et parcourir les voisins d’un sommet selon les 6 directions définies, en appliquant des décalages sur \((l,c)\).
+    \item convertir un couple de coordonnées axiales en un indice unique dans la matrice d’adjacence grâce à une fonction \texttt{\texttt{int} axial\_to\_index(\texttt{int} l, \texttt{int} c, \texttt{int} m)}.
 \end{itemize}
 
 \subsubsection{Implémentation du graphe}
