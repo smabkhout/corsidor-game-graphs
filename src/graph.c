@@ -154,15 +154,21 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   graph->t                    = gsl_spmatrix_uint_alloc(n, n);
   // Calcul du nombre de sommets à partir du nombre m
   if (type == TRIANGULAR) {
-    if (m < 2)
+    if (m < 2) {
+      puts("⚠️ m < 2, impossible de créer le graphe");
       return NULL;
+    }
   } else if (type == CYCLIC) {
-    if (m < 3)
+    if (m < 3) {
+      puts("⚠️ m < 3, impossible de créer le graphe");
       return NULL;
+    }
     n = 14 * m - 18;
   } else if (type == HOLEY) {
-    if ((m < 6) || (m % 3 != 0))
+    if ((m < 6) || (m % 3 != 0)) {
+      puts("⚠️ m < 6 ou m mod[3] != 0, impossible de créer le graphe");
       return NULL;
+    }
     n = 2 * (m * m / 3) + 18 * m - 48;
   }
   graph->num_edges = 0;
