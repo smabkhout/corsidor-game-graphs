@@ -44,30 +44,37 @@ Nous avons adopté une codification explicite des arêtes dans la matrice, inspi
 
 Pour illustrer l’intérêt des matrices creuses CSR, nous présentons deux figures côte à côte pour un plateau de jeu de taille $m=4$ et $n=37$ : à gauche (Figure \ref{fig:matrix-csr}) la matrice d’adjacence creuse de taille $n\times n$, où $n$ désigne le nombre de sommets du graphe, et à droite (Figure \ref{fig:graph-repr}) le graphe correspondant affichant ses $n$ sommets. Cette comparaison met en évidence la très faible densité de la matrice (peu d’éléments non nuls), justifiant l’usage d’un format compressé pour économiser significativement l’espace mémoire.
 
-\begin{figure}[!ht]
-  \centering
-  \begin{subfigure}[b]{0.45\textwidth}
-    \includegraphics[width=\textwidth]{rapport/adjacence_creuse.png}
-    \caption{Matrice d’adjacence creuse CSR}
-    \label{fig:matrix-csr}
-  \end{subfigure}
-  \hfill
-  \begin{subfigure}[b]{0.45\textwidth}
-    \includegraphics[width=\textwidth]{rapport/graphe.png}
-    \caption{Graphe représentant $n$ sommets et leurs arêtes}
-    \label{fig:graph-repr}
-  \end{subfigure}
-  \caption{Comparaison entre la représentation creuse de la matrice d’adjacence et le graphe associé}
-  \label{fig:csr-graph-example}
-\end{figure}
-
+\begin{figure}[H]
+    \centering
+    \begin{subfigure}[b]{0.45\textwidth}
+      \includegraphics[width=\textwidth]{rapport/adjacence_creuse.png}
+      \caption{Matrice d’adjacence creuse CSR}
+      \label{fig:matrix-csr}
+    \end{subfigure}
+    \hfill
+    \begin{subfigure}[b]{0.45\textwidth}
+      \includegraphics[width=\textwidth]{rapport/graphe.png}
+      \caption{Graphe représentant $n$ sommets et leurs arêtes}
+      \label{fig:graph-repr}
+    \end{subfigure}
+    \caption{Comparaison matrice creuse / graphe}
+    \label{fig:csr-graph-example}
+  \end{figure}
+  
 
 
 
 \subsubsection{Coordonnées axiales}
 Afin de représenter efficacement un plateau hexagonal, nous avons implémenté un système de coordonnées dit \textbf{axial}, très utilisé dans les graphes hexagonaux. Chaque case est identifiée par un couple $(l, c)$, correspondant aux coordonnées « ligne » et « colonne » dans ce système.
 
-\subsubsubsection{Type \texttt{axial\_t}}
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{rapport/axial.png}
+    \caption{Graphe hexagonal de rayon \(m=3\) avec coordonnées axiales décalées}
+    \label{fig:graph-m2}
+  \end{figure}
+
+\paragraph{Type \texttt{axial\_t}}
 Le type de données \texttt{axial\_t} est une simple structure contenant deux entiers :
 
 \begin{lstlisting}[language=C]
