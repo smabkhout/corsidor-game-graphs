@@ -111,19 +111,19 @@ int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist
 
 static const enum dir_t directions[] = {NW, NE, E, SE, SW, W};
 void                    get_side_dir_30(enum dir_t dir, enum dir_t* d1, enum dir_t* d2) {
-  int index = -1;
-  for (int i = 0; i < NUM_DIRECTIONS; i++) {
-    if (directions[i] == dir) {
-      index = i;
-      break;
+                     int index = -1;
+                     for (int i = 0; i < NUM_DIRECTIONS; i++) {
+                       if (directions[i] == dir) {
+                         index = i;
+                         break;
     }
   }
-  if (index == -1) {
-    *d1 = *d2 = NO_EDGE;
-    return;
+                     if (index == -1) {
+                       *d1 = *d2 = NO_EDGE;
+                       return;
   }
-  *d1 = directions[(index + NUM_DIRECTIONS - 1) % NUM_DIRECTIONS];
-  *d2 = directions[(index + 1) % NUM_DIRECTIONS];
+                     *d1 = directions[(index + NUM_DIRECTIONS - 1) % NUM_DIRECTIONS];
+                     *d2 = directions[(index + 1) % NUM_DIRECTIONS];
 }
 
 struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t opponent,
