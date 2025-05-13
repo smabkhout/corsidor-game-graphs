@@ -1,9 +1,7 @@
 #include "graph.h"
-#include "move.h"
+
 #include "move2.h"
-#include "player.h"
-#include "board.h"
-#include "graph_functions.h"
+
 #include <stdlib.h>
 #include <math.h>
 #include <time.h>

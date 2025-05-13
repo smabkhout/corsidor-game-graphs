@@ -2,7 +2,6 @@
 #define MOVE_H
 
 #include "graph.h"
-#include "move.h"
 #include <stdlib.h>
 #include <stdio.h>
 
