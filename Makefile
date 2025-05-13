@@ -1,3 +1,5 @@
+.DEFAULT_GOAL := all
+
 GSL_PATH ?= /net/ens/renault/save/gsl-2.6/install
 GSL_LIBDIR = $(shell [ -e $(GSL_PATH)/lib ] && \
         echo $(GSL_PATH)/lib || \
@@ -6,8 +8,10 @@ CFLAGS = -std=c99 -Wall -Wextra -Werror=implicit-function-declaration -Werror=in
 LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 	-L$(GSL_PATH)/lib -L$(GSL_PATH)/lib64 \
 	-Wl,--rpath=${GSL_PATH}/lib
+	
+.PHONY: rapport
 
-rapport: rapport.pdf
+rapport:
 	pdflatex rapport/rapport.tex
 	evince rapport.pdf &
 
