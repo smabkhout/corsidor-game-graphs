@@ -1,26 +1,82 @@
-\documentclass{article}
-
-\usepackage[french]{babel}
+\documentclass[a4paper,12pt]{article}
 \usepackage[utf8]{inputenc}
-\usepackage{subcaption} 
 \usepackage[T1]{fontenc}
-\usepackage{float}
-\usepackage{amsmath}
+
+%\usepackage[french]{babel}
 \usepackage{graphicx}
-\usepackage{hyperref}
+\usepackage{geometry}
+\usepackage{titling}
+\usepackage{color}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{tcolorbox}
+\usepackage{lmodern}
+\usepackage{url}
+\tcbuselibrary{skins, breakable}
+\usepackage{listings}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{hyperref}
 
+\usetikzlibrary{shapes.geometric, arrows, decorations.pathreplacing}
+\usepackage{colortbl}
+\definecolor{lightgray}{rgb}{0.9, 0.9, 0.9}
 
+\lstset{
+    basicstyle=\ttfamily\small,
+    frame=single,
+    backgroundcolor=\color{blue!5}, 
+    rulecolor=\color{blue!50},      
+    breaklines=true,
+    keywordstyle=\color{blue}\bfseries,
+    commentstyle=\color{gray},
+    stringstyle=\color{red!70!black},
+}
 
-\title{rapport brouillon}
-
-\date{May 2025}
+\geometry{margin=2.5cm}
+\setlength{\droptitle}{-5cm}
+\pagestyle{empty}
 
 \begin{document}
 
+\begin{center}
+    \includegraphics[width=0.45\textwidth]{rapport/BordeauINP.png.png}\\[1cm]
 
-\maketitle
+    {\Huge \textbf{Rapport de projet Coursidor}}\\[0.4cm]
+    {\Large \textit{Jeu de stratégie inspiré de Quoridor}}\\[0.8cm]
+    
+    \includegraphics[width=0.2\textwidth]{rapport/imageProjetC.png}\\[0.8cm]
+
+    \rule{\textwidth}{0.4pt}\\[0.8cm]
+
+    {\large \textbf{Programmation impérative}}\\[0.3cm]
+    {\large Année universitaire 2024--2025}\\[1cm]
+
+    {\normalsize Encadrant : \textbf{LARROZE-JARDINE Sarah}}\\
+    {\normalsize Responsable : \textbf{RENAULT David}}\\[1cm]
+
+    {\normalsize Date : \textbf{16 mai 2025}}\\[1cm]
+
+    \begin{tcolorbox}[colback=gray!10, colframe=black!50, width=0.9\textwidth, boxrule=0.5pt, sharp corners]
+    \centering
+    \textbf{Réalisé par :}\\[0.4cm]
+    {\large
+     Khaoula Najmeddine\textbullet\ Rafiq Amrar \textbullet\ Salah-Eddine Mabkhout\\[0.3cm]
+    Dina Rachid \textbullet\ Adam Dammou
+    }
+    \end{tcolorbox}
+
+    \vspace{1.5cm}
+
+\end{center}
+
+\newpage
+\tableofcontents
+\newpage
+
+
 
 
 %%%%%%%%%%%%%%%% Main part %%%%%%%%%%%%%%%%
