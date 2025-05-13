@@ -1,2 +1,27 @@
-\section{Part} 
+\section{Introduction}
 \label{sec:part-dina}
+
+\subsection{Présentation du projet}
+Le projet \textit{Coursidor} est un jeu stratégique inspiré du célèbre jeu de société \textit{Quoridor}, où les joueurs doivent visiter un ensemble de cases appelées \textit{objectifs} avant de revenir à leur case de départ. Deux joueurs s’affrontent dans une partie à tour de rôle. Chaque joueur peut soit se déplacer selon des règles spécifiques de direction et de distance, soit poser un mur pour ralentir son adversaire. Le jeu se déroule sur un graphe qui représente les connexions entre les différentes cases du plateau.
+
+\subsection{État des lieux du projet}
+Le projet en est actuellement à un stade où un serveur central joue un rôle crucial. Ce serveur est chargé de plusieurs tâches importantes : il charge dynamiquement les bibliothèques des joueurs, joue le premier coup et gère l’ensemble de la partie. Il sert de lien entre tous les fichiers et fonctions implémentés dans notre projet.
+
+Chaque joueur dispose de quatre fonctions principales (\texttt{get\_player\_name}, \texttt{initialize}, \texttt{play}, \texttt{finalize}). Ces fonctions permettent aux joueurs de participer activement à la partie en utilisant des stratégies spécifiques.
+
+En outre, un plateau de jeu a été conçu pour contenir toutes les informations sur les coups joués. Ce plateau sert de registre, enregistrant chaque mouvement et assurant le suivi de la progression de la partie. Grâce à cette structure, nous pouvons analyser les parties et améliorer les stratégies en fonction des résultats observés.
+
+
+\subsection{Architecture modulaire}
+
+Du point de vue de la modularité, la figure~\ref{fig:dependencies} illustre les dépendances entre les fichiers d'en-tête du projet.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{rapport/draw.png} 
+    \caption{Graphe des dépendances entre les fichiers d'en-tête}
+    \label{fig:dependencies}
+  \end{figure}
+  
+
+
