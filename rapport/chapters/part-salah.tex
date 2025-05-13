@@ -1,2 +1,65 @@
-\section{Part} 
+\section{Approche pour l'implémentation du jeu}
 \label{sec:part-salah}
+
+
+\section{Représentation du plateau et choix d’implémentation}
+
+\subsection{Pourquoi un graphe ?}
+Le plateau du jeu Coursidor est modélisé comme un graphe, où chaque case correspond à un sommet, et chaque possibilité de déplacement à une arête. Ce choix s’impose naturellement dans un jeu où les déplacements doivent être validés selon des règles de voisinage et de connectivité, notamment en présence d'obstacles (murs).
+
+Représenter le plateau sous forme de graphe permet :
+\begin{itemize}
+    \item d’exprimer les déplacements comme des parcours de sommets voisins ;
+    \item d’utiliser des algorithmes classiques (BFS, DFS, etc.) pour la recherche de chemins ;
+    \item de facilement désactiver certaines arêtes pour simuler la pose de murs.
+\end{itemize}
+
+\subsection{Pourquoi GSL ?}
+Nous avons choisi d’utiliser les matrices creuses de la bibliothèque \texttt{GSL} (\texttt{gsl\_spmatrix\_uint}) pour représenter la matrice d’adjacence du graphe. Ce choix s’explique par plusieurs raisons :
+\begin{itemize}
+    \item la majorité des sommets n’ont que quelques voisins (6 dans un hexagone), donc la matrice d’adjacence est très creuse ;
+    \item GSL propose des fonctions optimisées pour parcourir efficacement les entrées non nulles ;
+    \item elle permet une allocation mémoire plus économique et rend explicite la topologie du graphe.
+\end{itemize}
+
+Nous avons fixé certaines valeurs dans la matrice pour indiquer l'état des arêtes :
+\begin{itemize}
+    \item \texttt{1} : arête libre ;
+    \item \texttt{7} : arête bloquée par un mur ;
+    \item \texttt{0} : absence d'arête (inexistante dans le graphe).
+\end{itemize}
+
+\subsection{Coordonnées axiales}
+Afin de représenter efficacement un plateau hexagonal, nous avons implémenté un système de coordonnées dit \textbf{axial}, très utilisé dans les graphes hexagonaux. Chaque case est identifiée par un couple $(l, c)$, correspondant aux coordonnées « ligne » et « colonne » dans ce système.
+
+\subsubsection{Type \texttt{axial\_t}}
+Le type de données \texttt{axial\_t} est une simple structure contenant deux entiers :
+
+\begin{lstlisting}[language=C, caption=Définition du type axial\_t]
+    typedef struct {
+        int l; // ligne
+        int c; // colonne
+    } axial_t;
+    \end{lstlisting}
+    
+
+Ce type est utilisé dans la majorité des fonctions de construction du graphe pour :
+\begin{itemize}
+    \item convertir les coordonnées en index de matrice d’adjacence ;
+    \item vérifier l’appartenance à certaines régions du plateau (trou, cyclique, etc.) ;
+    \item déterminer les voisins d’un sommet selon les 6 directions possibles.
+\end{itemize}
+
+\subsection{Implémentation du graphe}
+Le graphe est généré dans la fonction \texttt{graph\_generate()}, qui :
+\begin{enumerate}
+    \item parcourt chaque coordonnée \texttt{axial\_t} du plateau ;
+    \item vérifie si la coordonnée est valide avec une fonction \texttt{in\_hexagon\_...} ;
+    \item assigne un index unique à chaque sommet (via \texttt{axial\_to\_index}) ;
+    \item ajoute des arêtes entre sommets voisins dans les 6 directions si elles sont valides.
+\end{enumerate}
+
+Cela permet de générer dynamiquement plusieurs types de plateaux selon les besoins : hexagonal simple, troué, cyclique, etc.
+
+\subsection{Conclusion}
+Le choix d’un graphe creux avec coordonnées axiales nous a permis d’implémenter un plateau robuste, extensible, et adapté aux règles complexes de Coursidor. Cette approche facilite l’implémentation des règles de déplacement, la pose de murs, et la recherche de chemins entre objectifs.
