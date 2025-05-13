@@ -101,6 +101,18 @@ int player_to_start() {
   return rand() % NUM_PLAYERS;
 }
 
+void print_walls(const struct graph_t *g) {
+  printf("Murs actuels dans le graphe du serveur :\n");
+  for (size_t i = 0; i < g->num_vertices; ++i) {
+    for (size_t j = i + 1; j < g->num_vertices; ++j) {
+      unsigned int val = gsl_spmatrix_uint_get(g->t, i, j);
+      if (val == 7) {
+        printf("Mur entre %lu et %lu\n", i, j);
+      }
+    }
+  }
+}
+
 int main(int argc, char *argv[]) {
   int   size_mesh  = -1;
   char *type_graph = NULL;
@@ -145,13 +157,104 @@ int main(int argc, char *argv[]) {
             argv[0]);
     exit(EXIT_FAILURE);
   }
+  int g_type = TRIANGULAR;
 
-  printf("Type de graphe: %s\n", type_graph);
+  if (type_graph == NULL) {
+    fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    g_type     = TRIANGULAR;
+    type_graph = "T";
+  } else if (size_mesh < 0) {
+    fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
+    size_mesh = 3;
+  }
+
+  // Valeurs par défaut si pas d’option -t ou -m
+  /*if (type_graph == NULL) {
+    fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    g_type     = TRIANGULAR;
+    type_graph = "T";
+  }
+  if (size_mesh < 0) {
+    fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
+    size_mesh = 3;
+  }
+
+  switch (type_graph[0]) {
+    case 'T':
+    case 't':
+      if (strcmp(type_graph, "T") == 0)
+        g_type = TRIANGULAR;
+      else if (strcmp(type_graph, "TR") == 0)
+        g_type = 4;  // TRIANGULAR_RANDOM
+      else
+        goto unknown;
+      break;
+
+    case 'C':
+    case 'c':
+      if (strcmp(type_graph, "C") == 0)
+        g_type = CYCLIC;
+      else
+        goto unknown;
+      break;
+
+    case 'H':
+    case 'h':
+      if (strcmp(type_graph, "H") == 0)
+        g_type = HOLEY;
+      else if (strcmp(type_graph, "HR") == 0)
+        g_type = 5;  // HOLEY_RANDOM
+      else
+        goto unknown;
+      break;
+
+    case 'S':
+    case 's':
+      if (strcmp(type_graph, "S") == 0)
+        g_type = 6;  // SPAN
+      else
+        goto unknown;
+      break;
+
+    default:
+    unknown:
+      fprintf(stderr, "Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n", type_graph);
+      g_type = TRIANGULAR;
+  }*/
+  // Valeurs par défaut
+  // int g_type = TRIANGULAR;
+  if (size_mesh < 0) {
+    fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
+    size_mesh = 3;
+  }
+
+  if (type_graph == NULL) {
+    fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    type_graph = "T";
+  }
+
+  if (type_graph != NULL) {
+    if (strcmp(type_graph, "T") == 0)
+      g_type = TRIANGULAR;
+    else if (strcmp(type_graph, "TR") == 0)
+      g_type = 4;
+    else if (strcmp(type_graph, "C") == 0)
+      g_type = CYCLIC;
+    else if (strcmp(type_graph, "H") == 0)
+      g_type = HOLEY;
+    else if (strcmp(type_graph, "HR") == 0)
+      g_type = 5;
+    else if (strcmp(type_graph, "S") == 0)
+      g_type = 6;
+    else {
+      fprintf(stderr, "Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n", type_graph);
+      g_type = TRIANGULAR;
+    }
+  }
+
+  printf("Type de graphe: %s (enum=%d)\n", type_graph, g_type);
   printf("Taille de la maille: %d\n", size_mesh);
   first_step(argc, argv);
-
-  // board->graph = malloc(sizeof(struct graph_t));
-  // copy_graph(board->graph, globalGraph);
 
   struct move_t *first_move  = make_first_move();
   struct move_t *first_move2 = makee_first_move();
@@ -164,8 +267,8 @@ int main(int argc, char *argv[]) {
   int current_player = start_player;
   int other_player   = (start_player + 1) % NUM_PLAYERS;
 
-  struct graph_t *g1 = createGraph(size_mesh, TRIANGULAR);
-  struct graph_t *g2 = createGraph(size_mesh, TRIANGULAR);
+  struct graph_t *g1 = createGraph(size_mesh, g_type);
+  struct graph_t *g2 = createGraph(size_mesh, g_type);
 
   struct graph_t *graphs[2] = {g1, g2};
   // struct graph_t *globalGraph = g1;
@@ -178,6 +281,8 @@ int main(int argc, char *argv[]) {
   players[current_player].initialize(current_player, graphs[current_player]);
   players[other_player].initialize(other_player, graphs[other_player]);
 
+  vertex_t first_positions[2] = {board->graph->start[0], board->graph->start[1]};
+
   players[current_player].pos_actuel = board->graph->start[current_player];
   players[other_player].pos_actuel   = board->graph->start[other_player];
 
@@ -187,8 +292,10 @@ int main(int argc, char *argv[]) {
   current_positions[current_player] = board->graph->start[current_player];
   current_positions[other_player]   = board->graph->start[other_player];
 
-  printf("First player: %s\n", players[start_player].get_player_name());
-  printf("Second player: %s\n", players[other_player].get_player_name());
+  printf("First player: %s, at position %d\n", players[start_player].get_player_name(),
+         players[start_player].pos_actuel);
+  printf("Second player: %s, at position %d\n", players[other_player].get_player_name(),
+         players[other_player].pos_actuel);
 
   int winner     = -1;
   int turn_count = 0;
@@ -206,33 +313,35 @@ int main(int argc, char *argv[]) {
   struct move_t moves_act[2] = {current_move, current_move};
 
   while (winner == -1 && turn_count < max_turns) {
-    // printf("psition actuelle du joueur 1 : %d  , position precedente %d  \n"
-    // , current_positions[0] , last_positions[0] ) ; printf("psition actuelle
-    // du joueur 2 : %d  , position precedente %d \n" , current_positions[1] ,
-    // last_positions[1] ) ;
     struct player_tt *current_player_ptr = malloc(sizeof(struct player_tt));
-    current_player_ptr->position         = players[current_player].pos_actuel;
-    current_player_ptr->c                = players[current_player].player_color;
-    // current_player_ptr.walls = players[current_player].walls;
+    memset(current_player_ptr, 0, sizeof(struct player_tt));
+    current_player_ptr->position      = players[current_player].pos_actuel;
+    current_player_ptr->c             = players[current_player].player_color;
+    current_player_ptr->walls         = 10;
     current_player_ptr->last_position = last_positions[current_player];
 
     // l'autre joueur
     struct player_tt *other_player_ptr = malloc(sizeof(struct player_tt));
-    other_player_ptr->position         = players[other_player].pos_actuel;
-    other_player_ptr->c                = players[other_player].player_color;
-    // other_player_ptr.walls = players[other_player].walls;
+    memset(other_player_ptr, 0, sizeof(struct player_tt));
+    other_player_ptr->position      = players[other_player].pos_actuel;
+    other_player_ptr->c             = players[other_player].player_color;
+    other_player_ptr->walls         = 10;
     other_player_ptr->last_position = last_positions[other_player];
 
     struct move_t move = players[current_player].play(moves_act[other_player]);
-    graphs[current_player]->start[current_player] =
-        move.m;  // stocker la nouvelle positions de current player dans les deux
-                 // graphes des joueurs
-    graphs[other_player]->start[current_player] = move.m;
-    moves_act[current_player]                   = move;
-    last_positions[current_player]              = current_positions[current_player];
-    current_positions[current_player]           = move.m;
-    if (!valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m) &&
-        move.t == MOVE) {
+    if (move.t == MOVE) {
+      players[current_player].pos_actuel            = move.m;
+      graphs[current_player]->start[current_player] = move.m;
+      graphs[other_player]->start[current_player]   = move.m;
+    }
+
+    moves_act[current_player]                = move;
+    last_positions[current_player]           = current_positions[current_player];
+    current_positions[current_player]        = move.m;
+    board->current_positions[current_player] = current_positions[current_player];
+
+    if (move.t == MOVE && moves_act[other_player].t == MOVE &&
+        !valid_move(board->graph, current_player_ptr, move.m, moves_act[other_player].m)) {
       int id = move.c;
       if (id != current_player) {
         printf("Player %s with id %d returned a move with id: %d\n",
@@ -240,45 +349,52 @@ int main(int argc, char *argv[]) {
       }
       if (affichage)
         print_hex_grid(board->graph);
-      printf(
-          "🤖 Player %s executed an illegal move of type %s. Did they even "
-          "read the rules? RIP\n",
-          players[current_player].get_player_name(), move_type_to_string(move.t));
+      printf("Player %s executed an illegal move of type RIP %s\n",
+             players[current_player].get_player_name(), move_type_to_string(move.t));
       printf("from %d to %d ", last_positions[current_player], move.m);
-      winner = (current_player + 1) % NUM_PLAYERS;
+      printf("Turn %d: Player %s plays %s from %u to vertex %u, his id is: %d\n", turn_count,
+             players[current_player].get_player_name(), move_type_to_string(move.t),
+             players[current_player].pos_actuel, move.m, current_player);
+      last_positions[current_player] = players[current_player].pos_actuel;
+      winner                         = (current_player + 1) % NUM_PLAYERS;
       free(current_player_ptr);
       free(other_player_ptr);
       break;
     }
-    // board->graph->start[current_player] = players[current_player].pos_actuel;
-    if (affichage)
+    board->graph->start[current_player] = players[current_player].pos_actuel;
+    if (affichage) {
       print_hex_grid(board->graph);
+      print_walls(board->graph);
+    }
     if (move.t == WALL) {
-      printf("the player %s put a wal from %d to %d and from %d to %d ",
+      printf("the player %s put a wall from %d to %d and from %d to %d ",
              players[current_player].get_player_name(), move.e[0].fr, move.e[0].to, move.e[1].fr,
              move.e[1].to);
+
+      struct player_tt dummy = {.position      = players[current_player].pos_actuel,
+                                .last_position = last_positions[current_player],
+                                .walls         = 10,
+                                .c             = current_player};
+      // place_wall(board->graph, &dummy, move);
+      place_wall(graphs[current_player], &dummy, move);
+      place_wall(graphs[other_player], &dummy, move);
     }
-    printf("Turn %d: Player %s plays %s from %u to vertex %u, his id is: %d\n", turn_count,
-           players[current_player].get_player_name(), move_type_to_string(move.t),
-           players[current_player].pos_actuel, move.m, current_player);
-    last_positions[current_player] =
-        players[current_player].pos_actuel;  // on stocke l'ancienne position et apres la nouvelle
-    players[current_player].pos_actuel = move.m;
-    moves_act[current_player]          = move;
+
     if (move.t != NO_TYPE) {
+      if (move.t == MOVE && move.m == first_positions[current_player] &&
+          (int)move.c == current_player && turn_count > 2) {
+        printf("Player %s claims victory by returning to start after visiting all objectives!\n",
+               players[current_player].get_player_name());
+        winner = current_player;
+        free(current_player_ptr);
+        free(other_player_ptr);
+        break;
+      }
       add_move_to_board(board, move);
       current_move   = move;
       current_player = (current_player + 1) % NUM_PLAYERS;
       other_player   = (current_player + 1) % NUM_PLAYERS;
       turn_count++;
-      /*
-                  if (g1->start[current_move.c] ==
-         board->current_positions[current_move.c]) { winner = current_move.c;
-                      free(current_player_ptr);
-                      free(other_player_ptr);
-                      break;
-                      }
-      */
     } else {
       printf("Invalid move by player %s — they lose!\n", players[current_player].get_player_name());
       winner = (current_player + 1) % NUM_PLAYERS;
@@ -286,6 +402,7 @@ int main(int argc, char *argv[]) {
       free(other_player_ptr);
       break;
     }
+
     // print_hex_grid(board->graph);
     free(current_player_ptr);
     free(other_player_ptr);
@@ -294,19 +411,16 @@ int main(int argc, char *argv[]) {
   graph_to_dot(board->graph, "graph.dot");
 
   if (winner >= 0) {
-    printf("\n🎉 Player %s wins the game!\n", players[winner].get_player_name());
+    printf("\nPlayer %s wins the game!\n", players[winner].get_player_name());
   } else {
-    printf("\n⏱️  Game ended in a draw (max turns reached)\n");
+    printf("\nGame ended in a draw (max turns reached)\n");
   }
   printf("----------The END----------\n");
 
-  // Libération des ressources
   for (int i = 0; i < NUM_PLAYERS; i++) {
     players[i].finalize();
     dlclose(players[i].library);
   }
-  // graph_free(globalGraph);
-  // board_free(board);
   free(board->moves);
   free(board);
   free(first_move);

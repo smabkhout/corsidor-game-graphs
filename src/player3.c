@@ -11,6 +11,7 @@ static struct board_t     *board = NULL;
 static int                 obj_visited[5];
 static int                 index_objective;
 static enum player_color_t my_color;
+static vertex_t            start_player;
 
 char const *get_player_name() {
   srand(time(NULL));
@@ -22,6 +23,7 @@ void initialize(unsigned int id, struct graph_t *graph) {
   board                        = board_init();
   board->graph                 = graph;
   board->current_positions[id] = graph->start[id];
+  start_player                 = graph->start[id];
   if (!board->graph) {
     fprintf(stderr, "Erreur allocation du graph\n");
     exit(EXIT_FAILURE);
@@ -58,13 +60,13 @@ struct move_t play(const struct move_t previous_move) {
         gsl_spmatrix_uint_ptr(board->graph->t, previous_move.e[1].to, previous_move.e[1].fr);
     *temp4 = 7;
   }
-  int best_order[5];
-  TSP(board->graph, best_order, obj_visited);
+  int           best_order[5];
   struct move_t move;
   move.t                = MOVE;
   move.c                = my_color;
   vertex_t pos_player   = board->current_positions[move.c];
   vertex_t pos_opponent = board->current_positions[(my_color + 1) % NUM_PLAYERS];
+  TSP(board->graph, best_order, obj_visited, pos_opponent);
   printf("la couleur du joueur %d\n", move.c);
   printf("la position du joueur %d\n ", pos_player);
   if (gsl_spmatrix_uint_get(board->graph->t, pos_player, pos_opponent) > 0) {
@@ -85,18 +87,18 @@ struct move_t play(const struct move_t previous_move) {
   }
   vertex_t target = board->graph->objectives[best_order[0]];
   if ((unsigned int)index_objective == board->graph->num_objectives) {
-    target = board->graph->start[my_color];
+    target = start_player;
   }
   int d[board->graph->num_vertices];
   int prev[board->graph->num_vertices];
   int next[board->graph->num_vertices];
-  dijistra(board->graph, pos_player, target, d, prev, next);
+  dijistra(board->graph, pos_player, target, d, prev, next, pos_opponent);
   printf("📏 Distance to target (%d): %d\n", target, d[target]);
   printf("la position de l objective %d\n", board->graph->objectives[0]);
   int d_enemy[board->graph->num_vertices];
   int prev_enemy[board->graph->num_vertices];
   int next_enemy[board->graph->num_vertices];
-  dijistra(board->graph, pos_opponent, target, d_enemy, prev_enemy, next_enemy);
+  dijistra(board->graph, pos_opponent, target, d_enemy, prev_enemy, next_enemy, pos_player);
   move.m = next[pos_player];
   printf(" le sommet destinataire %d\n", move.m);
   board->current_positions[move.c] = move.m;

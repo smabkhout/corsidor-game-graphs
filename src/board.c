@@ -14,21 +14,6 @@ struct board_t* board_init() {
   return board;
 }
 
-/*void display_board(struct board_t *board) {
-    for (int i = 0; i < board->size; i++) {
-        for (int j = 0; j < board->size; j++) {
-            char symbol;
-            switch (board->cells[i][j]) {
-                case BLACK: symbol = 'B'; break;
-                case WHITE: symbol = 'W'; break;
-                default: symbol = '.'; break;
-            }
-            printf("%c ", symbol);
-        }
-        printf("\n");
-    }
-}*/
-
 void add_move_to_board(struct board_t* board, struct move_t move) {
   if (move.t == WALL) {
     board->wall_count++;
@@ -40,12 +25,6 @@ void add_move_to_board(struct board_t* board, struct move_t move) {
   board->current_positions[move.c] = move.m;
 }
 
-/*void board_free(struct board_t* board){
-    //graph_free(board->graph);
-    free(board->moves);
-    free(board);
-}*/
-
 void board_free(struct board_t* board) {
   if (board) {
     free(board->moves);
@@ -56,16 +35,6 @@ void board_free(struct board_t* board) {
     free(board);
   }
   board = NULL;
-}
-
-// on doit voir comment on peut generer wall sans que graph soit en parametre pour l utiliser dans
-// la fct play
-void generate_wall(struct edge_t e[2], struct board_t* board) {
-  (void)board;
-  e[0].fr = axial_to_index(1, 0, 5);
-  e[0].to = axial_to_index(0, 1, 5);
-  e[1].to = axial_to_index(0, 1, 5);
-  e[1].fr = axial_to_index(0, -1, 5);
 }
 
 int is_invalid(struct move_t move, struct board_t* board) {
@@ -142,19 +111,19 @@ int is_path_clear(struct graph_t* graph, vertex_t from, enum dir_t dir, int dist
 
 static const enum dir_t directions[] = {NW, NE, E, SE, SW, W};
 void                    get_side_dir_30(enum dir_t dir, enum dir_t* d1, enum dir_t* d2) {
-  int index = -1;
-  for (int i = 0; i < NUM_DIRECTIONS; i++) {
-    if (directions[i] == dir) {
-      index = i;
-      break;
+                     int index = -1;
+                     for (int i = 0; i < NUM_DIRECTIONS; i++) {
+                       if (directions[i] == dir) {
+                         index = i;
+                         break;
     }
   }
-  if (index == -1) {
-    *d1 = *d2 = NO_EDGE;
-    return;
+                     if (index == -1) {
+                       *d1 = *d2 = NO_EDGE;
+                       return;
   }
-  *d1 = directions[(index + NUM_DIRECTIONS - 1) % NUM_DIRECTIONS];
-  *d2 = directions[(index + 1) % NUM_DIRECTIONS];
+                     *d1 = directions[(index + NUM_DIRECTIONS - 1) % NUM_DIRECTIONS];
+                     *d2 = directions[(index + 1) % NUM_DIRECTIONS];
 }
 
 struct move_t find_best_move(struct graph_t* graph, vertex_t pos, vertex_t opponent,

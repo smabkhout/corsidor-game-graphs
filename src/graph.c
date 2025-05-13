@@ -55,6 +55,17 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin) {
           ((k == m - 1) || (k == m - 2) || (-k == m - 1) || (-k == m - 2)));
 }
 
+// Vérifie si (l, c) est bien dans l'hexagone de type span (nouveau type)
+int in_hexagon_S(int l, int c, int m, int l_origin, int c_origin) {
+  l = l - l_origin;
+  c = c - c_origin;
+  if (!((abs(l) <= m - 1) && (abs(c) <= m - 1) && (abs(l + c) <= m - 1)))
+    return 0;
+
+  return ((l == 0) || (l == 1 && c != m - 1) || (l == -1 && c != -m + 1) ||
+          in_hexagon_C(l, c, m, l_origin, c_origin));
+}
+
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin) {
   int m_prime     = m / 3 + 1;  // m du sous hexagone (il y en a 7)
@@ -137,9 +148,10 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     perror("Failed to allocate memory for graph");
     return NULL;
   }
-  graph->num_vertices = 0;  // just for initialisation
-  unsigned int n      = 3 * (m * m) - 3 * m + 1;
-  graph->t            = gsl_spmatrix_uint_alloc(n, n);
+  graph->num_vertices         = 0;  // just for initialisation
+  unsigned int n              = 3 * (m * m) - 3 * m + 1;
+  int          dernier_sommet = n - 1;
+  graph->t                    = gsl_spmatrix_uint_alloc(n, n);
   // Calcul du nombre de sommets à partir du nombre m
   if (type == TRIANGULAR) {
     if (m < 2)
@@ -155,14 +167,22 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   }
   graph->num_edges = 0;
   graph->type      = type;
-
+  int type_graphe  = type;
   // Construction des arêtes en fonction du type de graphe
-  if (type == TRIANGULAR) {
+  if (type_graphe == TRIANGULAR || type_graphe == 4) {
     graph_generate(m, graph, in_hexagon_T);
-  } else if (type == CYCLIC) {
+  } else if (type_graphe == CYCLIC) {
     graph_generate(m, graph, in_hexagon_C);
-  } else if (type == HOLEY) {
+  } else if (type_graphe == HOLEY || type_graphe == 5) {
     graph_generate(m, graph, in_hexagon_H);
+  } else if (type_graphe == 6) {  // SPAN
+    graph_generate(m, graph, in_hexagon_S);
+  } else {
+    fprintf(
+        stderr,
+        "⚠️ Unknown graph type (%d) while creating the graph — falling back to TRIANGULAR\n",
+        type);
+    graph_generate(m, graph, in_hexagon_T);
   }
 
   // Initialiser les objectifs et les positions des joueurs
@@ -175,8 +195,9 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
 
   // Initialiser les positions de départ des joueurs
   graph->start[0] = 0;  // Premier joueur au sommet 0 //à changer au coordonnees axiales
-  graph->start[1] = graph->num_vertices -
-                    1;  // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
+
+  graph->start[1] =
+      dernier_sommet;  // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
   gsl_spmatrix_uint *csr = gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
   gsl_spmatrix_uint_free(graph->t);
   graph->t = csr;
@@ -287,32 +308,45 @@ int is_objective_or_player(int l, int c, int m, struct graph_t *g) {
   }
   return 3;
 }
+void resolve_graph_type_or_default(struct graph_t *g, int *m, in_hexagon_func_t *in_hexagon) {
+  int type = g->type;
+  switch (type) {
+    case TRIANGULAR:
+    case 4:  // TRIANGULAR_RANDOM
+      *m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
+      *in_hexagon = in_hexagon_T;
+      break;
+    case CYCLIC:
+      *m          = (int)((g->num_vertices + 18) / 12);
+      *in_hexagon = in_hexagon_C;
+      break;
+    case HOLEY:
+    case 5:  // HOLEY_RANDOM
+      *m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
+      *in_hexagon = in_hexagon_H;
+      break;
+
+    case 6:  // SPAN
+      *m          = (int)((g->num_vertices + 35) / 18);
+      *in_hexagon = in_hexagon_S;
+      break;
+
+    // ─────────────── fallback ───────────────
+    default:
+      fprintf(stderr, "⚠️ Unknown graph type (%d) — falling back to TRIANGULAR\n", g->type);
+      g->type     = TRIANGULAR;
+      *m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
+      *in_hexagon = in_hexagon_T;
+      break;
+  }
+}
 
 // impression du graphe avec les numeros d'indices
 void print_hex_grid(struct graph_t *g) {
-  int m                                                              = 0;
-  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
-  // Choix de la fonction selon le type
-  switch (g->type) {
-    case TRIANGULAR:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
-      in_hexagon = in_hexagon_T;
-      break;
-    case CYCLIC:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((g->num_vertices + 18) / 12);
-      in_hexagon = in_hexagon_C;
-      break;
-    case HOLEY:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
-      in_hexagon = in_hexagon_H;
-      break;
-    default:
-      puts("Invalid graph type");
-      return;
-  }
+  int               m          = 0;
+  in_hexagon_func_t in_hexagon = NULL;
+
+  resolve_graph_type_or_default(g, &m, &in_hexagon);
 
   for (int l = m - 1; l > 0; --l) {
     for (int k = 0; k < l; ++k) {

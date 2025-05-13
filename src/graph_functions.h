@@ -27,6 +27,9 @@ int in_hexagon_C(int l, int c, int m, int l_origin, int c_origin);
 // Vérifie si (l, c) est bien dans l'hexagone de type trouée (HOLEY)
 int in_hexagon_H(int l, int c, int m, int l_origin, int c_origin);
 
+// Vérifie si (l, c) est bien dans l'hexagone de type span (nouveau type)
+int in_hexagon_S(int l, int c, int m, int l_origin, int c_origin);
+
 void graph_generate(int m, struct graph_t *g,
                     int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin));
 
@@ -51,3 +54,7 @@ void print_hex_grid(struct graph_t *g);
 void index_to_axial(int index, int m, int *l, int *c);
 
 void graph_to_dot(const struct graph_t *g, const char *filename);
+
+typedef int (*in_hexagon_func_t)(int l, int c, int m, int l_origin, int c_origin);
+
+void resolve_graph_type_or_default(struct graph_t *g, int *m, in_hexagon_func_t *in_hexagon);

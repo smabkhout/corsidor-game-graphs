@@ -38,29 +38,13 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
 
   // Retrouver m
   // int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
-  int m                                                              = 0;
-  int (*in_hexagon)(int l, int c, int m, int l_origin, int c_origin) = NULL;
+
+  int               m          = 0;
+  in_hexagon_func_t in_hexagon = NULL;
+
   // Choix de la fonction selon le type
-  switch (g->type) {
-    case TRIANGULAR:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((3 + sqrt(12 * g->num_vertices - 3)) / 6);
-      in_hexagon = in_hexagon_T;
-      break;
-    case CYCLIC:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((g->num_vertices + 18) / 12);
-      in_hexagon = in_hexagon_C;
-      break;
-    case HOLEY:
-      // Retrouver m depuis le nombre de sommets
-      m          = (int)((-54 + sqrt(24 * g->num_vertices + 4068)) / 4);
-      in_hexagon = in_hexagon_H;
-      break;
-    default:
-      puts("Invalid graph type");
-      return 0;
-  }
+  resolve_graph_type_or_default(g, &m, &in_hexagon);
+
   // Convertir les index en coordonnées axiales
   int l0 = 0;
   int c0 = 0;
@@ -143,26 +127,41 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
 }
 
 int valid_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
-  if (p->walls <= 0)
+  if (p->walls <= 0) {
+    printf("Refusé : plus de murs\n");
     return 0;
+  }
 
   vertex_t fr1 = move.e[0].fr;
   vertex_t fr2 = move.e[1].fr;
-  if (fr1 != fr2)
-    return 0;  // les deux arêtes ne partent pas du même sommet
+  if (fr1 != fr2) {
+    printf("Refusé : les arêtes ne partent pas du même sommet (%u != %u)\n", fr1, fr2);
+    return 0;
+  }
 
   vertex_t to1 = move.e[0].to;
   vertex_t to2 = move.e[1].to;
 
   int dir1 = gsl_spmatrix_uint_get(g->t, fr1, to1);
-  int dir2 = gsl_spmatrix_uint_get(g->t, fr1, to2);
+  int dir2 = gsl_spmatrix_uint_get(g->t, fr2, to2);
 
-  if (dir1 == 0 || dir2 == 0)
-    return 0;  // arêtes inexistantes
+  if (dir1 == 0 || dir2 == 0) {
+    printf("Refusé : arête absente (%u->%u ou %u->%u)\n", fr1, to1, fr1, to2);
+    return 0;
+  }
+
+  if (dir1 == dir2) {
+    printf("Refusé : mêmes directions (%d == %d)\n", dir1, dir2);
+    return 0;
+  }
 
   int diff = abs(dir1 - dir2);
-  if (diff != 1 && diff != 5)
-    return 0;  // pas consécutives
+  if (diff != 1 && diff != 5) {
+    printf(
+        "Refusé : directions %d et %d ne sont pas consécutives fr1=%d et fr2=%d to1=%d to2=%det \n",
+        dir1, dir2, fr1, fr2, to1, to2);
+    return 0;
+  }
 
   return 1;
 }

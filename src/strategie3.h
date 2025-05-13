@@ -40,16 +40,19 @@ int is_valid_move(const struct move_t* move, const struct graph_t* graph);
 
 int  distance_minimal(int d[], int visited[], unsigned int n);
 void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_vertices],
-              int prev[graph->num_vertices], int next[graph->num_vertices]);
+              int prev[graph->num_vertices], int next[graph->num_vertices],
+              vertex_t pos_other_player);
 void calculate_dist_objectives(struct graph_t* graph, int num_objectives,
-                               int distance[num_objectives][num_objectives]);
+                               int      distance[num_objectives][num_objectives],
+                               vertex_t pos_other_player);
 int  calculate_total_dist(int n, int d[n][n], int tab[]);
 int  next_permutation(int arr[], int n);
 
 int exist_in_array(int a, int n, int t[]);
-int TSP(struct graph_t* graph, int best_order[], int obj_visited[]);
+int TSP(struct graph_t* graph, int best_order[], int obj_visited[], vertex_t pos_other_player);
 
-vertex_t      find_closest_objective(struct graph_t* graph, vertex_t player_pos);
+vertex_t      find_closest_objective(struct graph_t* graph, vertex_t player_pos,
+                                     vertex_t pos_other_player);
 struct move_t try_place_wall(struct graph_t* graph, vertex_t pos_enemy, vertex_t next_enemy,
                              enum player_color_t my_color);
 
