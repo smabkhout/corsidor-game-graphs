@@ -313,7 +313,7 @@ struct move_t play(const struct move_t previous_move) {
         copy_graph(&g_copy, g);
         struct player_tt dummy = player;
         place_wall(&g_copy, &dummy, wall);
-        unsigned int val = gsl_spmatrix_uint_get(g_copy.t, wall.e[0].fr, wall.e[0].to);
+        // unsigned int val = gsl_spmatrix_uint_get(g_copy.t, wall.e[0].fr, wall.e[0].to);
 
         int dist_after = s_p(&g_copy, adv_pos, adv_target);
         // printf("Comparaison distances : avant=%d après=%d\n", dist_before, dist_after);

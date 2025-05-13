@@ -169,7 +169,7 @@ int main(int argc, char *argv[]) {
   }
 
   // Valeurs par défaut si pas d’option -t ou -m
-  if (type_graph == NULL) {
+  /*if (type_graph == NULL) {
     fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
     g_type     = TRIANGULAR;
     type_graph = "T";
@@ -220,6 +220,36 @@ int main(int argc, char *argv[]) {
     unknown:
       fprintf(stderr, "Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n", type_graph);
       g_type = TRIANGULAR;
+  }*/
+  // Valeurs par défaut
+  // int g_type = TRIANGULAR;
+  if (size_mesh < 0) {
+    fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
+    size_mesh = 3;
+  }
+
+  if (type_graph == NULL) {
+    fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
+    type_graph = "T";
+  }
+
+  if (type_graph != NULL) {
+    if (strcmp(type_graph, "T") == 0)
+      g_type = TRIANGULAR;
+    else if (strcmp(type_graph, "TR") == 0)
+      g_type = 4;
+    else if (strcmp(type_graph, "C") == 0)
+      g_type = CYCLIC;
+    else if (strcmp(type_graph, "H") == 0)
+      g_type = HOLEY;
+    else if (strcmp(type_graph, "HR") == 0)
+      g_type = 5;
+    else if (strcmp(type_graph, "S") == 0)
+      g_type = 6;
+    else {
+      fprintf(stderr, "Type de graphe inconnu «%s», je tombe sur TRIANGULAR\n", type_graph);
+      g_type = TRIANGULAR;
+    }
   }
 
   printf("Type de graphe: %s (enum=%d)\n", type_graph, g_type);
