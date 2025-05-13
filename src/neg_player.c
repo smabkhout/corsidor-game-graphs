@@ -332,12 +332,11 @@ struct move_t play(const struct move_t previous_move) {
     int next_direction = next_dir(dir);
     int l2_2           = l0 + direec[next_direction].l;
     int c2_2           = c0 + direec[next_direction].c;
-
     if (!in_hexagon(l2_2, c2_2, m, 0, 0)) {
       // on simule une fonction prev_dir
       next_direction = (dir == 0) ? 0 : (dir == 6) ? FIRST_DIR : (dir + 1);
-      l2_2           = l1_1 + direec[next_direction].l;
-      c2_2           = l1_1 + direec[next_direction].c;
+      l2_2           = l0 + direec[next_direction].l;
+      c2_2           = c0 + direec[next_direction].c;
     }
 
     vertex_t to1 = axial_to_index(l1_1, c1_1, m);
