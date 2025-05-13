@@ -121,11 +121,6 @@ void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_ve
     if (index_min == b) {
       break;
     }
-    if (d[b] == INT_MAX) {
-      // Aucun chemin trouvé
-      next[a] = -1;
-      return;
-    }
     int path[graph->num_vertices];
     int len = 0;
     for (vertex_t v = b; v != (vertex_t)-1; v = prev[v]) {
