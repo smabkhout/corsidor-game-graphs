@@ -1,3 +1,4 @@
+
 #include "graph.h"
 #include "player.h"
 #include "board.h"
@@ -7,12 +8,14 @@
 #include <time.h>
 #include <string.h>
 #include <gsl/gsl_spmatrix.h>
+#define MAX_VERTICES 900
 
 static struct board_t *board = NULL;
 static unsigned int    player_id;
 static vertex_t        initial_position;
-static int             visited_objectives[256] = {0};
-static vertex_t        my_last_position        = (vertex_t)-1;
+static int             visited_objectives[256]               = {0};
+static vertex_t        my_last_position                      = (vertex_t)-1;
+static int             walls_used_for_position[MAX_VERTICES] = {0};
 // static vertex_t last_positions[3] = { -1, -1, -1 };
 
 int s_p(struct graph_t *g, vertex_t start, vertex_t goal) {
@@ -123,34 +126,6 @@ const struct axial_t blackpink[7] = {
     {0, -1}   // W
 };
 
-/*int get_direction(vertex_t from, vertex_t to, struct graph_t* g) {
-    if (!g || !g->t) return -1;
-
-    // Cas simple : la direction est déjà présente dans la matrice
-    unsigned int val = gsl_spmatrix_uint_get(g->t, from, to);
-    if (val != 0 && val != 7)  // 7 = mur
-        return (int)val;
-
-    // Cas plus général : déduction via les coordonnées axiales
-    int m = 0;
-    in_hexagon_func_t in_hex = NULL;
-    resolve_graph_type_or_default(g, &m, &in_hex); // récupère m automatiquement
-
-    int lf, cf, lt, ct;
-    index_to_axial(from, m, &lf, &cf);
-    index_to_axial(to,   m, &lt, &ct);
-
-    int dl = lt - lf;
-    int dc = ct - cf;
-
-    for (int dir = 1; dir <= 6; ++dir) {
-        if (blackpink[dir].l == dl && blackpink[dir].c == dc)
-            return dir;
-    }
-
-    return -1;
-}*/
-
 void index_to_axial_developped(const struct graph_t *g, vertex_t index, int *l, int *c) {
   int               m      = 0;
   in_hexagon_func_t in_hex = NULL;
@@ -212,53 +187,45 @@ int get_direction(vertex_t from, vertex_t to, struct graph_t *g) {
 }
 
 struct move_t play(const struct move_t previous_move) {
-  if (previous_move.t == MOVE) {
+  if (previous_move.t == MOVE)
     board->current_positions[previous_move.c] = previous_move.m;
-  }
+
+  int               m      = 0;
+  in_hexagon_func_t in_hex = NULL;
+  resolve_graph_type_or_default(board->graph, &m, &in_hex);
 
   struct graph_t *g        = board->graph;
   vertex_t        my_pos   = board->current_positions[player_id];
   vertex_t        last_pos = my_last_position;
   vertex_t        opp_pos  = board->current_positions[(player_id + 1) % 2];
 
-  printf("Jennie DEBUG -- position = %u, last_position = %u\n", my_pos, last_pos);
-
   if (previous_move.t == WALL && previous_move.c != player_id) {
-    unsigned int *temp  = gsl_spmatrix_uint_ptr(g->t, previous_move.e[0].fr, previous_move.e[0].to);
-    *temp               = 7;
-    unsigned int *temp1 = gsl_spmatrix_uint_ptr(g->t, previous_move.e[1].fr, previous_move.e[1].to);
-    *temp1              = 7;
-    unsigned int *temp2 = gsl_spmatrix_uint_ptr(g->t, previous_move.e[0].to, previous_move.e[0].fr);
-    *temp2              = 7;
-    unsigned int *temp3 = gsl_spmatrix_uint_ptr(g->t, previous_move.e[1].to, previous_move.e[1].fr);
-    *temp3              = 7;
-    struct player_tt dummy = {
-        .position = opp_pos, .last_position = opp_pos, .walls = 10, .c = (player_id + 1) % 2};
-    place_wall(g, &dummy, previous_move);
-    printf("Mur adverse détecté : entre %u-%u et %u-%u\n", previous_move.e[0].fr,
-           previous_move.e[0].to, previous_move.e[1].fr, previous_move.e[1].to);
+    for (int i = 0; i < 2; ++i) {
+      unsigned int *temp1 =
+          gsl_spmatrix_uint_ptr(g->t, previous_move.e[i].fr, previous_move.e[i].to);
+      unsigned int *temp2 =
+          gsl_spmatrix_uint_ptr(g->t, previous_move.e[i].to, previous_move.e[i].fr);
+      *temp1 = 7;
+      *temp2 = 7;
+    }
+    /* struct player_tt dummy = {.position = opp_pos, .last_position = opp_pos, .walls =
+     remaining_walls, .c = (player_id + 1) % 2}; place_wall(g, &dummy, previous_move);*/
   }
 
   if (my_pos == initial_position && all_objectives_visited(g)) {
-    printf("Bingooooo. Jennie did it and won\n");
-    struct move_t win_move = make_move_no_type();
-    win_move.t             = MOVE;
-    win_move.m             = my_pos;
-    win_move.c             = player_id;
-    return win_move;
-    // return make_move_no_type();
+    struct move_t win = make_move_no_type();
+    win.t             = MOVE;
+    win.m             = my_pos;
+    win.c             = player_id;
+    return win;
   }
 
-  for (unsigned int i = 0; i < g->num_objectives; ++i) {
-    if (my_pos == g->objectives[i]) {
+  for (unsigned int i = 0; i < g->num_objectives; ++i)
+    if (my_pos == g->objectives[i])
       visited_objectives[my_pos] = 1;
-      break;
-    }
-  }
 
   vertex_t target =
       all_objectives_visited(g) ? initial_position : get_next_closest_objective(g, my_pos);
-
   struct player_tt player = {
       .position = my_pos, .last_position = last_pos, .walls = 10, .c = player_id};
   enum dir_t last_dir = get_direction(last_pos, my_pos, g);
@@ -271,18 +238,21 @@ struct move_t play(const struct move_t previous_move) {
   for (int i = 0; i < nb; ++i) {
     struct move_t move     = options[i];
     enum dir_t    move_dir = get_direction(my_pos, move.m, g);
+    printf("Testing move from %u to %u — dir = %d\n", my_pos, move.m, move_dir);
+
     if ((int)move_dir == -1)
       continue;
 
     int allowed_steps = 1;
     if ((int)last_dir != -1) {
-      if (move_dir == last_dir) {
+      if (move_dir == last_dir)
         allowed_steps = 3;
-      } else if ((move_dir + 1) % 6 == last_dir || (move_dir + 5) % 6 == last_dir) {
+      else if ((move_dir + 1) % 6 == last_dir || (move_dir + 5) % 6 == last_dir)
         allowed_steps = 2;
-      }
     }
 
+    if (move.t == MOVE && move.m == last_pos)
+      continue;
     int distance = s_p(g, my_pos, move.m);
     if (distance > allowed_steps)
       continue;
@@ -297,75 +267,100 @@ struct move_t play(const struct move_t previous_move) {
       best_dist = dist;
     }
   }
+  vertex_t adv_pos = opp_pos;
+  if (walls_used_for_position[adv_pos] >= 1) {
+    printf("Jennie a déjà ralenti %u, pas de nouveau mur.\n", adv_pos);
+    goto fin_deplacement;
+  }
 
-  if (best_move.t == NO_TYPE && player.walls > 0) {
-    // Code pour tenter de bloquer l'adversaire (comme avant)
-    vertex_t adv_pos     = opp_pos;
-    vertex_t adv_target  = get_next_closest_objective(g, adv_pos);
-    int      dist_before = s_p(g, adv_pos, adv_target);
+  vertex_t adv_target  = get_next_closest_objective(g, adv_pos);
+  int      dist_before = s_p(g, adv_pos, adv_target);
+  if (dist_before <= 2 && player.walls > 0) {
+    printf("nbre de murs restants %d\n", player.walls);
+    int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+    int l, c;
+    index_to_axial(adv_pos, m, &l, &c);
 
-    if (dist_before == 1) {
-      int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
-      int l, c;
-      index_to_axial(adv_pos, m, &l, &c);
-
-      for (int d = 1; d < 7; ++d) {
-        int l1 = l + blackpink[d].l;
-        int c1 = c + blackpink[d].c;
-        if (!in_hexagon_T(l1, c1, m, 0, 0))
+    for (int d = 1; d < 7; ++d) {
+      int l1 = l + blackpink[d].l;
+      int c1 = c + blackpink[d].c;
+      if (!in_hex(l1, c1, m, 0, 0))
+        continue;
+      vertex_t to1 = axial_to_index(l1, c1, m);
+      for (int d2 = 1; d2 < 7; ++d2) {
+        if (d2 == d)
           continue;
+        int dir_diff = abs(d - d2);
+        if (dir_diff != 1 && dir_diff != 5)
+          continue;
+        int l2 = l + blackpink[d2].l;
+        int c2 = c + blackpink[d2].c;
+        if (!in_hex(l2, c2, m, 0, 0))
+          continue;
+        vertex_t to2 = axial_to_index(l2, c2, m);
 
-        vertex_t to  = axial_to_index(l1, c1, m);
-        vertex_t fr1 = adv_pos, to1 = to;
-        vertex_t fr2 = adv_pos, to2 = to;
-
-        for (int d2 = 1; d2 < 7; ++d2) {
-          if (d2 == d)
-            continue;
-          int l2 = l + blackpink[d2].l;
-          int c2 = c + blackpink[d2].c;
-          if (!in_hexagon_T(l2, c2, m, 0, 0))
-            continue;
-          to2 = axial_to_index(l2, c2, m);
-          break;
-        }
-
-        struct move_t *wall_ptr = make_wall_move(player_id, fr1, to1, fr2, to2);
+        struct move_t *wall_ptr = make_wall_move(player_id, adv_pos, to1, adv_pos, to2);
         struct move_t  wall     = *wall_ptr;
         free(wall_ptr);
 
-        if (valid_wall(g, &player, wall)) {
-          struct graph_t g_copy;
-          copy_graph(&g_copy, g);
-          place_wall(&g_copy, &player, wall);
-          int dist_after = s_p(&g_copy, adv_pos, adv_target);
-
-          if (dist_after > dist_before &&
-              path_to_objective_exists(&g_copy, adv_pos, g->objectives, g->num_objectives)) {
-            best_move = wall;
-            printf("Jennie puts a wall beetween %u-%u and %u-%u\n", wall.e[0].fr, wall.e[0].to,
-                   wall.e[1].fr, wall.e[1].to);
-            free(g_copy.objectives);
-            free(g_copy.t->data);
-            gsl_spmatrix_uint_free(g_copy.t);
-            break;
-          }
-
-          free(g_copy.objectives);
-          free(g_copy.t->data);
-          gsl_spmatrix_uint_free(g_copy.t);
+        if (!valid_wall(g, &player, wall)) {
+          printf("Mur %u-%u / %u-%u rejeté par valid_wall()\n", wall.e[0].fr, wall.e[0].to,
+                 wall.e[1].fr, wall.e[1].to);
+          continue;
         }
+
+        struct graph_t g_copy;
+        copy_graph(&g_copy, g);
+        struct player_tt dummy = player;
+        place_wall(&g_copy, &dummy, wall);
+        unsigned int val = gsl_spmatrix_uint_get(g_copy.t, wall.e[0].fr, wall.e[0].to);
+
+        int dist_after = s_p(&g_copy, adv_pos, adv_target);
+        // printf("Comparaison distances : avant=%d après=%d\n", dist_before, dist_after);
+        if (dist_after == 2) {
+          printf(
+              "Jennie a décidé de poser un mur entre %u-%u et %u-%u (dist_before=%d, "
+              "dist_after=%d)\n",
+              wall.e[0].fr, wall.e[0].to, wall.e[1].fr, wall.e[1].to, dist_before, dist_after);
+          best_move = wall;
+          walls_used_for_position[adv_pos]++;
+          place_wall(g, &player, wall);
+          gsl_spmatrix_uint_free(g_copy.t);
+          free(g_copy.objectives);
+          break;
+        }
+
+        gsl_spmatrix_uint_free(g_copy.t);
+        free(g_copy.objectives);
       }
+      if (best_move.t == WALL)
+        break;
     }
   }
 
+fin_deplacement:
+  if (best_move.t == NO_TYPE) {
+    for (int i = 0; i < nb; ++i) {
+      if (valid_move(g, &player, options[i].m, opp_pos)) {
+        best_move = options[i];
+        printf("Jennie joue un coup fallback de %u vers %u\n", my_pos, best_move.m);
+        break;
+      }
+    }
+
+    if (best_move.t == NO_TYPE) {
+      printf("Jennie n'a trouvé aucun move valide, elle passe.\n");
+      return make_move_no_type();
+    }
+  }
   add_move_to_board(board, best_move);
 
   if (best_move.t == MOVE) {
     my_last_position                    = my_pos;
     board->current_positions[player_id] = best_move.m;
-    printf(" Jennie se déplace de %u à %u\n", my_last_position, best_move.m);
   } else if (best_move.t == WALL) {
+    my_last_position                    = my_pos;
+    board->current_positions[player_id] = my_pos;
     printf(" Mur validé pour Jennie\n");
   } else {
     printf(" Aucun coup trouvé — Jennie passe\n");
