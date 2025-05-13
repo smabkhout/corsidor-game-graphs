@@ -157,12 +157,12 @@ int main(int argc, char *argv[]) {
             argv[0]);
     exit(EXIT_FAILURE);
   }
-  int g_type;
+  int g_type = TRIANGULAR;
 
   if (type_graph == NULL) {
     fprintf(stderr, "Type de graphe non spécifié, je tombe sur TRIANGULAR\n");
     g_type     = TRIANGULAR;
-    type_graph = "TRIANGULAR";
+    type_graph = "T";
   } else if (size_mesh < 0) {
     fprintf(stderr, "Taille de la maille non spécifiée, je tombe sur 3\n");
     size_mesh = 3;
