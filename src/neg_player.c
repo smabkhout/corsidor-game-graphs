@@ -292,6 +292,9 @@ struct move_t play(const struct move_t previous_move) {
   printf("opp distance to the objective  : %d \n", min_distance_opp);
   */
   if (min_distance_opp < min_distance) {
+    // printf("the distance to the objective for the opponent is %d\n", min_distance_opp);
+    // printf("the distance to the objective for me is %d\n", min_distance);
+
     // place a wall to stop him
     struct move_t wall;
     wall.t = WALL;
@@ -306,6 +309,9 @@ struct move_t play(const struct move_t previous_move) {
     int c1 = 0;
     index_to_axial(opp_pos, m, &l0, &c0);
     index_to_axial(opp_paths[obj_index_opp][1], m, &l1, &c1);
+
+    printf("opponent path : %d \n", opp_paths[obj_index_opp][1]);
+    printf("opponent position : %d \n", opp_pos);
 
     int dl_prev = l1 - l0;
     int dc_prev = c1 - c0;

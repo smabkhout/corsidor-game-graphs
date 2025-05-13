@@ -7,27 +7,47 @@
 \subsection{Pourquoi un graphe ?}
 Le plateau du jeu Coursidor est modélisé comme un graphe, où chaque case correspond à un sommet, et chaque possibilité de déplacement à une arête. Ce choix s’impose naturellement dans un jeu où les déplacements doivent être validés selon des règles de voisinage et de connectivité, notamment en présence d'obstacles (murs).
 
-Représenter le plateau sous forme de graphe permet :
+Représenter le plateau sous forme de graphe nous a permis :
 \begin{itemize}
-    \item d’exprimer les déplacements comme des parcours de sommets voisins ;
-    \item d’utiliser des algorithmes classiques (BFS, DFS, etc.) pour la recherche de chemins ;
-    \item de facilement désactiver certaines arêtes pour simuler la pose de murs.
+    \item d’implémenter plusieurs types et architectures de plateaux (hexagonal, troué, cyclique) à partir d’une même structure générique ;
+    \item de maintenir un code modulaire et réutilisable, indépendant du type de graphe utilisé ;
+    \item de préparer l’implémentation future d’algorithmes d’exploration plus complexes, comme ceux de plus court chemin (par exemple Dijkstra), sans nécessiter de réécriture fondamentale.
 \end{itemize}
+
+
 
 \subsection{Pourquoi GSL ?}
-Nous avons choisi d’utiliser les matrices creuses de la bibliothèque \texttt{GSL} (\texttt{gsl\_spmatrix\_uint}) pour représenter la matrice d’adjacence du graphe. Ce choix s’explique par plusieurs raisons :
+Nous avons choisi d’utiliser les matrices creuses au format compressé (CSR) fournies par la bibliothèque \texttt{GSL} (\texttt{gsl\_spmatrix\_uint}) pour représenter la matrice d’adjacence du graphe. Ce choix s’appuie sur plusieurs avantages essentiels pour notre projet :
+
 \begin{itemize}
-    \item la majorité des sommets n’ont que quelques voisins (6 dans un hexagone), donc la matrice d’adjacence est très creuse ;
-    \item GSL propose des fonctions optimisées pour parcourir efficacement les entrées non nulles ;
-    \item elle permet une allocation mémoire plus économique et rend explicite la topologie du graphe.
+    \item la majorité des sommets n’ont que quelques voisins (au plus 6 dans une grille hexagonale), ce qui rend la matrice d’adjacence très creuse.
+    \item le format CSR permet de stocker uniquement les entrées non nulles, réduisant considérablement l’espace mémoire nécessaire, ce qui est crucial sur des plateaux de grande taille.
+    \item GSL fournit des fonctions efficaces pour itérer sur les voisins d’un sommet sans parcourir toute la matrice, ce qui améliore les performances des fonctions de génération et de validation des mouvements.
+    \item l’utilisation d’une structure creuse rend explicite la topologie du graphe tout en maintenant une bonne flexibilité pour les manipulations (ajout, blocage, suppression d’arêtes).
 \end{itemize}
 
-Nous avons fixé certaines valeurs dans la matrice pour indiquer l'état des arêtes :
+Nous avons adopté une codification explicite des arêtes dans la matrice, inspirée de l’énumération suivante :
+
 \begin{itemize}
-    \item \texttt{1} : arête libre ;
-    \item \texttt{7} : arête bloquée par un mur ;
-    \item \texttt{0} : absence d'arête (inexistante dans le graphe).
+    \item \texttt{0} (\texttt{NO\_EDGE}) : aucune arête n’existe entre les deux sommets (non connectés) ;
+    \item \texttt{7} (\texttt{WALL\_DIR}) : l’arête est bloquée par un mur et donc inutilisable ;
+    \item \texttt{1} à \texttt{6} (\texttt{NW}, \texttt{NE}, \texttt{E}, \texttt{SE}, \texttt{SW}, \texttt{W}) : indication de la direction de l’arête selon le repère hexagonal, à savoir :
+    \begin{itemize}
+        \item \texttt{1 (NW)} : nord-ouest  
+        \item \texttt{2 (NE)} : nord-est  
+        \item \texttt{3 (E)}  : est  
+        \item \texttt{4 (SE)} : sud-est  
+        \item \texttt{5 (SW)} : sud-ouest  
+        \item \texttt{6 (W)}  : ouest  
+    \end{itemize}
 \end{itemize}
+
+
+
+
+
+
+
 
 \subsection{Coordonnées axiales}
 Afin de représenter efficacement un plateau hexagonal, nous avons implémenté un système de coordonnées dit \textbf{axial}, très utilisé dans les graphes hexagonaux. Chaque case est identifiée par un couple $(l, c)$, correspondant aux coordonnées « ligne » et « colonne » dans ce système.
@@ -35,7 +55,7 @@ Afin de représenter efficacement un plateau hexagonal, nous avons implémenté 
 \subsubsection{Type \texttt{axial\_t}}
 Le type de données \texttt{axial\_t} est une simple structure contenant deux entiers :
 
-\begin{lstlisting}[language=C, caption=Définition du type axial\_t]
+\begin{lstlisting}[language=C]
     typedef struct {
         int l; // ligne
         int c; // colonne
