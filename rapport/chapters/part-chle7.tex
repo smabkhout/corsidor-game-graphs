@@ -1,3 +1,53 @@
-\section{Part} 
+\section{Tests et couverture} 
 \label{sec:part-chle7}
-fgfhd
+
+\subsection{Objectifs des tests}
+
+Les tests constituent une étape essentielle du développement logiciel. Leur objectif principal est de s'assurer que le programme fonctionne conformément aux spécifications, dans des conditions normales comme exceptionnelles. Dans le cadre de ce projet, les tests ont été conçus pour vérifier le bon fonctionnement des mécanismes de base du jeu.
+
+Plus précisément, les tests visent à :
+\begin{itemize}
+    \item Détecter les erreurs de conception, d’implémentation ou d'intégration dans les différentes fonctions qui régissent les règles du jeu. (génération de graphe, déplacement, pose de mur, etc.).
+    \item Simuler différents scénarios de jeu, incluant des cas simples (déplacement classique, poser un mur valide) et des cas complexes (mur bloquant etc.).
+    \item Vérifier la stabilité du système, en s'assurant qu'aucune action ne provoque d’état incohérent ou de blocage du jeu.
+    \item Assurer la stabilité du système face aux interactions successives (enchaînements de coups, modifications du graphe).
+\end{itemize}
+Les tests permettent ainsi de valider les fondations du système, d'anticiper les comportements anormaux, et de guider le développement futur de manière structurée et sécurisée.
+
+\subsection{Méthodologie}
+
+La qualité d’un programme ne peut être garantie sans une stratégie de test rigoureuse et structurée. Dans ce projet, les tests ont été conçus de manière progressive, en commençant par des vérifications simples sur des fonctions isolées, puis en intégrant des scénarios plus complexes simulant des enchaînements d’actions possibles en cours de partie.
+
+L’objectif de cette approche est double : d’une part, valider chaque composant du moteur de jeu de manière indépendante, et d’autre part, s’assurer de la cohérence de l’ensemble une fois les composants combinés.
+
+Les tests ont été organisés selon les approches suivantes :
+\begin{itemize}
+    \item \textbf{Tests unitaires} : Les tests unitaires ont pour but de valider le comportement isolé de chaque fonction. Chaqu'une a été testée indépendamment, avec des entrées simples et représentatives des cas typiques ou attendus.
+
+Par exemple, la fonction \texttt{valid\_move} a été testée pour différentes distances et directions autorisées ou interdites, en prenant en compte la position précédente du joueur, la présence d’un adversaire, ou d’un mur. De même, \texttt{apply\_move} a été testée séparément pour s’assurer qu’elle modifie correctement la structure du graphe, que ce soit lors d’un déplacement ou l'usage d’un mur.
+
+    
+    \item \textbf{Tests d’intégration} :Les tests d’intégration visent à vérifier que les différentes fonctions interagissent correctement entre elles dans un contexte plus réaliste.
+    A titre d'exemple, la séquence :
+\begin{enumerate}
+    \item Création du graphe,
+    \item Placement d’un mur,
+    \item Vérification de la connectivité vers les objectifs.
+    \item Tentative de déplacement,
+\end{enumerate}
+Ces enchaînements permettent de détecter les incohérences qui n’apparaîtraient pas dans des tests unitaires, comme des effets de bord (par exemple, une modification incorrecte de la matrice d’adjacence) ou des interactions imprévues entre deux fonctions pourtant correctes prises isolément.
+    
+    \item \textbf{Tests de cas limites} :Des cas extrêmes ont été volontairement construits afin de tester la robustesse du moteur. Parmi ces cas, on peut citer :
+\begin{itemize}
+    \item La présence d’un joueur en bordure du graphe, où certaines directions deviennent inaccessibles,
+    \item Une tentative de déplacement vers une case inexistante ou bloquée par un mur,
+    \item Placement d’un mur dans une configuration risquant de bloquer tous les chemins vers les objectifs. 
+\end{itemize}
+
+Ces tests sont indispensables pour anticiper les comportements erronés dans des situations peu fréquentes mais critiques, qui pourraient compromettre le déroulement d’une partie.
+
+    
+    \item \textbf{Vérification manuelle et automatisée} : la majorité des tests sont réalisés à l’aide d’assertions (\texttt{assert}) pour automatiser la détection d’erreurs, mais certaines vérifications ont également été effectuées manuellement, notamment pour visualiser l’évolution du graphe ou comprendre le comportement dans des cas complexes.
+\end{itemize}
+
+Ainsi, cette méthodologie nous permet de valider progressivement les différentes composantes du moteur de jeu, tout en facilitant la détection et la correction d’éventuelles anomalies.

@@ -173,7 +173,6 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
   return (result == INT_MAX) ? -1 : result;
 }
 
-
 double heuristic(vertex_t a, vertex_t b, int m) {
   int la, ca, lb, cb;
   index_to_axial(a, m, &la, &ca);
@@ -191,8 +190,7 @@ vertex_t min_fscore_vertex(struct distance_node *nodes, double *f_score, size_t 
 
   for (vertex_t v = 0; v < num_vertices; ++v) {
     if (!nodes[v].visited) {
-      if (f_score[v] < min_f ||
-         (f_score[v] == min_f && nodes[v].num_moves < min_moves)) {
+      if (f_score[v] < min_f || (f_score[v] == min_f && nodes[v].num_moves < min_moves)) {
         min_f     = f_score[v];
         min_v     = v;
         min_moves = nodes[v].num_moves;
@@ -207,17 +205,19 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
   if (start == objective)
     return 0;
 
-  int path_length = 0;
-  int m           = 0;
-  in_hexagon_func_t in_hexagon = NULL;
+  int               path_length = 0;
+  int               m           = 0;
+  in_hexagon_func_t in_hexagon  = NULL;
   resolve_graph_type_or_default(g, &m, &in_hexagon);
   vertex_t n = 3 * (m * m) - 3 * m + 1;
 
-  struct distance_node *nodes = malloc(n * sizeof(struct distance_node));
-  double *f_score             = malloc(n * sizeof(double));
-  vertex_t *prev              = malloc(n * sizeof(vertex_t));
+  struct distance_node *nodes   = malloc(n * sizeof(struct distance_node));
+  double               *f_score = malloc(n * sizeof(double));
+  vertex_t             *prev    = malloc(n * sizeof(vertex_t));
   if (!nodes || !f_score || !prev) {
-    free(nodes); free(f_score); free(prev);
+    free(nodes);
+    free(f_score);
+    free(prev);
     return -1;
   }
 
@@ -242,19 +242,22 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
     nodes[u].visited = true;
 
     vertex_t *neighbors = malloc(sizeof(vertex_t) * 6 * 3);
-    int count = 0;
+    int       count     = 0;
     for (vertex_t v = 0; v < n; ++v) {
       if (nodes[v].vertex == (unsigned int)-1)
         continue;
 
-      struct player_tt p = { .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u] };
+      struct player_tt p = {
+          .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u]};
       if (valid_move(g, &p, v, opponent_pos)) {
         neighbors[count++] = v;
       }
     }
 
     if (count == 0) {
-      free(nodes); free(f_score); free(prev);
+      free(nodes);
+      free(f_score);
+      free(prev);
       return 0;
     }
 
@@ -262,7 +265,8 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
       for (int i = 0; i < count; ++i) {
         vertex_t v = neighbors[i];
 
-        struct player_tt p = { .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u] };
+        struct player_tt p = {
+            .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u]};
         int jump_distance = valid_move(g, &p, v, opponent_pos);
 
         if (jump_distance == wanted_jump) {
@@ -283,21 +287,21 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
 
   if (result != INT_MAX) {
     vertex_t current = objective;
-    path_length = 0;
+    path_length      = 0;
 
     while (current != (unsigned int)-1) {
       path[path_length++] = current;
-      current = prev[current];
+      current             = prev[current];
     }
 
     for (int i = 0; i < path_length / 2; ++i) {
-      vertex_t tmp = path[i];
-      path[i] = path[path_length - 1 - i];
+      vertex_t tmp              = path[i];
+      path[i]                   = path[path_length - 1 - i];
       path[path_length - 1 - i] = tmp;
     }
     path[path_length] = -1;
   } else {
-    path[0] = -1;
+    path[0]     = -1;
     path_length = 0;
   }
 
@@ -307,7 +311,7 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
 
   return (result == INT_MAX) ? -1 : result;
 }
-//test A* 
+// test A*
 /*
 void test_astar() {
   struct graph_t *g = createGraph(5, TRIANGULAR);
@@ -332,7 +336,6 @@ void test_astar() {
 
   free(g->objectives);
 }*/
-
 
 int shortest_path_player(vertex_t start, vertex_t objective, vertex_t opponent_pos,
                          struct graph_t *g, vertex_t last_pos) {
@@ -458,34 +461,34 @@ int main() {
 }
 */
 
-//calculer le temps pour chaque algo 
-void  test_AstarVSdIJKSTRA(){
+// calculer le temps pour chaque algo
+void test_AstarVSdIJKSTRA() {
   struct graph_t *g = createGraph(14, TRIANGULAR);
   g->num_objectives = 1;
   g->objectives     = malloc(sizeof(vertex_t) * 1);
   g->objectives[0]  = 546;
 
-  vertex_t start = 1;
-  g->start[0] = start;
-  vertex_t objective = g->objectives[0];
-  g->start[1] = objective;
+  vertex_t start        = 1;
+  g->start[0]           = start;
+  vertex_t objective    = g->objectives[0];
+  g->start[1]           = objective;
   vertex_t opponent_pos = 54;
-  vertex_t last_pos = 0;
+  vertex_t last_pos     = 0;
 
   vertex_t path[128];
-  
+
   clock_t start_time, end_time;
   printf("previous position  : %d\n", last_pos);
   print_hex_grid(g);
-  
-  start_time = clock();
+
+  start_time          = clock();
   int result_dijkstra = shortest_path_length(g, start, objective, opponent_pos, path, last_pos);
-  end_time = clock();
-  
+  end_time            = clock();
+
   double time_dijkstra = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-  
-  printf("Dijkstra: Shortest path length: %d\n", result_dijkstra+1);
-  printf("0-->") ;
+
+  printf("Dijkstra: Shortest path length: %d\n", result_dijkstra + 1);
+  printf("0-->");
   for (int i = 0; i < result_dijkstra + 1; ++i) {
     printf("-->%d ", path[i]);
   }
@@ -493,25 +496,24 @@ void  test_AstarVSdIJKSTRA(){
 
   printf("Dijkstra: Time taken: %f seconds\n", time_dijkstra);
 
-  
-  start_time = clock();
+  start_time       = clock();
   int result_astar = shortest_path_astar(g, start, objective, opponent_pos, path, last_pos);
-  end_time = clock();
-  
+  end_time         = clock();
+
   double time_astar = (double)(end_time - start_time) / CLOCKS_PER_SEC;
-  
-  printf("A*: Shortest path length: %d\n", result_astar +1);
-  printf("0-->") ;
+
+  printf("A*: Shortest path length: %d\n", result_astar + 1);
+  printf("0-->");
   for (int i = 0; i < result_astar + 1; ++i) {
     printf("-->%d ", path[i]);
   }
   printf("\n");
   printf("A*: Time taken: %f seconds\n", time_astar);
-
 }
-
+/*
 int main() {
   srand(time(NULL));
   test_AstarVSdIJKSTRA();
   return 0;
 }
+*/
