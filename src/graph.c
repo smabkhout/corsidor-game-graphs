@@ -27,45 +27,62 @@ int axial_to_index_T(int l, int c, int m) {
     count = m * (m - 1) / 2;
   return j + (2 * m - 1) * i - count;
 }
-/*
 
 int axial_to_index_C(int l, int c, int m) {
+  if (!in_hexagon_C(l, c, m, 0, 0)) {
+    return 0;
+  }
   int if_T  = axial_to_index_T(l, c, m);
   int count = 0;
   if (l == m - 1 || l == m - 2) {
     return if_T - count;
   } else if (l >= 0) {
     count += (2 * m - 5) * (m - 3 - l) - (m - 3 - l) * (m - 3 + l + 1) / 2;
-    if (c == -(m - 1) || c == -(m - 2)) {
+    if ((in_hexagon_C(l, c + 1, m, 0, 0) &&
+         (in_hexagon_T(l, c - 1, m, 0, 0) && !in_hexagon_C(l, c - 1, m, 0, 0))) ||
+        (in_hexagon_C(l, c - 1, m, 0, 0) &&
+         (in_hexagon_T(l, c - 2, m, 0, 0) && !in_hexagon_C(l, c - 2, m, 0, 0)))) {  // RIGHT SIDE
+      count += 2 * m - 5 - l;
       return if_T - count;
-    } else if (c == m - 1 || c == m - 2) {
-      count += 2 * m - 5;
-      return if_T - count;
-    } else {
-      count += 2 * m - 1 - l - (c + m - 1);
+    } else if ((in_hexagon_C(l, c - 1, m, 0, 0) &&
+                (in_hexagon_T(l, c + 1, m, 0, 0) && !in_hexagon_C(l, c + 1, m, 0, 0))) ||
+               (in_hexagon_C(l, c + 1, m, 0, 0) &&
+                (in_hexagon_T(l, c + 2, m, 0, 0) &&
+                 !in_hexagon_C(l, c + 2, m, 0, 0)))) {  // LEFT SIDE
       return if_T - count;
     }
-  } else {  // l<0
-    count += (2 * m - 5) * (m - 3) - (m - 3) * (m - 3 + 1) / 2;
-    count += (2 * m - 5) * (-l - 1) + (-1 - l) * (l) / 2;
 
-    if (l + c == -(m - 1) || l + c == -(m - 2)) {
+  } else {  // l<0
+    count += (2 * m - 5) * (m - 2) - (m - 3) * (m - 3 + 1) / 2;
+
+    count += (2 * m - 5) * (-l - 1) + (-1 - l) * (l) / 2;
+    if (l == -(m - 1)) {
+      count -= 2 * m - 5 + l + 1;
       return if_T - count;
-    } else if (c == m - 1 || c == m - 2) {
-      count += 2 * m - 5 - +l;
+    }
+
+    if ((in_hexagon_C(l, c + 1, m, 0, 0) &&
+         (in_hexagon_T(l, c - 1, m, 0, 0) && !in_hexagon_C(l, c - 1, m, 0, 0))) ||
+        (in_hexagon_C(l, c - 1, m, 0, 0) &&
+         (in_hexagon_T(l, c - 2, m, 0, 0) && !in_hexagon_C(l, c - 2, m, 0, 0)))) {  // RIGHT SIDE
+      count += 2 * m - 5 + l;
       return if_T - count;
-    } else {
-      count += 2 * m - 1 + l - (c + m - 1);
+    } else if ((in_hexagon_C(l, c - 1, m, 0, 0) &&
+                (in_hexagon_T(l, c + 1, m, 0, 0) && !in_hexagon_C(l, c + 1, m, 0, 0))) ||
+               (in_hexagon_C(l, c + 1, m, 0, 0) &&
+                (in_hexagon_T(l, c + 2, m, 0, 0) &&
+                 !in_hexagon_C(l, c + 2, m, 0, 0)))) {  // LEFT SIDE
       return if_T - count;
     }
   }
   return if_T - count;
 }
 
-*/
-
 // CYCLIC : scan rows from l=m-1 down to -(m-1), cols from c=-(m-1) up to m-1
-int axial_to_index_C(int l, int c, int m) {
+int axial_to_index_C_test(int l, int c, int m) {
+  if (!in_hexagon_C(l, c, m, 0, 0)) {
+    return 0;
+  }
   int count = 0;
   for (int ll = m - 1; ll >= -(m - 1); --ll) {
     for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
@@ -263,7 +280,6 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
       return NULL;
     }
     n = 12 * m - 18;
-    printf("n is %d\n", n);
   } else if (type == HOLEY || type == 5) {
     if ((m < 6) || (m % 3 != 0)) {
       puts("⚠️ m < 6 ou m mod[3] != 0, impossible de créer le graphe");
@@ -524,7 +540,9 @@ void print_hex_grid(struct graph_t *g) {
 void index_to_axial(int index, int m, int *l, int *c, int type) {
   for (int i = 1 - m; i < m; ++i) {
     for (int j = 1 - m; j < m; ++j) {
-      if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i, j, m, type) == index)) {
+      if (!in_hexagon_T(i, j, m, 0, 0))
+        continue;
+      if (axial_to_index(i, j, m, type) == index) {
         *l = i;
         *c = j;
         return;
@@ -615,3 +633,24 @@ void graph_to_dot(const struct graph_t *g, const char *filename) {
   fprintf(f, "}\n");
   fclose(f);
 }
+/*
+int main() {
+  for (int m = 5; m < 20; ++m) {
+    // int             m  = 6;
+    struct graph_t *g1 = createGraph(m, TRIANGULAR);
+    struct graph_t *g2 = createGraph(m, CYCLIC);
+    // print_hex_grid(g1);
+    print_hex_grid(g2);
+    for (int l = m - 1; l > -m; --l) {
+      for (int c = 1 - m; c < m; ++c) {
+        int index  = axial_to_index(l, c, m, g2->type);
+        int index2 = axial_to_index_C_test(l, c, m);
+        assert(index == index2);
+      }
+    }
+
+    graph_free(g1);
+    graph_free(g2);
+  }
+}
+*/

@@ -218,7 +218,10 @@ struct move_t play(const struct move_t previous_move) {
       continue;
     }
     count++;
-    paths[i]                   = malloc(board->graph->num_vertices * sizeof(vertex_t));
+    paths[i] = malloc(board->graph->num_vertices * sizeof(vertex_t));
+    for (vertex_t j = 0; j < board->graph->num_vertices; ++j) {
+      paths[i][j] = NO_VERTEX;
+    }
     distances_to_objectives[i] = shortest_path_length(
         board->graph, my_pos, board->graph->objectives[i], opp_pos, paths[i], my_last_pos);
   }
@@ -231,7 +234,10 @@ struct move_t play(const struct move_t previous_move) {
       continue;
     }
     p_count++;
-    opp_paths[i]                   = malloc(board->graph->num_vertices * sizeof(vertex_t));
+    opp_paths[i] = malloc(board->graph->num_vertices * sizeof(vertex_t));
+    for (vertex_t j = 0; j < board->graph->num_vertices; ++j) {
+      opp_paths[i][j] = NO_VERTEX;
+    }
     opp_distances_to_objectives[i] = shortest_path_length(
         board->graph, opp_pos, board->graph->objectives[i], my_pos, opp_paths[i], opp_las_pos);
   }
