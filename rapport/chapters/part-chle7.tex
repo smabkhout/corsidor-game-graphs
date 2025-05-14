@@ -51,3 +51,34 @@ Ces tests sont indispensables pour anticiper les comportements erronés dans des
 \end{itemize}
 
 Ainsi, cette méthodologie nous permet de valider progressivement les différentes composantes du moteur de jeu, tout en facilitant la détection et la correction d’éventuelles anomalies.
+
+\subsection{Couverture fonctionnelle}
+
+La couverture du code est un indicateur essentiel pour évaluer la qualité et la portée d’une campagne de tests. Elle permet de mesurer quelle proportion du code source est effectivement exécutée lors des tests, et donc d’identifier les parties du programme qui ne sont pas testées et qui pourraient contenir des erreurs non détectées.
+
+Dans ce projet, la couverture a été mesurée à l’aide de l’outil \texttt{LCOV}, en s’appuyant sur \texttt{gcov}, un utilitaire intégré au compilateur \texttt{gcc}. Pour cela, les fichiers sources et les tests ont été compilés avec l’option \texttt{--coverage}, qui génère automatiquement les fichiers de suivi d’exécution (\texttt{.gcda} et \texttt{.gcno}) nécessaires à l’analyse.
+
+Deux types de couverture ont été analysés :
+
+\begin{itemize}
+    \item La \textbf{couverture en lignes}, qui mesure quelles instructions du code ont été exécutées ;
+    \item La \textbf{couverture en fonctions}, qui indique quelles fonctions ont été appelées au moins une fois.
+\end{itemize}
+
+L’objectif n’est pas uniquement d’obtenir un taux de couverture élevé, mais surtout de garantir que les \textbf{comportements critiques} du programme (règles du jeu, logique de graphe, gestion des erreurs) sont correctement validés par les tests.
+
+La couverture a été analysée à la fois sur les fichiers de test (pour s’assurer que les scénarios sont bien exercés) et sur le code source (pour connaître l’impact réel des tests sur le cœur du moteur). Cette analyse permet de repérer les zones bien couvertes et d’identifier les fonctions ou fichiers qui nécessitent un renforcement des tests.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../cov2.jpeg}
+    \caption{Couverture du code dans les fichiers de test .}
+    
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{../cov.jpeg}
+    \caption{Couverture du code source .}
+    
+\end{figure}
