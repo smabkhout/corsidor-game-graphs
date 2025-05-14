@@ -136,7 +136,7 @@ void index_to_axial_developped(const struct graph_t *g, vertex_t index, int *l, 
       if (!in_hex(i, j, m, 0, 0))
         continue;
 
-      int idx = axial_to_index(i, j, m);
+      int idx = axial_to_index(i, j, m, g->type);
       if ((vertex_t)idx == index) {
         *l = i;
         *c = j;
@@ -279,14 +279,14 @@ struct move_t play(const struct move_t previous_move) {
     printf("nbre de murs restants %d\n", player.walls);
     int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
     int l, c;
-    index_to_axial(adv_pos, m, &l, &c);
+    index_to_axial(adv_pos, m, &l, &c, g->type);
 
     for (int d = 1; d < 7; ++d) {
       int l1 = l + blackpink[d].l;
       int c1 = c + blackpink[d].c;
       if (!in_hex(l1, c1, m, 0, 0))
         continue;
-      vertex_t to1 = axial_to_index(l1, c1, m);
+      vertex_t to1 = axial_to_index(l1, c1, m, g->type);
       for (int d2 = 1; d2 < 7; ++d2) {
         if (d2 == d)
           continue;
@@ -297,7 +297,7 @@ struct move_t play(const struct move_t previous_move) {
         int c2 = c + blackpink[d2].c;
         if (!in_hex(l2, c2, m, 0, 0))
           continue;
-        vertex_t to2 = axial_to_index(l2, c2, m);
+        vertex_t to2 = axial_to_index(l2, c2, m, g->type);
 
         struct move_t *wall_ptr = make_wall_move(player_id, adv_pos, to1, adv_pos, to2);
         struct move_t  wall     = *wall_ptr;

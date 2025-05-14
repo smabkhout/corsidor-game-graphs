@@ -12,9 +12,9 @@ void test_index_axial_inverse() {
     for (int l = 1 - m; l < m; ++l) {
       for (int c = 1 - m; c < m; ++c) {
         if (in_hexagon_T(l, c, m, 0, 0)) {
-          int index = axial_to_index(l, c, m);
+          int index = axial_to_index(l, c, m, TRIANGULAR);
           int l2, c2;
-          index_to_axial(index, m, &l2, &c2);
+          index_to_axial(index, m, &l2, &c2, TRIANGULAR);
           // Vérification : aller-retour (l,c) -> index -> (l2,c2)
           assert(l == l2);
           assert(c == c2);
@@ -42,15 +42,16 @@ void test_direction_axial() {
 }
 
 void test_valid_wall() {
-  struct graph_t *g = createGraph(5, TRIANGULAR);
+  int             type = TRIANGULAR;
+  struct graph_t *g    = createGraph(5, type);
   assert(g != NULL);
 
   struct player_tt p = {.walls = 50};
 
-  vertex_t center = axial_to_index(0, 0, 5);
-  vertex_t e      = axial_to_index(0, 1, 5);
-  vertex_t ne     = axial_to_index(1, 0, 5);
-  vertex_t nw     = axial_to_index(1, -1, 5);
+  vertex_t center = axial_to_index(0, 0, 5, type);
+  vertex_t e      = axial_to_index(0, 1, 5, type);
+  vertex_t ne     = axial_to_index(1, 0, 5, type);
+  vertex_t nw     = axial_to_index(1, -1, 5, type);
 
   // Cas valide : NW + NE = directions 1 et 2 → consécutives
   struct move_t m1 = {.e = {{.fr = center, .to = nw}, {.fr = center, .to = ne}}};
@@ -101,30 +102,32 @@ void test_dijkstra2() {
 }
 
 void test_valid_move() {
-  struct graph_t *g = createGraph(5, TRIANGULAR);
+  int             type = TRIANGULAR;
+  struct graph_t *g    = createGraph(5, type);
   assert(g != NULL);
 
-  struct player_tt p = {
-      .walls = 10, .position = axial_to_index(0, 0, 5), .last_position = axial_to_index(0, -1, 5)};
-  vertex_t opponent = axial_to_index(4, -4, 5);  // NW
+  struct player_tt p        = {.walls         = 10,
+                               .position      = axial_to_index(0, 0, 5, type),
+                               .last_position = axial_to_index(0, -1, 5, type)};
+  vertex_t         opponent = axial_to_index(4, -4, 5, type);  // NW
 
   // Test de mouvement dans la même direction (NE trois fois max)
-  vertex_t t1 = axial_to_index(0, 1, 5);
-  vertex_t t2 = axial_to_index(0, 2, 5);
-  vertex_t t3 = axial_to_index(0, 3, 5);
-  vertex_t t4 = axial_to_index(0, 4, 5);
+  vertex_t t1 = axial_to_index(0, 1, 5, type);
+  vertex_t t2 = axial_to_index(0, 2, 5, type);
+  vertex_t t3 = axial_to_index(0, 3, 5, type);
+  vertex_t t4 = axial_to_index(0, 4, 5, type);  // hors graphe
   assert(valid_move(g, &p, t1, opponent));
   assert(valid_move(g, &p, t2, opponent));
   assert(valid_move(g, &p, t3, opponent));
   assert(!valid_move(g, &p, t4, opponent));  // hors graphe ou arête absente
 
   // Test d’un angle à 30° (direction SE)
-  vertex_t se1 = axial_to_index(1, 0, 5);
-  vertex_t se2 = axial_to_index(2, 0, 5);
-  vertex_t se3 = axial_to_index(3, 0, 5);
-  vertex_t se4 = axial_to_index(-1, 1, 5);
-  vertex_t se5 = axial_to_index(-2, 2, 5);
-  vertex_t se6 = axial_to_index(-3, 3, 5);
+  vertex_t se1 = axial_to_index(1, 0, 5, type);
+  vertex_t se2 = axial_to_index(2, 0, 5, type);
+  vertex_t se3 = axial_to_index(3, 0, 5, type);
+  vertex_t se4 = axial_to_index(-1, 1, 5, type);
+  vertex_t se5 = axial_to_index(-2, 2, 5, type);
+  vertex_t se6 = axial_to_index(-3, 3, 5, type);
   assert(valid_move(g, &p, se1, opponent));  // déplacement latéral à distance 1 autorisé
   assert(valid_move(g, &p, se2, opponent));
   assert(!valid_move(g, &p, se3, opponent));  // trop loin
@@ -133,7 +136,7 @@ void test_valid_move() {
   assert(!valid_move(g, &p, se6, opponent));
 
   // Test d’une direction non autorisée (ex: opposée)
-  vertex_t invalid = axial_to_index(-2, 0, 5);  // opposé à NE → devrait être refusé
+  vertex_t invalid = axial_to_index(-2, 0, 5, type);  // opposé à NE → devrait être refusé
   assert(!valid_move(g, &p, invalid, opponent));
 
   // Test interdit : case actuelle ou position adversaire

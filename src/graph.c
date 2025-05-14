@@ -12,10 +12,9 @@
 // déplacement North West,
 // struct axial_t;
 
-// Conversion coordonnées (l, c) -> index dans le graphe
-int axial_to_index(int l, int c, int m) {
+int axial_to_index_T(int l, int c, int m) {
   int i = m - l - 1;  // indice de la ligne dans la matrice equivalente à la
-                      // notation graphe (son image)
+  // notation graphe (son image)
   int j = m + c - 1;  // indice de la colonne dans la matrice equivalente à la
                       // notation graphe (son image)
   int count = 0;      // nombre d'elements dans la matrice non representes sur le
@@ -27,6 +26,107 @@ int axial_to_index(int l, int c, int m) {
   else
     count = m * (m - 1) / 2;
   return j + (2 * m - 1) * i - count;
+}
+/*
+
+int axial_to_index_C(int l, int c, int m) {
+  int if_T  = axial_to_index_T(l, c, m);
+  int count = 0;
+  if (l == m - 1 || l == m - 2) {
+    return if_T - count;
+  } else if (l >= 0) {
+    count += (2 * m - 5) * (m - 3 - l) - (m - 3 - l) * (m - 3 + l + 1) / 2;
+    if (c == -(m - 1) || c == -(m - 2)) {
+      return if_T - count;
+    } else if (c == m - 1 || c == m - 2) {
+      count += 2 * m - 5;
+      return if_T - count;
+    } else {
+      count += 2 * m - 1 - l - (c + m - 1);
+      return if_T - count;
+    }
+  } else {  // l<0
+    count += (2 * m - 5) * (m - 3) - (m - 3) * (m - 3 + 1) / 2;
+    count += (2 * m - 5) * (-l - 1) + (-1 - l) * (l) / 2;
+
+    if (l + c == -(m - 1) || l + c == -(m - 2)) {
+      return if_T - count;
+    } else if (c == m - 1 || c == m - 2) {
+      count += 2 * m - 5 - +l;
+      return if_T - count;
+    } else {
+      count += 2 * m - 1 + l - (c + m - 1);
+      return if_T - count;
+    }
+  }
+  return if_T - count;
+}
+
+*/
+
+// CYCLIC : scan rows from l=m-1 down to -(m-1), cols from c=-(m-1) up to m-1
+int axial_to_index_C(int l, int c, int m) {
+  int count = 0;
+  for (int ll = m - 1; ll >= -(m - 1); --ll) {
+    for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
+      if (!in_hexagon_C(ll, cc, m, 0, 0))
+        continue;
+      if (ll == l && cc == c)
+        return count;
+      ++count;
+    }
+  }
+  return (vertex_t)-1;  // hors graphe
+}
+
+// HOLEY : same scan order, filter with in_hexagon_H
+int axial_to_index_H(int l, int c, int m) {
+  int count = 0;
+  for (int ll = m - 1; ll >= -(m - 1); --ll) {
+    for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
+      if (!in_hexagon_H(ll, cc, m, 0, 0))
+        continue;
+      if (ll == l && cc == c)
+        return count;
+      ++count;
+    }
+  }
+  return (vertex_t)-1;
+}
+
+// SPAN : same scan order, filter with in_hexagon_S
+int axial_to_index_S(int l, int c, int m) {
+  int count = 0;
+  for (int ll = m - 1; ll >= -(m - 1); --ll) {
+    for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
+      if (!in_hexagon_S(ll, cc, m, 0, 0))
+        continue;
+      if (ll == l && cc == c)
+        return count;
+      ++count;
+    }
+  }
+  return (vertex_t)-1;
+}
+
+// Conversion coordonnées (l, c) -> index dans le graphe
+int axial_to_index(int l, int c, int m, int type) {
+  switch (type) {
+    case TRIANGULAR:
+    case 4:  // TRIANGULAR_RANDOM
+      return axial_to_index_T(l, c, m);
+    case CYCLIC:
+      return axial_to_index_C(l, c, m);
+    case 6:  // SPAN
+      return axial_to_index_S(l, c, m);
+    case HOLEY:
+    case 5:  // HOLEY_RANDOM
+      return axial_to_index_H(l, c, m);
+    default:
+      fprintf(stderr, "⚠️ Unknown graph type (%d) — falling back to TRIANGULAR\n", type);
+      type = TRIANGULAR;
+      return axial_to_index_T(l, c, m);
+  }
 }
 
 // Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
@@ -126,12 +226,13 @@ void graph_generate(int m, struct graph_t *g,
       if (!in_hexagon(l, c, m, 0, 0))
         continue;
       ++g->num_vertices;
-      int index = axial_to_index(l, c, m);
+      int index = axial_to_index(l, c, m, g->type);
       for (int dir = 1; dir < 7; ++dir) {
         int l_voisin     = l + directions[dir].l;
         int c_voisin     = c + directions[dir].c;
-        int index_voisin = axial_to_index(l_voisin, c_voisin, m);
+        int index_voisin = axial_to_index(l_voisin, c_voisin, m, g->type);
         if (in_hexagon(l_voisin, c_voisin, m, 0, 0)) {
+          // printf("Adding edge %d <-> %d\n", index, index_voisin);
           gsl_spmatrix_uint_set(g->t, index, index_voisin, dir);
           ++g->num_edges;
         }
@@ -148,12 +249,10 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
     perror("Failed to allocate memory for graph");
     return NULL;
   }
-  graph->num_vertices         = 0;  // just for initialisation
-  unsigned int n              = 3 * (m * m) - 3 * m + 1;
-  int          dernier_sommet = n - 1;
-  graph->t                    = gsl_spmatrix_uint_alloc(n, n);
+  graph->num_vertices = 0;  // just for initialisation
+  unsigned int n      = 3 * (m * m) - 3 * m + 1;
   // Calcul du nombre de sommets à partir du nombre m
-  if (type == TRIANGULAR) {
+  if (type == TRIANGULAR || type == 4) {
     if (m < 2) {
       puts("⚠️ m < 2, impossible de créer le graphe");
       return NULL;
@@ -163,14 +262,22 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
       puts("⚠️ m < 3, impossible de créer le graphe");
       return NULL;
     }
-    n = 14 * m - 18;
-  } else if (type == HOLEY) {
+    n = 12 * m - 18;
+    printf("n is %d\n", n);
+  } else if (type == HOLEY || type == 5) {
     if ((m < 6) || (m % 3 != 0)) {
       puts("⚠️ m < 6 ou m mod[3] != 0, impossible de créer le graphe");
       return NULL;
     }
     n = 2 * (m * m / 3) + 18 * m - 48;
+  } else if (type == 6) {  // SPAN
+    if (m < 6) {
+      puts("⚠️ m < 6, impossible de créer le graphe");
+      return NULL;
+    }
+    n = 12 * m - 18 + (6 * m - 17);
   }
+  graph->t         = gsl_spmatrix_uint_alloc(n, n);
   graph->num_edges = 0;
   graph->type      = type;
   int type_graphe  = type;
@@ -184,9 +291,10 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   } else if (type_graphe == 6) {  // SPAN
     graph_generate(m, graph, in_hexagon_S);
   } else {
-    fprintf(stderr,
-            "⚠️ Unknown graph type (%d) while creating the graph — falling back to TRIANGULAR\n",
-            type);
+    fprintf(
+        stderr,
+        "⚠️ Unknown graph type (%d) while creating the graph — falling back to TRIANGULAR\n",
+        type);
     graph_generate(m, graph, in_hexagon_T);
   }
 
@@ -195,14 +303,12 @@ struct graph_t *createGraph(int m, enum graph_type_t type) {
   graph->num_objectives = 2;
   graph->objectives     = (vertex_t *)malloc(sizeof(vertex_t) * 2);
   graph->objectives[0]  = n / 2;  // Placer le premier objectif au centre du graphe (par exemple)
-  int obj               = axial_to_index(m - 1, 0, m);
+  int obj               = axial_to_index(m - 1, 0, m, type_graphe);
   graph->objectives[1] = obj;  // Placer le second objectif en haut à droite du graphe (par exemple)
 
   // Initialiser les positions de départ des joueurs
-  graph->start[0] = 0;  // Premier joueur au sommet 0 //à changer au coordonnees axiales
-
-  graph->start[1] =
-      dernier_sommet;  // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
+  graph->start[0] = 0;      // Premier joueur au sommet 0 //à changer au coordonnees axiales
+  graph->start[1] = n - 1;  // Deuxième joueur au dernier sommet //à changer au coordonnees axiales
   gsl_spmatrix_uint *csr = gsl_spmatrix_uint_compress(graph->t, GSL_SPMATRIX_CSR);
   gsl_spmatrix_uint_free(graph->t);
   graph->t = csr;
@@ -302,7 +408,7 @@ void graph_free(struct graph_t *g) {
 // retourne 2 si il s'agit d'un objectif, 0 pour le joueur à la position
 // start[0] et 1 pour le joueur en start[1]
 int is_objective_or_player(int l, int c, int m, struct graph_t *g) {
-  unsigned int ax = axial_to_index(l, c, m);
+  unsigned int ax = axial_to_index(l, c, m, g->type);
   if (ax == g->start[0])
     return 0;
   if (ax == g->start[1])
@@ -361,19 +467,19 @@ void print_hex_grid(struct graph_t *g) {
       if (in_hexagon_T(l, c, m, 0, 0)) {
         if (in_hexagon(l, c, m, 0, 0)) {
           if (is_objective_or_player(l, c, m, g) == 0) {
-            int index = axial_to_index(l, c, m);
+            int index = axial_to_index(l, c, m, g->type);
             printf(GREEN "%5d " RESET, index);
             continue;
           } else if (is_objective_or_player(l, c, m, g) == 1) {
-            int index = axial_to_index(l, c, m);
+            int index = axial_to_index(l, c, m, g->type);
             printf(BLUE "%5d " RESET, index);
             continue;
           } else if (is_objective_or_player(l, c, m, g) == 2) {
-            int index = axial_to_index(l, c, m);
+            int index = axial_to_index(l, c, m, g->type);
             printf(VIOLET "%5d " RESET, index);
             continue;
           }
-          int index = axial_to_index(l, c, m);
+          int index = axial_to_index(l, c, m, g->type);
           printf("%5d ", index);
         } else {
           printf("   " RED "E" RESET "  ");
@@ -390,19 +496,19 @@ void print_hex_grid(struct graph_t *g) {
       if (in_hexagon_T(l, c, m, 0, 0)) {
         if (in_hexagon(l, c, m, 0, 0)) {
           if (is_objective_or_player(l, c, m, g) == 0) {
-            int index = axial_to_index(l, c, m);
+            int index = axial_to_index(l, c, m, g->type);
             printf(GREEN "%5d " RESET, index);
             continue;
           } else if (is_objective_or_player(l, c, m, g) == 1) {
-            int index = axial_to_index(l, c, m);
+            int index = axial_to_index(l, c, m, g->type);
             printf(BLUE "%5d " RESET, index);
             continue;
           } else if (is_objective_or_player(l, c, m, g) == 2) {
-            int index = axial_to_index(l, c, m);
+            int index = axial_to_index(l, c, m, g->type);
             printf(VIOLET "%5d " RESET, index);
             continue;
           }
-          int index = axial_to_index(l, c, m);
+          int index = axial_to_index(l, c, m, g->type);
           printf("%5d ", index);
         } else {
           printf("   " RED "E" RESET "  ");
@@ -415,10 +521,10 @@ void print_hex_grid(struct graph_t *g) {
 
 // fonction qui prend en entre l'indice du vertice et revoie la ligne et colone
 // dans le graph
-void index_to_axial(int index, int m, int *l, int *c) {
+void index_to_axial(int index, int m, int *l, int *c, int type) {
   for (int i = 1 - m; i < m; ++i) {
     for (int j = 1 - m; j < m; ++j) {
-      if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i, j, m) == index)) {
+      if (in_hexagon_T(i, j, m, 0, 0) && (axial_to_index(i, j, m, type) == index)) {
         *l = i;
         *c = j;
         return;
@@ -464,7 +570,7 @@ void graph_to_dot(const struct graph_t *g, const char *filename) {
   // Affichage des sommets
   for (size_t i = 0; i < g->num_vertices; ++i) {
     int l, c;
-    index_to_axial(i, m, &l, &c);
+    index_to_axial(i, m, &l, &c, g->type);
 
     if (!in_hexagon(l, c, m, l_origin, c_origin))
       continue;
@@ -486,13 +592,13 @@ void graph_to_dot(const struct graph_t *g, const char *filename) {
   // Affichage des arêtes
   for (size_t i = 0; i < g->num_vertices; ++i) {
     int l1, c1;
-    index_to_axial(i, m, &l1, &c1);
+    index_to_axial(i, m, &l1, &c1, g->type);
     if (!in_hexagon(l1, c1, m, l_origin, c_origin))
       continue;
 
     for (size_t j = i + 1; j < g->num_vertices; ++j) {
       int l2, c2;
-      index_to_axial(j, m, &l2, &c2);
+      index_to_axial(j, m, &l2, &c2, g->type);
       if (!in_hexagon(l2, c2, m, l_origin, c_origin))
         continue;
 

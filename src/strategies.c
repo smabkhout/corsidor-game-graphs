@@ -73,7 +73,7 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
   for (vertex_t v = 0; v < n; ++v) {
     int l;
     int c;
-    index_to_axial(v, m, &l, &c);
+    index_to_axial(v, m, &l, &c, g->type);
     // if (!in_hexagon(l, c, m, 0, 0)) {
     //   nodes[v].vertex = -1;
     //  continue;
@@ -173,10 +173,10 @@ int shortest_path_length(struct graph_t *g, vertex_t start, vertex_t objective,
   return (result == INT_MAX) ? -1 : result;
 }
 
-double heuristic(vertex_t a, vertex_t b, int m) {
+double heuristic(vertex_t a, vertex_t b, int m, int type) {
   int la, ca, lb, cb;
-  index_to_axial(a, m, &la, &ca);
-  index_to_axial(b, m, &lb, &cb);
+  index_to_axial(a, m, &la, &ca, type);
+  index_to_axial(b, m, &lb, &cb, type);
 
   int dx = ca - cb;
   int dy = la - lb;
@@ -231,7 +231,7 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
   }
 
   nodes[start].distance = 0;
-  f_score[start]        = heuristic(start, objective, m);
+  f_score[start]        = heuristic(start, objective, m, g->type);
   path[path_length]     = start;
 
   for (size_t i = 0; i < n; ++i) {
@@ -275,7 +275,7 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
             nodes[v].distance  = tentative_g;
             nodes[v].num_moves = nodes[u].num_moves + 1;
             prev[v]            = u;
-            f_score[v]         = tentative_g + heuristic(v, objective, m);
+            f_score[v]         = tentative_g + heuristic(v, objective, m, g->type);
           }
         }
       }

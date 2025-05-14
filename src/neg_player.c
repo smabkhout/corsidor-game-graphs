@@ -68,7 +68,7 @@ void initialize(unsigned int id, struct graph_t *graph) {
   for (int i = 0; i < numberOfObjectives; i++) {
     int l = 0;
     int c = 0;
-    index_to_axial(board->graph->objectives[i], m, &l, &c);
+    index_to_axial(board->graph->objectives[i], m, &l, &c, graph->type);
     if (!in_hexagon(l, c, m, 0, 0)) {
       visited_objectives[i]     = 1;
       visited_objectives_opp[i] = 1;
@@ -79,7 +79,7 @@ void initialize(unsigned int id, struct graph_t *graph) {
   for (int i = 0; i < numberOfObjectives; i++) {
     int l = 0;
     int c = 0;
-    index_to_axial(board->graph->objectives[i], m, &l, &c);
+    index_to_axial(board->graph->objectives[i], m, &l, &c, graph->type);
     if (!in_hexagon(l, c, m, 0, 0)) {
       visited_objectives[i]     = 1;
       visited_objectives_opp[i] = 1;
@@ -307,8 +307,8 @@ struct move_t play(const struct move_t previous_move) {
     // opponent next_pos (based on his shortest path)
     int l1 = 0;
     int c1 = 0;
-    index_to_axial(opp_pos, m, &l0, &c0);
-    index_to_axial(opp_paths[obj_index_opp][1], m, &l1, &c1);
+    index_to_axial(opp_pos, m, &l0, &c0, board->graph->type);
+    index_to_axial(opp_paths[obj_index_opp][1], m, &l1, &c1, board->graph->type);
 
     int dl_prev = l1 - l0;
     int dc_prev = c1 - c0;
@@ -336,8 +336,8 @@ struct move_t play(const struct move_t previous_move) {
       c2_2           = c0 + direec[next_direction].c;
     }
 
-    vertex_t to1 = axial_to_index(l1_1, c1_1, m);
-    vertex_t to2 = axial_to_index(l2_2, c2_2, m);
+    vertex_t to1 = axial_to_index(l1_1, c1_1, m, board->graph->type);
+    vertex_t to2 = axial_to_index(l2_2, c2_2, m, board->graph->type);
     wall.e[0].fr = opp_pos;
     wall.e[1].fr = opp_pos;
     wall.e[0].to = to1;

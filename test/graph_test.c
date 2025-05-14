@@ -26,8 +26,8 @@ void test_graph_generate_triangular() {
       assert(dir >= 1 && dir <= 6);
 
       int li, ci, lj, cj;
-      index_to_axial(i, m, &li, &ci);
-      index_to_axial(j, m, &lj, &cj);
+      index_to_axial(i, m, &li, &ci, TRIANGULAR);
+      index_to_axial(j, m, &lj, &cj, TRIANGULAR);
 
       assert(in_hexagon_T(li, ci, m, 0, 0));
       assert(in_hexagon_T(lj, cj, m, 0, 0));
@@ -43,7 +43,7 @@ void test_create_Graph() {
     struct graph_t *g1 = createGraph(m, TRIANGULAR);
     assert(g1->num_vertices == 3 * (m * m) - 3 * m + 1);
     assert(g1->num_edges == 9 * (m * m) - 15 * m + 6);
-    unsigned int a = axial_to_index(0, 0, m);
+    unsigned int a = axial_to_index(0, 0, m, TRIANGULAR);
     assert(a == g1->num_vertices / 2);
     graph_free(g1);
   }
@@ -99,7 +99,7 @@ void test_objectives() {
     for (unsigned int i = 0; i < g->num_objectives; ++i) {
       vertex_t obj = g->objectives[i];
       int      l, c;
-      index_to_axial(obj, m, &l, &c);
+      index_to_axial(obj, m, &l, &c, TRIANGULAR);
 
       int result = is_objective_or_player(l, c, m, g);
 

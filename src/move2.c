@@ -50,8 +50,8 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
   int c0 = 0;
   int l1 = 0;
   int c1 = 0;
-  index_to_axial(p->last_position, m, &l0, &c0);
-  index_to_axial(p->position, m, &l1, &c1);
+  index_to_axial(p->last_position, m, &l0, &c0, g->type);
+  index_to_axial(p->position, m, &l1, &c1, g->type);
 
   int dl_prev = l1 - l0;
   int dc_prev = c1 - c0;
@@ -95,9 +95,9 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
       if (!in_hexagon(l, c, m, 0, 0))
         break;
 
-      vertex_t from  = axial_to_index(l - direc[dir].l, c - direc[dir].c, m);
+      vertex_t from  = axial_to_index(l - direc[dir].l, c - direc[dir].c, m, g->type);
       route[count++] = from;
-      vertex_t to    = axial_to_index(l, c, m);
+      vertex_t to    = axial_to_index(l, c, m, g->type);
       route[count++] = to;
 
       int exists = gsl_spmatrix_uint_get(g->t, from, to);
@@ -343,7 +343,7 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
                                          vertex_t opponent_pos) {
   int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
   int l, c;
-  index_to_axial(p->position, m, &l, &c);
+  index_to_axial(p->position, m, &l, &c, g->type);
 
   int directions[6] = {1, 2, 3, 4, 5, 6};
 
@@ -366,7 +366,7 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
       if (!in_hexagon_T(l2, c2, m, 0, 0))
         continue;
 
-      vertex_t dest = axial_to_index(l2, c2, m);
+      vertex_t dest = axial_to_index(l2, c2, m, g->type);
 
       if (valid_move(g, p, dest, opponent_pos)) {
         return (struct move_t){.t = MOVE, .c = p->c, .m = dest};

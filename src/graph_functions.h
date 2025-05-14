@@ -15,8 +15,19 @@ struct axial_t {
   int c;  // colonne
 };
 
+int axial_to_index_T(int l, int c, int m);
+
+// Cyclique : même forme que TRIANGULAR, mais on garde l’enroulement
+// en utilisant in_hexagon_C pour filtrer.
+int axial_to_index_C(int l, int c, int m);
+
+// Holey : même boucle, on filtre avec in_hexagon_H
+int axial_to_index_H(int l, int c, int m);
+
+// Span : même principe, on filtre avec in_hexagon_S
+int axial_to_index_S(int l, int c, int m);
 // Conversion coordonnées (l, c) -> index dans le graphe
-int axial_to_index(int l, int c, int m);
+int axial_to_index(int l, int c, int m, int type);
 
 // Vérifie si (l, c) est bien dans l'hexagone de type triangulaire
 int in_hexagon_T(int l, int c, int m, int l_origin, int c_origin);
@@ -51,7 +62,7 @@ void graph_free(struct graph_t *g);
 
 void print_hex_grid(struct graph_t *g);
 
-void index_to_axial(int index, int m, int *l, int *c);
+void index_to_axial(int index, int m, int *l, int *c, int type);
 
 void graph_to_dot(const struct graph_t *g, const char *filename);
 
