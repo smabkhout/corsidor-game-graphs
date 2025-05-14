@@ -113,6 +113,28 @@ int axial_to_index_H(int l, int c, int m) {
 
 // SPAN : same scan order, filter with in_hexagon_S
 int axial_to_index_S(int l, int c, int m) {
+  if (l > 1)
+    return axial_to_index_C(l, c, m);
+  if (l == 1) {
+    return axial_to_index_C(l + 1, m - 3, m) + (c + m);
+  }
+  if (l == 0) {
+    return axial_to_index_S(l + 1, m - 2, m) + (c + m);
+  }
+  if (l == -1) {
+    return axial_to_index_S(l + 1, m - 1, m) + (c + m - 1);
+  }
+  if (l < -1) {
+    int if_C  = axial_to_index_C(l, c, m);
+    int count = 0;
+    count += (2 * m - 5) + 2 * (2 * m - 6);
+    return if_C + count;
+  }
+  return 0;
+}
+
+// SPAN : same scan order, filter with in_hexagon_S
+int axial_to_index_S_test(int l, int c, int m) {
   int count = 0;
   for (int ll = m - 1; ll >= -(m - 1); --ll) {
     for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
@@ -635,20 +657,20 @@ void graph_to_dot(const struct graph_t *g, const char *filename) {
 }
 /*
 int main() {
-  for (int m = 5; m < 20; ++m) {
-    // int             m  = 6;
+  for (int m = 8; m < 20; ++m) {
     struct graph_t *g1 = createGraph(m, TRIANGULAR);
-    struct graph_t *g2 = createGraph(m, CYCLIC);
-    // print_hex_grid(g1);
+    struct graph_t *g2 = createGraph(m, 6);
+    print_hex_grid(g1);
     print_hex_grid(g2);
     for (int l = m - 1; l > -m; --l) {
       for (int c = 1 - m; c < m; ++c) {
+        if (!in_hexagon_S(l, c, m, 0, 0))
+          continue;
         int index  = axial_to_index(l, c, m, g2->type);
-        int index2 = axial_to_index_C_test(l, c, m);
+        int index2 = axial_to_index_S_test(l, c, m);
         assert(index == index2);
       }
     }
-
     graph_free(g1);
     graph_free(g2);
   }

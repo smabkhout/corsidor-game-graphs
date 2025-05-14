@@ -180,11 +180,11 @@ struct move_t play(const struct move_t previous_move) {
       opp_pos = board->graph->num_vertices + 1;  // aller vers le sommet d'indice precedent
     }
     int result =
-        shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) + 1;
+        shortest_path_astar(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) + 1;
     if (result == 1 && objectif == temp) {
       opp_pos = temp;
       objectif -= 1;
-      result = shortest_path_length(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) + 1;
+      result = shortest_path_astar(board->graph, my_pos, objectif, opp_pos, lile, my_last_pos) + 1;
     }
     printf("resultat : %d  ", result);
     for (int i = 0; i < result; i++) {
@@ -222,7 +222,7 @@ struct move_t play(const struct move_t previous_move) {
     for (vertex_t j = 0; j < board->graph->num_vertices; ++j) {
       paths[i][j] = NO_VERTEX;
     }
-    distances_to_objectives[i] = shortest_path_length(
+    distances_to_objectives[i] = shortest_path_astar(
         board->graph, my_pos, board->graph->objectives[i], opp_pos, paths[i], my_last_pos);
   }
   int p_count = 0;
@@ -238,7 +238,7 @@ struct move_t play(const struct move_t previous_move) {
     for (vertex_t j = 0; j < board->graph->num_vertices; ++j) {
       opp_paths[i][j] = NO_VERTEX;
     }
-    opp_distances_to_objectives[i] = shortest_path_length(
+    opp_distances_to_objectives[i] = shortest_path_astar(
         board->graph, opp_pos, board->graph->objectives[i], my_pos, opp_paths[i], opp_las_pos);
   }
   // find the closest objective for me
@@ -378,8 +378,8 @@ struct move_t play(const struct move_t previous_move) {
 
     for (int i = 0; i < numberOfObjectives; ++i) {
       vertex_t *opp_path = malloc(board->graph->num_vertices * sizeof(vertex_t));
-      int       distance = shortest_path_length(board->graph, opp_pos, board->graph->objectives[i],
-                                                my_pos, opp_path, opp_las_pos);
+      int distance = shortest_path_astar(board->graph, opp_pos, board->graph->objectives[i], my_pos,
+                                         opp_path, opp_las_pos);
       free(opp_path);
       if (distance == -1) {
         blocked = 1;
@@ -440,7 +440,7 @@ struct move_t play(const struct move_t previous_move) {
 
   /*
   for (int i = 0 ; i<num_ofObjective ; i++){
-      int t = shortest_path_length(board->graph, my_pos,
+      int t = shortest_path_astar(board->graph, my_pos,
   board->graph->objectives[0], opp_pos, path, my_last_pos); if (t<taille &&
   visited_objectives[i]==0 ){ taille = t ; start = i ;
       }
