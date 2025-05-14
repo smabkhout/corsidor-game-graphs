@@ -4,6 +4,7 @@
 void test_graph_generate_triangular() {
   for (int m = 3; m < 10; m++) {
     struct graph_t g;
+    g.type         = TRIANGULAR;
     g.num_vertices = 0;
     g.num_edges    = 0;
 
