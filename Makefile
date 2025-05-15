@@ -40,7 +40,7 @@ libPlayer2.so: neg_player.o move2.o strategies.o board.o graph.o
 server: server.o graph.o move2.o board.o
 	gcc $^ $(LDFLAGS) -o $@
 
-client: libPlayer1.so libPlayer2.so	libPlayer3.so libPlayer4.so 
+client: libPlayer1.so libPlayer3.so	libPlayer2.so libPlayer4.so 
 
 alltests: graph.o strategie3.o strategies.o move2.o board.o
 	$(CC) --coverage $(CFLAGS) -c test/graph_test.c -o graph_test.o
