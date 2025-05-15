@@ -14,6 +14,7 @@ LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 rapport:
 	pdflatex rapport/rapport.tex
 	evince rapport.pdf &
+	rm -f rapport.toc rapport.aux rapport.log rapport.out rapport/rapoprt.aux rapport/rapport.log rapport/rapport.out
 
 all: build
 

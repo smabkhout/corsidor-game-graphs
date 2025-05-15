@@ -92,6 +92,19 @@ Ce type est utilisé dans la majorité des fonctions de construction du graphe p
     \item convertir un couple de coordonnées axiales en un indice unique dans la matrice d’adjacence selon le type du graphe grâce à une fonction \texttt{\texttt{int} axial\_to\_index(\texttt{int} l, \texttt{int} c, \texttt{int} m, \texttt{int} type)}.
 \end{itemize}
 
+
+\paragraph{Graphe annoté par indice}
+Nous reprenons le même graphe de la Figure~\ref{fig:graph-m2}, mais cette fois chaque sommet est étiqueté par son indice unique calculé par la fonction \texttt{axial\_to\_index(l,c,m)}. La Figure~\ref{fig:graph-index} illustre cette correspondance entre les coordonnées axiales et l’indice dans la matrice d’adjacence.
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.6\textwidth]{rapport/graph_index_m3.png}
+    \caption{Graphe de rayon \(m=3\) annoté par l’indice de chaque sommet}
+    \label{fig:graph-index}
+\end{figure}
+
+
+
 -----------A MODIFIER-----------
 
 \subsubsection{Implémentation du graphe}
