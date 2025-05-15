@@ -114,7 +114,6 @@ Le fichier \texttt{server.c} accepte deux bibliothèques dynamiques (\texttt{.so
   \item \textbf{Flexibilité} : au lancement, on change simplement les noms des bibliothèques passées en paramètre de l’exécutable pour tester différentes stratégies.
   \item \textbf{Modularité} : chaque stratégie est empaquetée dans sa propre bibliothèque, facilitant le développement, la maintenance et les tests isolés.
   \item \textbf{Chargement} : un pointeur \texttt{library} est initialisé avec le résultat de \texttt{dlopen()} pour lier dynamiquement les symboles.
-  \item \textbf{Gestion d’erreurs} : \texttt{dlerror()} permet de détecter et gérer les anomalies au moment du chargement.
 \end{itemize}
 
 \begin{lstlisting}[language=C,caption={Définition de la structure \texttt{player\_t}}]
