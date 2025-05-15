@@ -6,7 +6,7 @@
 
 \subsubsection{Pourquoi un graphe ?}
 
-Le plateau du jeu Coursidor est modélisé comme un graphe, où chaque case correspond à un sommet, et chaque possibilité de déplacement à une arête. Ce choix s’impose naturellement dans un jeu où les déplacements doivent être validés selon des règles de voisinage et de connectivité, notamment en présence d'obstacles (murs).
+Le plateau du jeu Coursidor est modélisé comme un graphe, où chaque case correspond à un sommet, et chaque possibilité de déplacement à une arête. Ce choix s’impose naturellement dans un jeu où les déplacements doivent être validés selon des règles de voisinage, notamment en présence d'obstacles (murs).
 
 Représenter le plateau sous forme de graphe nous a permis :
 \begin{itemize}
@@ -16,7 +16,8 @@ Représenter le plateau sous forme de graphe nous a permis :
 \end{itemize}
 
 \subsubsection{Pourquoi GSL ?}
-Nous avons choisi d’utiliser les matrices creuses au format compressé (CSR) fournies par la bibliothèque \texttt{GSL} (\texttt{gsl\_spmatrix\_uint}) pour représenter la matrice d’adjacence du graphe. Ce choix s’appuie sur plusieurs avantages essentiels pour notre projet :
+
+Le choix de l'utililsation des matrices creuses au format compressé (CSR) fournies par la bibliothèque \texttt{GSL} (\texttt{gsl\_spmatrix\_uint}) pour représenter la matrice d’adjacence du graphe s’appuie sur plusieurs avantages essentiels pour notre projet :
 
 \begin{itemize}
     \item la majorité des sommets n’ont que quelques voisins (au plus 6 dans une grille hexagonale), ce qui rend la matrice d’adjacence très creuse.
@@ -30,7 +31,7 @@ Nous avons adopté une codification explicite des arêtes dans la matrice, inspi
 \begin{itemize}
     \item \texttt{0} (\texttt{NO\_EDGE}) : aucune arête n’existe entre les deux sommets (non connectés) ;
     \item \texttt{7} (\texttt{WALL\_DIR}) : l’arête est bloquée par un mur et donc inutilisable ;
-    \item \texttt{1} à \texttt{6} (\texttt{NW}, \texttt{NE}, \texttt{E}, \texttt{SE}, \texttt{SW}, \texttt{W}) : indication de la direction de l’arête selon le repère hexagonal, à savoir :
+    \item \texttt{1} à \texttt{6} : indication de la direction de l’arête selon le repère hexagonal, à savoir :
     \begin{itemize}
         \item \texttt{1 (NW)} : nord-ouest  
         \item \texttt{2 (NE)} : nord-est  
@@ -88,7 +89,7 @@ Ce type est utilisé dans la majorité des fonctions de construction du graphe p
 \begin{itemize}
     \item vérifier simplement l’appartenance d’un sommet au graphe à partir de ses coordonnées axiales.
     \item déterminer et parcourir les voisins d’un sommet selon les 6 directions définies, en appliquant des décalages sur \((l,c)\).
-    \item convertir un couple de coordonnées axiales en un indice unique dans la matrice d’adjacence grâce à une fonction \texttt{\texttt{int} axial\_to\_index(\texttt{int} l, \texttt{int} c, \texttt{int} m)}.
+    \item convertir un couple de coordonnées axiales en un indice unique dans la matrice d’adjacence selon le type du graphe grâce à une fonction \texttt{\texttt{int} axial\_to\_index(\texttt{int} l, \texttt{int} c, \texttt{int} m, \texttt{int} type)}.
 \end{itemize}
 
 -----------A MODIFIER-----------
@@ -104,7 +105,50 @@ Le graphe est généré dans la fonction \texttt{graph\_generate()}, qui :
 
 Cela permet de générer dynamiquement plusieurs types de plateaux selon les besoins : hexagonal simple, troué, cyclique, etc.
 
-\subsubsection{Conclusion}
-Le choix d’un graphe creux avec coordonnées axiales nous a permis d’implémenter un plateau robuste, extensible, et adapté aux règles complexes de Coursidor. Cette approche facilite l’implémentation des règles de déplacement, la pose de murs, et la recherche de chemins entre objectifs.
-
 -----------A MODIFIER-----------
+\subsection{Chargement dynamique des stratégies}
+
+Le fichier \texttt{server.c} accepte deux bibliothèques dynamiques (\texttt{.so}) passées en argument à l’exécution. Le serveur ouvre chacune d’elles avec \texttt{dlopen()} et récupère les fonctions standard (\texttt{get\_player\_name}, \texttt{initialize}, \texttt{play}, \texttt{finalize}) via \texttt{dlsym()}, sans qu’il soit nécessaire de modifier ou de recompiler le code du serveur.
+
+\begin{itemize}
+  \item \textbf{Flexibilité} : au lancement, on change simplement les noms des bibliothèques passées en paramètre de l’exécutable pour tester différentes stratégies.
+  \item \textbf{Modularité} : chaque stratégie est empaquetée dans sa propre bibliothèque, facilitant le développement, la maintenance et les tests isolés.
+  \item \textbf{Chargement} : un pointeur \texttt{library} est initialisé avec le résultat de \texttt{dlopen()} pour lier dynamiquement les symboles.
+  \item \textbf{Gestion d’erreurs} : \texttt{dlerror()} permet de détecter et gérer les anomalies au moment du chargement.
+\end{itemize}
+
+\begin{lstlisting}[language=C,caption={Définition de la structure \texttt{player\_t}}]
+struct player_t {
+    enum player_color_t     player_color;
+    char const *(*get_player_name)();
+    void (*initialize)(unsigned int, struct graph_t *);
+    struct move_t (*play)(const struct move_t);
+    void (*finalize)();
+    void *library;        // pointeur vers la bibliothèque dynamique
+    vertex_t pos_actuel;
+};
+\end{lstlisting}
+
+\begin{lstlisting}[language=C,caption={Chargement dynamique d’une stratégie dans \texttt{server.c}}]
+void load_player(struct player_t *p, char *lib) {
+    if (!library) {
+      fprintf(stderr, "Error opening library %s: %s\n", lib, dlerror());
+      exit(1);
+    }
+    p->library = dlopen(lib, RTLD_LAZY);
+    p->get_player_name =
+        (char const*(*)())dlsym(p->library, "get_player_name");
+    p->initialize =
+        (void (*)(unsigned int, struct graph_t*))dlsym(p->library, "initialize");
+    p->play =
+        (struct move_t (*)(const struct move_t))dlsym(p->library, "play");
+    p->finalize =
+        (void (*)(void))dlsym(p->library, "finalize");
+    if (dlerror()) {
+        fputs(dlerror(), stderr);
+        exit(1);
+    }
+}
+\end{lstlisting}
+
+Grâce à cette organisation, le \texttt{server.c} peut charger et exécuter plusieurs stratégies en changeant simplement les fichiers fournis en paramètres, ce qui simplifie la comparaison et l’évaluation de nouveaux algorithmes tout en respectant une interface commune.```
