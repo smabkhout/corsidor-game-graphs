@@ -58,7 +58,7 @@ Pour illustrer l’intérêt des matrices creuses CSR, nous présentons deux fig
       \caption{Graphe représentant $n$ sommets et leurs arêtes}
       \label{fig:graph-repr}
     \end{subfigure}
-    \caption{Comparaison matrice creuse / graphe}
+    \caption{Correspondance matrice creuse / graphe}
     \label{fig:csr-graph-example}
   \end{figure}
   
@@ -116,22 +116,17 @@ Voici un exemple pour un graphe hexagonal troué (\texttt{HOLEY}) de rayon \(m=1
   \label{fig:holey-m12}
 \end{figure}
 
-
-
------------A MODIFIER-----------
-
 \subsubsection{Implémentation du graphe}
 Le graphe est généré dans la fonction \texttt{graph\_generate()}, qui :
-\begin{enumerate}
+\begin{itemize}
     \item parcourt chaque coordonnée \texttt{axial\_t} du plateau ;
-    \item vérifie si la coordonnée est valide avec une fonction \texttt{in\_hexagon\_...} ;
-    \item assigne un index unique à chaque sommet (via \texttt{axial\_to\_index}) ;
+    \item vérifie si la coordonnée est valide avec une fonction \texttt{in\_hexagon()...} ;
+    \item assigne un index unique à chaque sommet (via \texttt{axial\_to\_index()}) ;
     \item ajoute des arêtes entre sommets voisins dans les 6 directions si elles sont valides.
-\end{enumerate}
+\end{itemize}
 
-Cela permet de générer dynamiquement plusieurs types de plateaux selon les besoins : hexagonal simple, troué, cyclique, etc.
+Cela permet de générer dynamiquement plusieurs types de plateaux selon les besoins.
 
------------A MODIFIER-----------
 \subsection{Chargement dynamique des stratégies}
 
 Le fichier \texttt{server.c} accepte deux bibliothèques dynamiques (\texttt{.so}) passées en argument à l’exécution. Le serveur ouvre chacune d’elles avec \texttt{dlopen()} et récupère les fonctions standard (\texttt{get\_player\_name}, \texttt{initialize}, \texttt{play}, \texttt{finalize}) via \texttt{dlsym()}, sans qu’il soit nécessaire de modifier ou de recompiler le code du serveur.
