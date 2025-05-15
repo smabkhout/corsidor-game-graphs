@@ -475,10 +475,10 @@ int main() {
 
 // calculer le temps pour chaque algo
 void test_AstarVSdIJKSTRA() {
-  struct graph_t *g = createGraph(14, TRIANGULAR);
+  struct graph_t *g = createGraph(5, TRIANGULAR);
   g->num_objectives = 1;
   // g->objectives     = malloc(sizeof(vertex_t) * 1);
-  g->objectives[0]  = 546;
+  g->objectives[0]  = g->num_vertices - 10;
 
   vertex_t start        = 1;
   g->start[0]           = start;
