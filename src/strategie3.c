@@ -1,5 +1,6 @@
 #include "strategie3.h"
 #include <stdio.h>
+#include <string.h>
 #include <gsl/gsl_spmatrix.h>
 #include <gsl/gsl_spmatrix_uint.h>
 #include <gsl/gsl_spblas.h>
@@ -84,7 +85,7 @@ int distance_minimal(int d[], int visited[], unsigned int n) {
   int          min   = INT_MAX;
   unsigned int index = -1;
   for (unsigned int i = 0; i < n; i++) {
-    if (!visited[i] && d[i] < min) {
+    if (!visited[i] && d[i] <= min) {
       min   = d[i];
       index = i;
     }
@@ -109,6 +110,9 @@ void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_ve
       break;
     }
     visited[index_min] = 1;
+    if (index_min == b) {
+      break;
+    }
     for (unsigned int j = 0; j < graph->num_vertices; j++) {
       int dir   = gsl_spmatrix_uint_get(graph->t, index_min, j);
       int poids = 1;
@@ -118,19 +122,21 @@ void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_ve
         prev[j] = index_min;
       }
     }
-    if (index_min == b) {
-      break;
-    }
+  }
+  if (prev[b] != -1 || a == b) {
     int path[graph->num_vertices];
     int len = 0;
     for (vertex_t v = b; v != (vertex_t)-1; v = prev[v]) {
       path[len++] = v;
     }
     if (len > 1) {
-      next[a] = path[len - 2];  // depuis 'a', aller vers le sommet suivant
+      next[a] = path[len - 2];
     } else {
-      next[a] = a;  // pas de déplacement possible ou déjà sur place
+      next[a] = a;
     }
+  } else {
+    // b inaccessible depuis a
+    next[a] = -1;
   }
 }
 
@@ -230,33 +236,21 @@ int TSP(struct graph_t* graph, int best_order[], int obj_visited[], vertex_t pos
 
   int perm[num_remaining];
   for (int i = 0; i < num_remaining; i++) {
-    perm[i] = remaining[i];
+    perm[i] = i;
   }
 
   int best_temp[num_remaining];
   int min_distance = INT_MAX;
-
-  // Première permutation
-  int dist = calculate_total_dist(num_remaining, d, perm);
-  if (dist < min_distance) {
-    min_distance = dist;
-    for (int i = 0; i < num_remaining; i++) {
-      best_temp[i] = perm[i];
+  do {
+    int cost = calculate_total_dist(num_remaining, d, perm);
+    if (cost < min_distance) {
+      min_distance = cost;
+      memcpy(best_temp, perm, sizeof perm);
     }
-  }
+  } while (next_permutation(perm, num_remaining));
 
-  // Boucle des permutations restantes
-  while (next_permutation(perm, num_remaining)) {
-    dist = calculate_total_dist(num_remaining, d, perm);
-    if (dist < min_distance) {
-      min_distance = dist;
-      for (int i = 0; i < num_remaining; i++) {
-        best_temp[i] = perm[i];
-      }
-    }
-  }
   for (int i = 0; i < num_remaining; i++) {
-    best_order[i] = best_temp[i];
+    best_order[i] = remaining[best_temp[i]];
   }
 
   return min_distance;
@@ -284,25 +278,42 @@ vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos,
   return closest_objective;
 }
 
+// renvoie le nombre de voisins
+int num_neighbors(struct graph_t* graph, vertex_t v, vertex_t* out, int max_out) {
+  if (v >= graph->num_vertices)
+    return 0;
+  int count = 0;
+  for (vertex_t i = 0; i < graph->num_vertices && count < max_out; i++) {
+    if (gsl_spmatrix_uint_get(graph->t, v, i) != 0) {
+      out[count++] = i;
+    }
+  }
+  return count;
+}
+
 struct move_t try_place_wall(struct graph_t* graph, vertex_t pos_enemy, vertex_t next_enemy,
-                             enum player_color_t my_color) {
-  struct move_t move;
-  move.t = WALL;
-  move.c = my_color;
+                             struct move_t fallback) {
   struct edge_t wall[2];
   wall[0].fr = pos_enemy;
   wall[0].to = next_enemy;
-  wall[1].fr = pos_enemy + 1;
-  wall[1].to = next_enemy + 1;
-
-  if (can_place_wall(graph, wall)) {
-    move.e[0] = wall[0];
-    move.e[1] = wall[1];
-    printf("🧱 Player %d places a wall between %d-%d and %d-%d\n", my_color, wall[0].fr, wall[0].to,
-           wall[1].fr, wall[1].to);
-    return move;
+  vertex_t nbr;
+  vertex_t tmp[6];  // au max 6 voisins
+  int      nb = num_neighbors(graph, pos_enemy, tmp, 6);
+  nbr         = (vertex_t)-1;
+  for (int i = 0; i < nb; ++i) {
+    if (tmp[i] != next_enemy) {
+      nbr = tmp[i];
+      break;
+    }
   }
+  if (nbr == (vertex_t)-1) {
+    return fallback;
+  }
+  wall[1].fr = pos_enemy;
+  wall[1].to = nbr;
 
-  move.t = MOVE;
-  return move;
+  if (!can_place_wall(graph, wall)) {
+    return fallback;
+  }
+  return (struct move_t){.t = WALL, .c = fallback.c, .e = {wall[0], wall[1]}};
 }

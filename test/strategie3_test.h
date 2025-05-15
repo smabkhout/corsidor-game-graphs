@@ -19,8 +19,12 @@ void test_calculate_total_dist();
 
 void test_next_permutation();
 
-// void test_TSP() ;
+void test_TSP();
 
 void test_find_closest_objective();
+
+void test_num_neighbors();
+
+void test_try_place_wall_basic();
 
 #endif  // _CORS_MOVE_TEST_H_

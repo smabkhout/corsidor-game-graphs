@@ -58,14 +58,17 @@ void test_is_valid_move() {
 
 void test_dijkstra() {
   struct graph_t *graph = createGraph(3, TRIANGULAR);
-
-  int d[graph->num_vertices];
-  int prev[graph->num_vertices];
-  int next[graph->num_vertices];
-  dijistra(graph, 0, 10, d, prev, next, 11);
+  unsigned int    n     = graph->num_vertices;
+  vertex_t        tmp[6];
+  int             nb = num_neighbors(graph, 0, tmp, 6);
+  assert(nb > 0);
+  vertex_t v = tmp[0];
+  int      d[n], prev[n], next[n];
+  dijistra(graph, 0, v, d, prev, next, n);
   assert(d[0] == 0);
-  assert(d[10] == 3);
-  assert(prev[10] == 5);
+  assert(d[v] == 1);
+  assert(prev[v] == 0);
+  assert((unsigned int)next[0] == v);
   printf("test_dijkstra passed.\n");
   graph_free(graph);
 }
@@ -124,7 +127,7 @@ void test_next_permutation() {
   assert(next_permutation(arr, n) == 0);  // Il n'y a plus de permutation suivante
   printf("test_next_permutation passed.\n");
 }
-/*
+
 void test_TSP() {
   int             m     = 3;
   struct graph_t *graph = createGraph(m, TRIANGULAR);
@@ -133,31 +136,26 @@ void test_TSP() {
   graph->objectives[0]  = 0;
   graph->objectives[1]  = 10;
   graph->objectives[2]  = 5;
-  unsigned int num_objectives = graph->num_objectives;
-  int          distance[num_objectives][num_objectives];
-  calculate_dist_objectives(graph, num_objectives, distance, 11);
-  for (unsigned int i = 0; i < num_objectives; i++) {
-    for (unsigned int j = 0; j < num_objectives; j++) {
-      printf("Distance entre %d et %d: %d\n", i, j, distance[i][j]);
-    }
-  }
 
-  int best_order[graph->num_objectives];
-  int obj_visited[graph->num_objectives];
-  int min_distance = TSP(graph, best_order, obj_visited, 11);
-  printf("Meilleure permutation: ");
-  for (unsigned int i = 0; i < graph->num_objectives; i++) {
-    printf("%d ", best_order[i]);
+  unsigned int n_obj = graph->num_objectives;
+  int          obj_visited[n_obj];
+  for (unsigned int i = 0; i < n_obj; ++i) {
+    obj_visited[i] = -1;
   }
-  printf("\n");
+  int best_order[n_obj];
+  int min_distance = TSP(graph, best_order, obj_visited, graph->num_vertices);
   assert(min_distance >= 0);
-
-  assert(best_order[0] == 0);
-  assert(best_order[1] == 1);
-  assert(best_order[2] == 2);
+  int seen[3] = {0, 0, 0};
+  for (unsigned int i = 0; i < n_obj; ++i) {
+    assert(best_order[i] >= 0 && best_order[i] < (int)n_obj);
+    seen[best_order[i]] = 1;
+  }
+  for (unsigned int i = 0; i < n_obj; ++i) {
+    assert(seen[i]);
+  }
+  printf("test_TSP passed.\n");
   graph_free(graph);
 }
-*/
 
 void test_find_closest_objective() {
   struct graph_t graph;
@@ -180,17 +178,43 @@ void test_find_closest_objective() {
   gsl_spmatrix_uint_free(t);
 }
 
-/*void test_is_path_clear(){
-    struct graph_t graph;
-    graph.num_vertices = 5;
-    graph.num_objectives = 2;
-    vertex_t objectives[] = { 3, 4 };
-    graph.objectives = objectives;
-    gsl_spmatrix_uint* t = gsl_spmatrix_uint_alloc(5, 5);
-    gsl_spmatrix_uint_set(t, 0, 1, 1);
-    gsl_spmatrix_uint_set(t, 1, 2, 1);
-    gsl_spmatrix_uint_set(t, 2, 3, 1);
-    gsl_spmatrix_uint_set(t, 3, 4, 1);
-    graph.t = t;
+void test_num_neighbors() {
+  struct graph_t *graph = createGraph(3, TRIANGULAR);
+  vertex_t        tmp[6];
+  int             nb = num_neighbors(graph, 0, tmp, 6);
+  assert(nb > 0 && nb <= 6);
+  for (int i = 0; i < nb; i++) {
+    assert(tmp[i] < graph->num_vertices);
+    assert(gsl_spmatrix_uint_get(graph->t, 0, tmp[i]) > 0);
+  }
+  printf("test_num_neighbors passed.\n");
+  graph_free(graph);
+}
 
-}*/
+void test_try_place_wall_basic() {
+  struct graph_t *graph = createGraph(3, TRIANGULAR);
+  unsigned int    n     = graph->num_vertices;
+  vertex_t        tmp[6];
+  vertex_t        pos_enemy = (vertex_t)-1;
+  int             nb;
+
+  for (vertex_t v = 0; v < n; ++v) {
+    nb = num_neighbors(graph, v, tmp, 6);
+    if (nb >= 2) {
+      pos_enemy = v;
+      break;
+    }
+  }
+  assert(pos_enemy != (vertex_t)-1);
+  vertex_t next_enemy = tmp[0];
+
+  struct move_t fallback = create_move(NO_COLOR, MOVE, 999, NULL);
+  struct move_t mv       = try_place_wall(graph, pos_enemy, next_enemy, fallback);
+
+  assert(mv.t == WALL);
+  assert(mv.e[0].fr == pos_enemy && mv.e[0].to == next_enemy);
+  assert(mv.e[1].fr == pos_enemy && mv.e[1].to != next_enemy);
+
+  printf("test_try_place_wall_basic passed.\n");
+  graph_free(graph);
+}

@@ -7,9 +7,9 @@
 #include <time.h>
 #include <string.h>
 #include <gsl/gsl_spmatrix.h>
-
+#define MAX_OBJ 20
 static struct board_t     *board = NULL;
-static int                 obj_visited[5];
+static int                 obj_visited[MAX_OBJ];
 static int                 index_objective;
 static enum player_color_t my_color;
 static vertex_t            start_player;
@@ -68,22 +68,10 @@ struct move_t play(const struct move_t previous_move) {
   move.c                = my_color;
   vertex_t pos_player   = board->current_positions[move.c];
   vertex_t pos_opponent = board->current_positions[(my_color + 1) % NUM_PLAYERS];
-  TSP(board->graph, best_order, obj_visited, pos_opponent);
+  TSP(board->graph, best_order, obj_visited, pos_player);
   vertex_t target = ((unsigned int)index_objective == board->graph->num_objectives)
                         ? start_player
                         : board->graph->objectives[best_order[0]];
-
-  // 🎯 Marquer l’objectif comme atteint si on l’a touché
-  if (move.m == target &&
-      !exist_in_array(best_order[0], board->graph->num_objectives, obj_visited)) {
-    printf("🎯 Objective %d reached!\n", index_objective);
-    obj_visited[index_objective] = best_order[0];
-    index_objective++;
-    TSP(board->graph, best_order, obj_visited, pos_opponent);
-    target = ((unsigned int)index_objective == board->graph->num_objectives)
-                 ? start_player
-                 : board->graph->objectives[best_order[0]];
-  }
 
   int d[board->graph->num_vertices];
   int prev[board->graph->num_vertices];
@@ -101,7 +89,6 @@ struct move_t play(const struct move_t previous_move) {
       add_move_to_board(board, move);
       return move;
     }
-    move.t = NO_TYPE;
     return move;
   }
 
@@ -137,12 +124,27 @@ struct move_t play(const struct move_t previous_move) {
   printf("🎯 Prochain sommet: %d\n", move.m);
 
   board->current_positions[my_color] = move.m;
+  // marquage d'objectif
+  for (unsigned int i = 0; i < board->graph->num_objectives; i++) {
+    if (obj_visited[i] == -1 && board->current_positions[my_color] == board->graph->objectives[i]) {
+      obj_visited[i] = i;
+      index_objective++;
+      printf("🎯 Objectif %d (vertex %d) visité ! index_objective=%d\n", i,
+             board->graph->objectives[i], index_objective);
+      break;
+    }
+  }
+
   move.e[0].fr = move.e[0].to = 0;
   move.e[1].fr = move.e[1].to = 0;
 
-  if (d_enemy[target] < d[target]) {
+  if ((d_enemy[target] < d[target]) && (next_enemy[pos_opponent] != -1) &&
+      ((unsigned int)board->wall_count <= (board->graph->num_edges) / 10)) {
+    struct move_t fall_back =
+        find_best_move(board->graph, pos_player, pos_opponent,
+                       gsl_spmatrix_uint_get(board->graph->t, start_player, pos_player), my_color);
     struct move_t wall_move =
-        try_place_wall(board->graph, pos_opponent, next_enemy[pos_opponent], my_color);
+        try_place_wall(board->graph, pos_opponent, next_enemy[pos_opponent], fall_back);
     if (wall_move.t == WALL) {
       add_move_to_board(board, wall_move);
       return wall_move;

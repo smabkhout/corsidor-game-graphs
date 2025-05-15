@@ -50,9 +50,11 @@ int  next_permutation(int arr[], int n);
 int exist_in_array(int a, int n, int t[]);
 int TSP(struct graph_t* graph, int best_order[], int obj_visited[], vertex_t pos_other_player);
 
-vertex_t      find_closest_objective(struct graph_t* graph, vertex_t player_pos,
-                                     vertex_t pos_other_player);
+vertex_t find_closest_objective(struct graph_t* graph, vertex_t player_pos,
+                                vertex_t pos_other_player);
+
+int           num_neighbors(struct graph_t* graph, vertex_t v, vertex_t* out, int max_out);
 struct move_t try_place_wall(struct graph_t* graph, vertex_t pos_enemy, vertex_t next_enemy,
-                             enum player_color_t my_color);
+                             struct move_t fallback);
 
 #endif  // MOVE_H
