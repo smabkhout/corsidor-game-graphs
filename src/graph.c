@@ -577,11 +577,11 @@ void index_to_axial(int index, int m, int *l, int *c, int type) {
       break;
     default:
       fprintf(stderr, "⚠️ Unknown graph type (%d) — falling back to TRIANGULAR\n", type);
-      type = TRIANGULAR;
+      type       = TRIANGULAR;
       in_hexagon = in_hexagon_T;
       break;
   }
-  
+
   for (int i = 1 - m; i < m; ++i) {
     for (int j = 1 - m; j < m; ++j) {
       if (!in_hexagon(i, j, m, 0, 0))

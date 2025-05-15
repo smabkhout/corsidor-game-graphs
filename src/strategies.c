@@ -209,9 +209,8 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
   int               m           = 0;
   in_hexagon_func_t in_hexagon  = NULL;
   resolve_graph_type_or_default(g, &m, &in_hexagon);
-  //vertex_t n = 3 * (m * m) - 3 * m + 1;
+  // vertex_t n = 3 * (m * m) - 3 * m + 1;
   vertex_t n = g->num_vertices;
-
 
   struct distance_node *nodes   = malloc(n * sizeof(struct distance_node));
   double               *f_score = malloc(n * sizeof(double));
@@ -251,7 +250,7 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
 
       struct player_tt p = {
           .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u]};
-      
+
       if (valid_move(g, &p, v, opponent_pos)) {
         neighbors[count++] = v;
       }

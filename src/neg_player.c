@@ -298,9 +298,9 @@ struct move_t play(const struct move_t previous_move) {
     if (min_distance_opp == -1) {
       printf("no reachable objective for both players, falling back to home\n");
       struct move_t move;
-      move.t      = MOVE;
-      move.c      = player_id;
-      vertex_t* home_path = malloc(board->graph->num_vertices * sizeof(vertex_t));
+      move.t              = MOVE;
+      move.c              = player_id;
+      vertex_t *home_path = malloc(board->graph->num_vertices * sizeof(vertex_t));
       for (vertex_t j = 0; j < board->graph->num_vertices; ++j) {
         home_path[j] = NO_VERTEX;
       }
@@ -314,11 +314,10 @@ struct move_t play(const struct move_t previous_move) {
 
         int l_home;
         int c_home;
-        index_to_axial(home-1, m, &l_home, &c_home, board->graph->type);
+        index_to_axial(home - 1, m, &l_home, &c_home, board->graph->type);
 
-        home = (in_hexagon(l_home-1, c_home-1, m, 0, 0)) ? home - 1 : home + 1;
-        result = shortest_path_astar(
-            board->graph, my_pos, home, opp_pos, home_path, my_last_pos);
+        home   = (in_hexagon(l_home - 1, c_home - 1, m, 0, 0)) ? home - 1 : home + 1;
+        result = shortest_path_astar(board->graph, my_pos, home, opp_pos, home_path, my_last_pos);
         move.m = home_path[1];
         move.t = MOVE;
         move.c = player_id;
@@ -330,7 +329,7 @@ struct move_t play(const struct move_t previous_move) {
         return move;
       }
 
-      move.m = home_path[1];
+      move.m      = home_path[1];
       my_last_pos = my_pos;
       my_pos      = home_path[1];
       free(home_path);
@@ -460,8 +459,8 @@ struct move_t play(const struct move_t previous_move) {
   }
 
   if (min_distance_opp < min_distance) {
-    //printf("the distance to the objective for the opponent is %d\n", min_distance_opp);
-    //printf("the distance to the objective for me is %d\n", min_distance);
+    // printf("the distance to the objective for the opponent is %d\n", min_distance_opp);
+    // printf("the distance to the objective for me is %d\n", min_distance);
 
     // place a wall to stop him
     struct move_t wall;
