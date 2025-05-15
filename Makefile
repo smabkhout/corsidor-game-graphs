@@ -29,7 +29,7 @@ libPlayer1.so: player1.o strategie3.o board.o graph.o move2.o
 	gcc -shared -fPIC $(CFLAGS) $^ -o $@
 
 libPlayer3.so: player3.o move2.o strategie3.o board.o graph.o
-	gcc -shared -fPIC $^ -o $@
+	gcc -shared -fPIC $(CFLAGS) $^ -o $@
 
 libPlayer4.so: player2.o move2.o strategies.o board.o graph.o
 	gcc -shared -fPIC $(CFLAGS) $^ -o $@
