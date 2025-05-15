@@ -477,7 +477,7 @@ int main() {
 void test_AstarVSdIJKSTRA() {
   struct graph_t *g = createGraph(14, TRIANGULAR);
   g->num_objectives = 1;
-  g->objectives     = malloc(sizeof(vertex_t) * 1);
+  // g->objectives     = malloc(sizeof(vertex_t) * 1);
   g->objectives[0]  = 546;
 
   vertex_t start        = 1;
