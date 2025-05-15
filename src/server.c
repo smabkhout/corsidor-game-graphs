@@ -292,10 +292,10 @@ int main(int argc, char *argv[]) {
   current_positions[current_player] = board->graph->start[current_player];
   current_positions[other_player]   = board->graph->start[other_player];
 
-  printf("First player: %s, at position %d\n", players[start_player].get_player_name(),
-         players[start_player].pos_actuel);
-  printf("Second player: %s, at position %d\n", players[other_player].get_player_name(),
-         players[other_player].pos_actuel);
+  printf("First player: %s, at position %d with id %d\n", players[start_player].get_player_name(),
+         players[start_player].pos_actuel, current_player);
+  printf("Second player: %s, at position %d with id %d\n", players[other_player].get_player_name(),
+         players[other_player].pos_actuel, other_player);
 
   int winner     = -1;
   int turn_count = 0;

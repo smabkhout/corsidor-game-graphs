@@ -209,7 +209,9 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
   int               m           = 0;
   in_hexagon_func_t in_hexagon  = NULL;
   resolve_graph_type_or_default(g, &m, &in_hexagon);
-  vertex_t n = 3 * (m * m) - 3 * m + 1;
+  //vertex_t n = 3 * (m * m) - 3 * m + 1;
+  vertex_t n = g->num_vertices;
+
 
   struct distance_node *nodes   = malloc(n * sizeof(struct distance_node));
   double               *f_score = malloc(n * sizeof(double));
@@ -249,12 +251,14 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
 
       struct player_tt p = {
           .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u]};
+      
       if (valid_move(g, &p, v, opponent_pos)) {
         neighbors[count++] = v;
       }
     }
 
     if (count == 0) {
+      puts("NO VALID NEIGHBORS, OUT !!");
       free(nodes);
       free(f_score);
       free(prev);
@@ -264,6 +268,8 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
     for (int wanted_jump = 3; wanted_jump >= 1; --wanted_jump) {
       for (int i = 0; i < count; ++i) {
         vertex_t v = neighbors[i];
+        if (nodes[v].vertex == (unsigned int)-1)
+          continue;
 
         struct player_tt p = {
             .position = u, .c = 0, .last_position = (u == start) ? last_pos : prev[u]};
@@ -284,6 +290,7 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
   }
 
   int result = nodes[objective].distance;
+  printf("The result found to obj %d is %d\n", objective, result);
 
   if (result != INT_MAX) {
     vertex_t current = objective;
@@ -304,6 +311,12 @@ int shortest_path_astar(struct graph_t *g, vertex_t start, vertex_t objective,
     path[0]     = -1;
     path_length = 0;
   }
+
+  printf("The path found to objective %d is : ", objective);
+  for (int i = 0; i < path_length; ++i) {
+    printf("%d ", path[i]);
+  }
+  printf("\n");
 
   free(nodes);
   free(f_score);

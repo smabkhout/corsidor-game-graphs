@@ -559,9 +559,32 @@ void print_hex_grid(struct graph_t *g) {
 // fonction qui prend en entre l'indice du vertice et revoie la ligne et colone
 // dans le graph
 void index_to_axial(int index, int m, int *l, int *c, int type) {
+  in_hexagon_func_t in_hexagon = NULL;
+  switch (type) {
+    case TRIANGULAR:
+    case 4:  // TRIANGULAR_RANDOM
+      in_hexagon = in_hexagon_T;
+      break;
+    case CYCLIC:
+      in_hexagon = in_hexagon_C;
+      break;
+    case HOLEY:
+    case 5:  // HOLEY_RANDOM
+      in_hexagon = in_hexagon_H;
+      break;
+    case 6:  // SPAN
+      in_hexagon = in_hexagon_S;
+      break;
+    default:
+      fprintf(stderr, "⚠️ Unknown graph type (%d) — falling back to TRIANGULAR\n", type);
+      type = TRIANGULAR;
+      in_hexagon = in_hexagon_T;
+      break;
+  }
+  
   for (int i = 1 - m; i < m; ++i) {
     for (int j = 1 - m; j < m; ++j) {
-      if (!in_hexagon_T(i, j, m, 0, 0))
+      if (!in_hexagon(i, j, m, 0, 0))
         continue;
       if (axial_to_index(i, j, m, type) == index) {
         *l = i;

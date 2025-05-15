@@ -255,10 +255,8 @@ struct move_t play(const struct move_t previous_move) {
     }
   }
   if (obj_index < 0) {
-    // no reachable objective? fall back to a safe move:
-    obj_index    = 0;  // pick objective 0
-    min_distance = distances_to_objectives[0];
-    printf("no reachable objective for the player, falling back to obj 0\n");
+    min_distance = -1;
+    printf("no reachable objective for the player, falling back to home\n");
   }
 
   // find the closest objective for the opponent
@@ -276,18 +274,16 @@ struct move_t play(const struct move_t previous_move) {
         opp_distances_to_objectives[i] != -1) {
       // printf("distances to objectives for the opponent %d : %d \n",
       // opp_distances_to_objectives[i],
-      //    i);
+      //     i);
 
       obj_index_opp    = i;
       min_distance_opp = opp_distances_to_objectives[i];
     }
   }
 
-  if (obj_index < 0) {
-    // no reachable objective? fall back to a safe move:
-    obj_index    = 0;  // pick objective 0
-    min_distance = distances_to_objectives[0];
-    printf("no reachable objective for the opponent, falling back to obj 0\n");
+  if (obj_index_opp < 0) {
+    min_distance_opp = -1;
+    printf("no reachable objective for the opponent, falling back to home\n");
   }
   /*
   printf("my position : %d \n", my_pos);
@@ -297,9 +293,175 @@ struct move_t play(const struct move_t previous_move) {
   printf("my distance to the nearest objective : %d \n", min_distance);
   printf("opp distance to the objective  : %d \n", min_distance_opp);
   */
+
+  if (min_distance == -1) {
+    if (min_distance_opp == -1) {
+      printf("no reachable objective for both players, falling back to home\n");
+      struct move_t move;
+      move.t      = MOVE;
+      move.c      = player_id;
+      vertex_t* home_path = malloc(board->graph->num_vertices * sizeof(vertex_t));
+      for (vertex_t j = 0; j < board->graph->num_vertices; ++j) {
+        home_path[j] = NO_VERTEX;
+      }
+      int result = shortest_path_astar(board->graph, my_pos, home, opp_pos, home_path, my_last_pos);
+      if (result == 1 && home == opp_pos) {
+        opp_pos = board->graph->num_vertices + 1;  // aller vers le sommet d'indice precedent
+        result  = shortest_path_astar(board->graph, my_pos, home, opp_pos, home_path, my_last_pos);
+      }
+      if (result == -1) {
+        printf("I cannot go home, I will go next to it\n");
+
+        int l_home;
+        int c_home;
+        index_to_axial(home-1, m, &l_home, &c_home, board->graph->type);
+
+        home = (in_hexagon(l_home-1, c_home-1, m, 0, 0)) ? home - 1 : home + 1;
+        result = shortest_path_astar(
+            board->graph, my_pos, home, opp_pos, home_path, my_last_pos);
+        move.m = home_path[1];
+        move.t = MOVE;
+        move.c = player_id;
+        free(home_path);
+        free(paths);
+        free(distances_to_objectives);
+        free(opp_paths);
+        free(opp_distances_to_objectives);
+        return move;
+      }
+
+      move.m = home_path[1];
+      my_last_pos = my_pos;
+      my_pos      = home_path[1];
+      free(home_path);
+      free(paths);
+      free(distances_to_objectives);
+      free(opp_paths);
+      free(opp_distances_to_objectives);
+      return move;
+    } else {
+      puts("No reachable objective for me, but the opponent has one, I must block him");
+      printf("the distance to the objective for the opponent is %d\n", min_distance_opp);
+      printf("the distance to the objective for me is %d\n", min_distance);
+
+      // place a wall to stop him
+      struct move_t wall;
+      wall.t = WALL;
+      wall.c = player_id;
+
+      // Convertir les index en coordonnées axiales
+      // opponent pos
+      int l0 = 0;
+      int c0 = 0;
+      // opponent next_pos (based on his shortest path)
+      int l1 = 0;
+      int c1 = 0;
+      index_to_axial(opp_pos, m, &l0, &c0, board->graph->type);
+      index_to_axial(opp_paths[obj_index_opp][1], m, &l1, &c1, board->graph->type);
+      printf("opponent path : %d to %d\n", opp_pos, opp_paths[obj_index_opp][1]);
+      int dl_prev = l1 - l0;
+      int dc_prev = c1 - c0;
+
+      // Normalisation du vecteur direction afin qu'il soit reconnu par
+      // direction_axial par exemple dir (3, 0) devient (1, 0)
+      int max_abs = fmax(abs(dl_prev), abs(dc_prev));
+      if (max_abs != 0) {
+        dl_prev /= max_abs;
+        dc_prev /= max_abs;
+      }
+
+      int dir = direction_axial(dl_prev, dc_prev);
+      // the first vertex to cut is (l0,c0) to (l1,c1)
+      int l1_1 = l0 + direec[dir].l;
+      int c1_1 = c0 + direec[dir].c;
+      // the second one is either through the next direction or through the previous one
+      printf("the direction is %d\n", dir);
+      int next_direction = next_dir(dir);
+      printf("the next direction is %d\n", next_direction);
+      int l2_2 = l0 + direec[next_direction].l;
+      int c2_2 = c0 + direec[next_direction].c;
+      if (!in_hexagon(l2_2, c2_2, m, 0, 0)) {
+        // on simule une fonction prev_dir
+        next_direction = (dir == 0) ? 0 : (dir == 6) ? FIRST_DIR : (dir + 1);
+        l2_2           = l0 + direec[next_direction].l;
+        c2_2           = c0 + direec[next_direction].c;
+      }
+
+      vertex_t to1 = axial_to_index(l1_1, c1_1, m, board->graph->type);
+      vertex_t to2 = axial_to_index(l2_2, c2_2, m, board->graph->type);
+      wall.e[0].fr = opp_pos;
+      wall.e[1].fr = opp_pos;
+      wall.e[0].to = to1;
+      wall.e[1].to = to2;
+      wall.m       = my_pos;
+      printf("I want to put a wall form %d to (%d, %d) and (%d, %d)\n", opp_pos, l1_1, c1_1, l2_2,
+             c2_2);
+
+      /*
+      // just for testing before putting a wall
+      struct player_tt *p = malloc(sizeof(struct player_tt));
+      p->walls            = 50;
+      printf("The wall is being built from %d to : %d and %d.\n", opp_pos, to1, to2);
+      assert(valid_wall(board->graph, p, wall));
+      free(p);
+      */
+
+      // now we need to check whether there is a path to all objectives or not in order not to cut
+      // the road for the opponent
+      int blocked = 0;
+
+      unsigned int *temp      = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
+      unsigned int  old_temp  = *temp;
+      *temp                   = 7;
+      unsigned int *temp1     = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].fr, wall.e[1].to);
+      unsigned int  old_temp1 = *temp1;
+      *temp1                  = 7;
+      unsigned int *temp3     = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].to, wall.e[0].fr);
+      unsigned int  old_temp3 = *temp3;
+      *temp3                  = 7;
+      unsigned int *temp4     = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[1].to, wall.e[1].fr);
+      unsigned int  old_temp4 = *temp4;
+      *temp4                  = 7;
+
+      for (int i = 0; i < numberOfObjectives; ++i) {
+        vertex_t *opp_path = malloc(board->graph->num_vertices * sizeof(vertex_t));
+        int       distance = shortest_path_astar(board->graph, opp_pos, board->graph->objectives[i],
+                                                 my_pos, opp_path, opp_las_pos);
+        free(opp_path);
+        if (distance == -1) {
+          blocked = 1;
+          break;
+        }
+      }
+
+      if (!blocked) {
+        for (int i = 0; i < numberOfObjectives; ++i) {
+          if (visited_objectives[i])
+            continue;
+          free(paths[i]);
+        }
+        for (int i = 0; i < numberOfObjectives; ++i) {
+          if (visited_objectives_opp[i])
+            continue;
+          free(opp_paths[i]);
+        }
+        free(paths);
+        free(distances_to_objectives);
+        free(opp_paths);
+        free(opp_distances_to_objectives);
+        return wall;
+      } else {  // we return the graph to its original state and continue
+        *temp  = old_temp;
+        *temp1 = old_temp1;
+        *temp3 = old_temp3;
+        *temp4 = old_temp4;
+      }
+    }
+  }
+
   if (min_distance_opp < min_distance) {
-    // printf("the distance to the objective for the opponent is %d\n", min_distance_opp);
-    // printf("the distance to the objective for me is %d\n", min_distance);
+    //printf("the distance to the objective for the opponent is %d\n", min_distance_opp);
+    //printf("the distance to the objective for me is %d\n", min_distance);
 
     // place a wall to stop him
     struct move_t wall;
@@ -315,7 +477,7 @@ struct move_t play(const struct move_t previous_move) {
     int c1 = 0;
     index_to_axial(opp_pos, m, &l0, &c0, board->graph->type);
     index_to_axial(opp_paths[obj_index_opp][1], m, &l1, &c1, board->graph->type);
-
+    printf("opponent path : %d to %d\n", opp_pos, opp_paths[obj_index_opp][1]);
     int dl_prev = l1 - l0;
     int dc_prev = c1 - c0;
 
@@ -332,9 +494,11 @@ struct move_t play(const struct move_t previous_move) {
     int l1_1 = l0 + direec[dir].l;
     int c1_1 = c0 + direec[dir].c;
     // the second one is either through the next direction or through the previous one
+    printf("the direction is %d\n", dir);
     int next_direction = next_dir(dir);
-    int l2_2           = l0 + direec[next_direction].l;
-    int c2_2           = c0 + direec[next_direction].c;
+    printf("the next direction is %d\n", next_direction);
+    int l2_2 = l0 + direec[next_direction].l;
+    int c2_2 = c0 + direec[next_direction].c;
     if (!in_hexagon(l2_2, c2_2, m, 0, 0)) {
       // on simule une fonction prev_dir
       next_direction = (dir == 0) ? 0 : (dir == 6) ? FIRST_DIR : (dir + 1);
@@ -349,6 +513,8 @@ struct move_t play(const struct move_t previous_move) {
     wall.e[0].to = to1;
     wall.e[1].to = to2;
     wall.m       = my_pos;
+    printf("I want to put a wall form %d to (%d, %d) and (%d, %d)\n", opp_pos, l1_1, c1_1, l2_2,
+           c2_2);
 
     /*
     // just for testing before putting a wall
@@ -359,8 +525,8 @@ struct move_t play(const struct move_t previous_move) {
     free(p);
     */
 
-    // now we need to check whether there is a path to all objectives or not in order not to cut the
-    // road for the opponent
+    // now we need to check whether there is a path to all objectives or not in order not to cut
+    // the road for the opponent
     int blocked = 0;
 
     unsigned int *temp      = gsl_spmatrix_uint_ptr(board->graph->t, wall.e[0].fr, wall.e[0].to);
@@ -417,7 +583,8 @@ struct move_t play(const struct move_t previous_move) {
   printf("objective index : %d \n", obj_index);
   move.m = paths[obj_index][1];
 
-  printf("Player %d found this path using A* :\n", player_id);
+  printf("Player %d found this path using A* to objective %d :\n", player_id,
+         board->graph->objectives[obj_index]);
   for (vertex_t v = 0; paths[obj_index][v] != (unsigned int)-1; ++v) {
     printf("%d, ", paths[obj_index][v]);
   }
