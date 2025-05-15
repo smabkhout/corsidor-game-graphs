@@ -60,10 +60,10 @@ Conclusion :  A* est plus efficace dans la recherche de plus cours chemin comme 
 Dans notre implémentation de l’algorithme A*, nous utilisons une fonction heuristique basée sur la \textbf{distance de euclidienne} pour estimer le coût restant entre un sommet donné et le sommet objectif.
 
 \begin{lstlisting}[language=C]
-  double heuristic(vertex_t a, vertex_t b, int m) {
+  double heuristic(vertex_t a, vertex_t b, int m, int type) {
       int la, ca, lb, cb;
-      index_to_axial(a, m, &la, &ca);
-      index_to_axial(b, m, &lb, &cb);
+      index_to_axial(a, m, &la, &ca, type);
+      index_to_axial(b, m, &lb, &cb, type);
 
       int dx = ca - cb;
       int dy = la - lb;
