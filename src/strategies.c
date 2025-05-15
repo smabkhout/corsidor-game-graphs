@@ -491,7 +491,7 @@ void test_AstarVSdIJKSTRA() {
 
   clock_t start_time, end_time;
   printf("previous position  : %d\n", last_pos);
-  print_hex_grid(g);
+  // print_hex_grid(g);
 
   start_time          = clock();
   int result_dijkstra = shortest_path_length(g, start, objective, opponent_pos, path, last_pos);
