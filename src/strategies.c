@@ -487,7 +487,7 @@ void test_AstarVSdIJKSTRA() {
   vertex_t opponent_pos = 54;
   vertex_t last_pos     = 0;
 
-  vertex_t path[128];
+  vertex_t* path = malloc(g->num_vertices * sizeof(vertex_t));
 
   clock_t start_time, end_time;
   printf("previous position  : %d\n", last_pos);
@@ -521,6 +521,7 @@ void test_AstarVSdIJKSTRA() {
   }
   printf("\n");
   printf("A*: Time taken: %f seconds\n", time_astar);
+  free(path);
   graph_free(g);
 }
 /*
