@@ -417,7 +417,7 @@ struct move_t play(const struct move_t previous_move) {
   printf("objective index : %d \n", obj_index);
   move.m = paths[obj_index][1];
 
-  printf("Player %d found this path using dijkstra :\n", player_id);
+  printf("Player %d found this path using A* :\n", player_id);
   for (vertex_t v = 0; paths[obj_index][v] != (unsigned int)-1; ++v) {
     printf("%d, ", paths[obj_index][v]);
   }
