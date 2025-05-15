@@ -149,28 +149,4 @@ struct player_t {
 };
 \end{lstlisting}
 
-La fonction \texttt{load\_player()} ouvre la bibliothèque indiquée et lie dynamiquement chacune des fonctions exportées de la stratégie :
-
-\begin{lstlisting}[language=C]
-void load_player(struct player_t *p, char *lib) {
-    if (!library) {
-      fprintf(stderr, "Error opening library %s: %s\n", lib, dlerror());
-      exit(1);
-    }
-    p->library = dlopen(lib, RTLD_LAZY);
-    p->get_player_name =
-        (char const*(*)())dlsym(p->library, "get_player_name");
-    p->initialize =
-        (void (*)(unsigned int, struct graph_t*))dlsym(p->library, "initialize");
-    p->play =
-        (struct move_t (*)(const struct move_t))dlsym(p->library, "play");
-    p->finalize =
-        (void (*)(void))dlsym(p->library, "finalize");
-    if (dlerror()) {
-        fputs(dlerror(), stderr);
-        exit(1);
-    }
-}
-\end{lstlisting}
-
-Grâce à cette organisation, le \texttt{server.c} peut charger et exécuter plusieurs stratégies en changeant simplement les fichiers fournis en paramètres, ce qui simplifie la comparaison et l’évaluation de nouveaux algorithmes tout en respectant une interface commune.```
+Une fonction \texttt{load\_player()} a pour unique rôle de charger, au démarrage de la partie, les deux bibliothèques dynamiques correspondant aux stratégies des joueurs. En appelant successivement \texttt{dlopen()} puis \texttt{dlsym()} pour chaque fonction standard des joueurs.
