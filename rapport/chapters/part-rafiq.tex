@@ -80,40 +80,191 @@ Ces propriétés assurent qu’A* trouvera un chemin optimal (s'il en existe un)
 
 
 \subsubsection{Exemples des players implementer}
-\paragraph{player 1 : WALL x A* } \\
-\subparagraph{Stratégie du joueur : équilibre entre attaque et défense} \\
-
+\section{Player 1 – Avancer ou ralentir : une stratégie guidée par A*}
+\noindent
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!40!black,title=\textbf{Principe de la stratégie}]
 La stratégie du joueur repose sur une combinaison dynamique entre \textbf{avancer vers l’objectif} (attaque) et \textbf{ralentir l’adversaire} (défense). L’idée principale est d’évaluer en temps réel qui est le plus proche de sa zone d’objectif, et de choisir l’action optimale en conséquence.
+\end{tcolorbox}
 
-\medskip
+\vspace{0.3cm}
 
-\textbf{Stratégie résumée :}
-
+\noindent\textbf{Stratégie résumée :}
 \begin{itemize}
   \item Calculer la distance minimale vers l’arrivée pour le joueur et pour l’adversaire (avec A*).
   \item Si la distance du joueur est \textbf{inférieure ou égale} à celle de l’adversaire, avancer vers l’objectif.
   \item Sinon, s’il reste des murs, en placer un de façon stratégique pour \textbf{ralentir l’adversaire}, en choisissant la position qui \textbf{augmente le plus sa distance minimale} sans bloquer toutes les issues légales.
 \end{itemize}
 
-\vspace{1cm}
-
-\textbf{Avantages de cette stratégie :}
-Cette stratégie s’adapte dynamiquement à l’évolution du jeu, adoptant une posture offensive en cas d’avance et défensive en cas de retard. Elle repose sur l’algorithme A\* pour évaluer les positions dans les deux situations, ce qui permet de maintenir une pression constante sur l’adversaire tout en maximisant les chances de victoire.
-
-
-\subparagraph{Complexité et amélioration possible}
-
-À chaque tour, notre stratégie appelle l’algorithme A* deux fois : une fois pour estimer la distance minimale entre le joueur et sa cible, et une autre pour l’adversaire. \\
-
-Une amélioration importante consiste à utiliser la \textbf{mémorisation des distances(memoization)}: tant que le graphe ne change pas (c’est-à-dire qu’aucun mur n’est ajouté), il est possible de réutiliser les distances déjà calculées lors des tours précédents, ce qui permet d’éviter des appels redondants à A* et ainsi d’accélérer la prise de décision.
+\vspace{0.3cm}
+\noindent
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=\textbf{Avantages de cette stratégie}]
+Cette stratégie s’adapte dynamiquement à l’évolution du jeu : offensive lorsqu’un avantage est détecté, défensive pour conserver cet avantage. Grâce à l’algorithme A*, elle prend en compte en temps réel la topologie du graphe et la position des murs, garantissant une pression constante sur l’adversaire et une grande robustesse face à différents scénarios.
+\end{tcolorbox}
 
 
 
 
-\paragraph{player 2 : }
-la il faut ajouter la strategie du player 1 
-\vspace{1cm}
-\vspace{1cm}
+
+\section{Player 2 – Avancer ou ralentir : progression directe et blocages conditionnels}
+
+\noindent
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!40!black,title=\textbf{Principe de la stratégie}]
+La stratégie de ce joueur repose sur un contrôle dynamique de l'avantage spatial. Elle alterne entre \textit{avancer vers les objectifs} tant que cela est sûr, et \textit{interrompre l'adversaire} par des murs bien ciblés uniquement lorsque la menace est significative. Aucun calcul de chemin complexe n'est effectué : la décision est fondée sur des distances simples et des vérifications locales.
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\noindent\textbf{Stratégie résumée :}
+\begin{itemize}
+\item Déplacement en ligne droite ou en angles autorisés (jusqu'à 3 pas selon la direction précédente).
+\item Vérification si un objectif est atteint et marquage.
+\item Choix du prochain objectif non atteint.
+\item Si l'adversaire est à distance critique (\texttt{\textless= 2}) d'un objectif, poser un mur pour le ralentir, \textbf{mais seulement une fois par position}.
+\item Reprise de la progression normale une fois la menace contenue.
+\end{itemize}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=gray!5!white, colframe=gray!60!black, title=\textbf{Déroulement de la stratégie}]
+\begin{itemize}
+\item \textbf{Initialisation} : chaque joueur commence avec un ensemble d'objectifs et une position initiale. Une copie du graphe est fournie pour chaque joueur.
+\item \textbf{Tour par tour} : le joueur analyse sa position actuelle, celle de l'adversaire, la liste des objectifs, et sa position précédente.
+\item \textbf{Déplacement} : il choisit le meilleur déplacement admissible parmi ceux autorisés (direction, distance).
+\item \textbf{Mur} : si l'adversaire menace directement un objectif et qu'aucun mur n'a été posé sur cette position, un mur est placé pour lui allonger le chemin (mais sans jamais bloquer la solution).
+\item \textbf{Retour} : une fois tous les objectifs atteints, le joueur retourne à sa position initiale pour valider la victoire.
+\end{itemize}
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=green!5!white,colframe=green!50!black,title=\textbf{Avantages de la stratégie}]
+\begin{itemize}
+\item \textbf{Efficace} : aucun calcul de chemin global, uniquement des distances simples, ce qui permet une réactivité rapide.
+\item \textbf{Prudente} : ne gaspille pas les murs inutilement, chaque blocage est justifié.
+\item \textbf{Respecte les règles du jeu} : toutes les décisions respectent les directions autorisées et les contraintes de déplacement.
+\item \textbf{Robuste} : même en fin de partie ou en situation de pression, la stratégie propose toujours un fallback (déplacement valide vers un voisin).
+\end{itemize}
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\begin{tcolorbox}[colback=red!5!white,colframe=red!50!black,title=\textbf{Limitations et complexité}]
+\begin{itemize}
+\item \textbf{Limitation de vision} : le joueur ne prévoit pas à long terme, il réagit uniquement à la menace locale.
+\item \textbf{Pas d'optimisation globale} : plusieurs coups peuvent sembler bons, mais la stratégie ne choisit pas toujours le chemin optimal globalement.
+\item \textbf{Complexité} : l'algorithme de décision de mouvement est en $\mathcal{O}(n^2)$ au pire pour \textit{n} sommets du graphe (parcours des voisins, tests de validités, distances).
+\item \textbf{Une seule tentative de mur par position} : l’adversaire peut parfois contourner rapidement si un seul mur est posé.
+\end{itemize}
+\end{tcolorbox}
+
+\vspace{0.3cm}
+
+\noindent
+
+\textit{Cette stratégie est donc conçue pour des parties rapides, réactives et régulières, où chaque action est justifiée par un contrôle local sans surcoût algorithmique important. Elle assure une bonne performance tout en évitant les erreurs coûteuses.}
+
+
+\subsubsection{Illustration de la stratégie dynamique de Player}
+
+\textit{Les schémas illustrent la progression tactique du joueur : dans l’étape 1, il se positionne en bas à gauche avec un objectif en haut à droite. L’étape 2 montre une tentative d’avancée directe. Dans l’étape 3, un mur est placé pour ralentir l’adversaire qui menaçait d’atteindre l’objectif en premier. Enfin, l’étape 4 montre la reprise du chemin vers l’objectif, maintenant plus sécurisé. Ces étapes traduisent une stratégie simple, locale et réactive.}
+
+\vspace{0.5cm}
+\noindent
+\begin{minipage}{0.48\textwidth}
+\paragraph{\textbf{\`Etape 1 : Position initiale}}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+
+  \foreach \x in {0,...,5} {
+    \foreach \y in {0,...,5} {
+      \pgfmathsetmacro{\xa}{\x + mod(\y,2)*0.5}
+      \pgfmathsetmacro{\ya}{\y*0.866}
+      \node[circle, draw=gray!50, minimum size=6pt, inner sep=0pt] at (\xa,\ya) {};
+    }
+  }
+
+  \node[circle, draw=black, fill=blue!80, minimum size=8pt] at (0,0) {};
+  \node at (0,-0.4) {\footnotesize Player};
+
+  \node[circle, draw=black, fill=gray!70, minimum size=8pt] at (2,3.464) {};
+  \node at (2,3.8) {\footnotesize Adversaire};
+
+  \node[circle, draw=red!80!black, fill=red!80, minimum size=7pt] at (5,1.732) {};
+  \node at (5.3,1.732) {\footnotesize Objectif};
+\end{tikzpicture}
+\end{center}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.48\textwidth}
+\paragraph{\textbf{\`Etape 2 : Choix du chemin court}}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \foreach \x in {0,...,5} {
+    \foreach \y in {0,...,5} {
+      \pgfmathsetmacro{\xa}{\x + mod(\y,2)*0.5}
+      \pgfmathsetmacro{\ya}{\y*0.866}
+      \node[circle, draw=gray!50, minimum size=6pt, inner sep=0pt] at (\xa,\ya) {};
+    }
+  }
+
+  \draw[blue, thick, ->] (0,0) -- (1,0) -- (2,0.866) -- (3,0.866) -- (4,1.732) -- (5,1.732);
+
+  \draw[red, thick, dashed, ->] (2,3.464) -- (3,2.598) -- (4,1.732) -- (5,1.732);
+
+  \node[circle, draw=black, fill=blue!80, minimum size=8pt] at (0,0) {};
+  \node[circle, draw=black, fill=gray!70, minimum size=8pt] at (2,3.464) {};
+  \node[circle, draw=red!80!black, fill=red!80, minimum size=7pt] at (5,1.732) {};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\bigskip
+
+\noindent
+\begin{minipage}{0.48\textwidth}
+\paragraph{\textbf{\`Etape 3 : Placement d'un mur pour ralentir}}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \foreach \x in {0,...,5} {
+    \foreach \y in {0,...,5} {
+      \pgfmathsetmacro{\xa}{\x + mod(\y,2)*0.5}
+      \pgfmathsetmacro{\ya}{\y*0.866}
+      \node[circle, draw=gray!50, minimum size=6pt, inner sep=0pt] at (\xa,\ya) {};
+    }
+  }
+
+  \draw[red!80!black, ultra thick] (3,2.598) -- (4,1.732);
+  \node[red!80!black] at (3.5,2.2) {\tiny Mur};
+
+
+  \node[circle, draw=black, fill=blue!80, minimum size=8pt] at (1,0) {};
+  \node[circle, draw=black, fill=gray!70, minimum size=8pt] at (3,2.598) {};
+  \node[circle, draw=red!80!black, fill=red!80, minimum size=7pt] at (5,1.732) {};
+\end{tikzpicture}
+\end{center}
+\end{minipage}%
+\hfill
+\begin{minipage}{0.48\textwidth}
+\paragraph{\textbf{\`Etape 4 : Reprise de la progression}}
+\begin{center}
+\begin{tikzpicture}[scale=0.9]
+  \foreach \x in {0,...,5} {
+    \foreach \y in {0,...,5} {
+      \pgfmathsetmacro{\xa}{\x + mod(\y,2)*0.5}
+      \pgfmathsetmacro{\ya}{\y*0.866}
+      \node[circle, draw=gray!50, minimum size=6pt, inner sep=0pt] at (\xa,\ya) {};
+    }
+  }
+
+  \draw[blue, thick, ->] (1,0) -- (2,0.866) -- (3,0.866) -- (4,1.732) -- (5,1.732);
+
+  \node[circle, draw=black, fill=blue!80, minimum size=8pt] at (3,0.866) {};
+  \node[circle, draw=red!80!black, fill=red!80, minimum size=7pt] at (5,1.732) {};
+\end{tikzpicture}
+\end{center}
+\end{minipage}
+
+\vspace
 
 \subsubsection{Strategies avancees }
 La stratégie de base repose sur un équilibre entre l'\textbf{attaque} (avancer vers l'objectif) et la \textbf{défense} (ralentir l'adversaire à l'aide des murs). Bien qu'elle soit intuitive, cette approche souffre de \textbf{limites importantes} :
@@ -227,7 +378,3 @@ Cela permet de réduire la complexité tout en conservant une qualité décision
 
 
 \subsubsection{analyse comparative entre les joueurs}
-
-
-
-
