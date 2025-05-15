@@ -140,7 +140,6 @@ void dijistra(struct graph_t* graph, vertex_t a, vertex_t b, int d[graph->num_ve
   }
 }
 
-// calculer les distances entre les objectives
 void calculate_dist_objectives(struct graph_t* graph, int num_objectives,
                                int      distance[num_objectives][num_objectives],
                                vertex_t pos_other_player) {
