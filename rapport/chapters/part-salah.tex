@@ -94,13 +94,26 @@ Ce type est utilisé dans la majorité des fonctions de construction du graphe p
 
 
 \paragraph{Graphe annoté par indice}
-Nous reprenons le même graphe de la Figure~\ref{fig:graph-m2}, mais cette fois chaque sommet est étiqueté par son indice unique calculé par la fonction \texttt{axial\_to\_index(l,c,m)}. La Figure~\ref{fig:graph-index} illustre cette correspondance entre les coordonnées axiales et l’indice dans la matrice d’adjacence.
+Nous reprenons le même graphe de la Figure~\ref{fig:graph-m2}, mais cette fois chaque sommet est étiqueté par son indice unique calculé par la fonction \texttt{axial\_to\_index( l, c, m, TRIANGULAR)}. La Figure~\ref{fig:graph-index} illustre cette correspondance entre les coordonnées axiales et l’indice dans la matrice d’adjacence.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[width=0.6\textwidth]{rapport/graph_index_m3.png}
     \caption{Graphe de rayon \(m=3\) annoté par l’indice de chaque sommet}
     \label{fig:graph-index}
+\end{figure}
+
+\paragraph{Légende des couleurs}
+
+Nous avons adopté ce code couleur pour l’ensemble du projet : les objectifs sont coloriés en rose, les deux joueurs en vert et en bleu, et les positions invalides (hors du plateau) sont indiquées par un « E » orange.
+
+Voici un exemple pour un graphe hexagonal troué (\texttt{HOLEY}) de rayon \(m=12\) :
+
+\begin{figure}[!ht]
+  \centering
+  \includegraphics[width=0.7\textwidth]{rapport/graph_holey_m12.png}
+  \caption{Graphe hexagonal troué (HOLEY) de rayon \(m=12\), avec objectifs en rose, joueurs en vert et bleu, et cases invalides marquées par « E » en orange}
+  \label{fig:holey-m12}
 \end{figure}
 
 
