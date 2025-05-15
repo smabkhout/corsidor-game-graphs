@@ -91,8 +91,7 @@ struct move_t play(const struct move_t previous_move) {
   dijistra(board->graph, pos_player, target, d, prev, next, pos_opponent);
 
   if (next[pos_player] == -1) {
-    printf("⚠️ Dijkstra a échoué, aucun chemin trouvé depuis %d vers %d !\n", pos_player,
-           target);
+    printf("⚠️ Dijkstra a échoué, aucun chemin trouvé depuis %d vers %d !\n", pos_player, target);
 
     move =
         find_best_move(board->graph, pos_player, pos_opponent,
