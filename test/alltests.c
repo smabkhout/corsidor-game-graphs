@@ -3,8 +3,10 @@
 #include "strategie3_test.h"
 #include "move2_test.h"
 #include "test_player.h"
+#include "strategies.h"
 
 int main() {
+  test_AstarVSdIJKSTRA();
   test_graph_generate_triangular();
   test_create_Graph();
   test_create_move();

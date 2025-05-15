@@ -78,24 +78,6 @@ int axial_to_index_C(int l, int c, int m) {
   return if_T - count;
 }
 
-// CYCLIC : scan rows from l=m-1 down to -(m-1), cols from c=-(m-1) up to m-1
-int axial_to_index_C_test(int l, int c, int m) {
-  if (!in_hexagon_C(l, c, m, 0, 0)) {
-    return 0;
-  }
-  int count = 0;
-  for (int ll = m - 1; ll >= -(m - 1); --ll) {
-    for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
-      if (!in_hexagon_C(ll, cc, m, 0, 0))
-        continue;
-      if (ll == l && cc == c)
-        return count;
-      ++count;
-    }
-  }
-  return (vertex_t)-1;  // hors graphe
-}
-
 // HOLEY : same scan order, filter with in_hexagon_H
 int axial_to_index_H(int l, int c, int m) {
   int count = 0;
@@ -131,21 +113,6 @@ int axial_to_index_S(int l, int c, int m) {
     return if_C + count;
   }
   return 0;
-}
-
-// SPAN : same scan order, filter with in_hexagon_S
-int axial_to_index_S_test(int l, int c, int m) {
-  int count = 0;
-  for (int ll = m - 1; ll >= -(m - 1); --ll) {
-    for (int cc = -(m - 1); cc <= (m - 1); ++cc) {
-      if (!in_hexagon_S(ll, cc, m, 0, 0))
-        continue;
-      if (ll == l && cc == c)
-        return count;
-      ++count;
-    }
-  }
-  return (vertex_t)-1;
 }
 
 // Conversion coordonnées (l, c) -> index dans le graphe
@@ -367,62 +334,6 @@ void graph_print_matrix(const struct graph_t *g) {
   }
 }
 
-// Affichage pour debug
-void graph_print(struct graph_t *graph) {
-  if (!graph)
-    return;
-  printf("Graph Type: %d\n", graph->type);
-  printf("Number of vertices: %u\n", graph->num_vertices);
-  printf("Number of edges: %u\n", graph->num_edges);
-
-  // Affichage de la matrice d'adjacence
-  graph_print_matrix(graph);
-
-  // Affichage des positions de départ des joueurs
-  printf("Starting positions:\n");
-  for (int i = 0; i < NUM_PLAYERS; i++) {
-    printf("Player %d starts at vertex %u\n", i, graph->start[i]);
-  }  // à modifier selon les coordonnees axiales
-
-  // Affichage des objectifs
-  printf("Objectives:\n");
-  for (unsigned int i = 0; i < graph->num_objectives; i++) {
-    printf("Objective %u: vertex %u\n", i, graph->objectives[i]);
-  }
-}
-// Copie d'un graphe
-
-void copy_graph(struct graph_t *dest, const struct graph_t *src) {
-  // Copier les champs simples
-  dest->type           = src->type;
-  dest->num_vertices   = src->num_vertices;
-  dest->num_edges      = src->num_edges;
-  dest->num_objectives = src->num_objectives;
-
-  memcpy(dest->start, src->start,
-         sizeof(vertex_t) * NUM_PLAYERS);  // Copier start[]
-
-  // Copier la matrice creuse (sparse matrix)
-  dest->t                = gsl_spmatrix_uint_alloc(src->num_vertices, src->num_vertices);
-  gsl_spmatrix_uint *csr = gsl_spmatrix_uint_compress(dest->t, GSL_SPMATRIX_CSR);
-  gsl_spmatrix_uint_free(dest->t);
-  dest->t = NULL;
-  dest->t = csr;
-  if (!dest->t) {
-    fprintf(stderr, "Erreur allocation mémoire pour t\n");
-    exit(1);
-  }
-  gsl_spmatrix_uint_memcpy(dest->t, src->t);  // Copie de la matrice creuse
-
-  // Copier les objectifs (tableau dynamique)
-  dest->objectives = malloc(src->num_objectives * sizeof(vertex_t));
-  if (!dest->objectives) {
-    fprintf(stderr, "Erreur allocation mémoire pour objectives\n");
-    exit(1);
-  }
-  memcpy(dest->objectives, src->objectives,
-         src->num_objectives * sizeof(vertex_t));  // Copie du tableau
-}
 // Libération du graphe
 void graph_free(struct graph_t *g) {
   if (!g)

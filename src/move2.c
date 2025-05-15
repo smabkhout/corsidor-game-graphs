@@ -214,55 +214,6 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move, verte
   return 0;
 }
 
-int path_to_objective_exists(struct graph_t *g, vertex_t start, const vertex_t *objectives,
-                             size_t nb_obj) {
-  int *visited = calloc(g->num_vertices, sizeof(int));
-  if (!visited)
-    return 0;
-
-  vertex_t *queue = malloc(g->num_vertices * sizeof(vertex_t));
-  if (!queue) {
-    free(visited);
-    return 0;
-  }
-
-  size_t front = 0, back = 0;
-  visited[start] = 1;
-  queue[back++]  = start;
-
-  while (front < back) {
-    vertex_t u = queue[front++];
-
-    // Objectif atteint ?
-    for (size_t i = 0; i < nb_obj; ++i) {
-      if (u == objectives[i]) {
-        free(queue);
-        free(visited);
-        return 1;
-      }
-    }
-
-    // Parcours de tous les éléments non nuls (en COO)
-    for (size_t k = 0; k < g->t->nz; ++k) {
-      vertex_t     row = g->t->i[k];
-      vertex_t     col = g->t->p[k];
-      unsigned int val = g->t->data[k];
-
-      if (val == 7)
-        continue;  // mur → bloqué
-
-      // Ajout du voisin si arête (u → v)
-      if (row == u && !visited[col]) {
-        visited[col]  = 1;
-        queue[back++] = col;
-      }
-    }
-  }
-
-  free(queue);
-  free(visited);
-  return 0;
-}
 // make_move_move
 struct move_t make_move_moove(enum player_color_t color, vertex_t dest) {
   struct move_t move;

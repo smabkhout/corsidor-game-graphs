@@ -35,6 +35,7 @@ int               shortest_path_astar(struct graph_t *g, vertex_t start, vertex_
                                       vertex_t opponent_pos, vertex_t *path, vertex_t last_pos);
 double            heuristic(vertex_t a, vertex_t b, int m, int type);
 struct game_state applyy_move(const struct game_state *state, struct move_t move);
+void test_AstarVSdIJKSTRA();
 // int evaluate(struct game_state *state, int color);
 
 // struct scored_move minmax(struct game_state *state, int depth, int color);
