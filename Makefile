@@ -4,8 +4,8 @@ GSL_PATH ?= /net/ens/renault/save/gsl-2.6/install
 GSL_LIBDIR = $(shell [ -e $(GSL_PATH)/lib ] && \
         echo $(GSL_PATH)/lib || \
         echo $(GSL_PATH)/lib64)
-CFLAGS = --coverage -std=c99 -Wall -Wextra -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -fPIC -g3 -O0 -I$(GSL_PATH)/include -Isrc
-LDFLAGS = --coverage -lm -lgsl -lgslcblas -ldl \
+CFLAGS = -std=c99 -Wall -Wextra -Werror=implicit-function-declaration -Werror=incompatible-pointer-types -fPIC -g3 -O0 -I$(GSL_PATH)/include -Isrc
+LDFLAGS = -lm -lgsl -lgslcblas -ldl \
 	-L$(GSL_PATH)/lib -L$(GSL_PATH)/lib64 \
 	-Wl,--rpath=${GSL_PATH}/lib
 	
@@ -26,16 +26,16 @@ build_tests: alltests
 	$(CC) $< $(CFLAGS) -c
 
 libPlayer1.so: player1.o strategie3.o board.o graph.o move2.o
-	gcc -shared -fPIC $(CFLAGS) $^ -o $@ -lgcov
+	gcc -shared -fPIC $(CFLAGS) $^ -o $@ 
 
 libPlayer4.so: player2.o move2.o strategies.o board.o graph.o
-	gcc -shared -fPIC $(CFLAGS) $^ -o $@ -lgcov
+	gcc -shared -fPIC $(CFLAGS) $^ -o $@ 
 
 libPlayer3.so: player3.o move2.o strategie3.o board.o graph.o
-	gcc -shared -fPIC $^ -o $@ -lgcov
+	gcc -shared -fPIC $^ -o $@ 
 
 libPlayer2.so: neg_player.o move2.o strategies.o board.o graph.o
-	gcc -shared -fPIC $^ -o $@ -lgcov
+	gcc -shared -fPIC $^ -o $@ 
 
 server: server.o graph.o move2.o board.o
 	gcc $^ $(LDFLAGS) -o $@
