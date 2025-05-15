@@ -149,7 +149,7 @@ struct player_t {
     void (*initialize)(unsigned int, struct graph_t *);
     struct move_t (*play)(const struct move_t);
     void (*finalize)();
-    void *library;        // pointeur vers la bibliothèque dynamique
+    void *library;        // pointeur vers la bibliotheque dynamique
     vertex_t pos_actuel;
 };
 \end{lstlisting}
