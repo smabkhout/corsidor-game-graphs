@@ -521,6 +521,7 @@ void test_AstarVSdIJKSTRA() {
   }
   printf("\n");
   printf("A*: Time taken: %f seconds\n", time_astar);
+  graph_free(g);
 }
 /*
 int main() {
