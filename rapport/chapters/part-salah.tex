@@ -128,6 +128,8 @@ struct player_t {
 };
 \end{lstlisting}
 
+La fonction \texttt{load\_player()} ouvre la bibliothèque indiquée et lie dynamiquement chacune des fonctions exportées de la stratégie :
+
 \begin{lstlisting}[language=C]
 void load_player(struct player_t *p, char *lib) {
     if (!library) {
