@@ -116,7 +116,7 @@ Le fichier \texttt{server.c} accepte deux bibliothèques dynamiques (\texttt{.so
   \item \textbf{Chargement} : un pointeur \texttt{library} est initialisé avec le résultat de \texttt{dlopen()} pour lier dynamiquement les symboles.
 \end{itemize}
 
-\begin{lstlisting}[language=C,caption={Définition de la structure \texttt{player\_t}}]
+\begin{lstlisting}[language=C]
 struct player_t {
     enum player_color_t     player_color;
     char const *(*get_player_name)();
@@ -128,7 +128,7 @@ struct player_t {
 };
 \end{lstlisting}
 
-\begin{lstlisting}[language=C,caption={Chargement dynamique d’une stratégie dans \texttt{server.c}}]
+\begin{lstlisting}[language=C]
 void load_player(struct player_t *p, char *lib) {
     if (!library) {
       fprintf(stderr, "Error opening library %s: %s\n", lib, dlerror());
