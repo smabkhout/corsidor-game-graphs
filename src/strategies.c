@@ -478,7 +478,7 @@ void test_AstarVSdIJKSTRA() {
   struct graph_t *g = createGraph(5, TRIANGULAR);
   g->num_objectives = 1;
   // g->objectives     = malloc(sizeof(vertex_t) * 1);
-  g->objectives[0]  = g->num_vertices - 10;
+  g->objectives[0] = g->num_vertices - 10;
 
   vertex_t start        = 1;
   g->start[0]           = start;
@@ -487,7 +487,7 @@ void test_AstarVSdIJKSTRA() {
   vertex_t opponent_pos = 54;
   vertex_t last_pos     = 0;
 
-  vertex_t* path = malloc(g->num_vertices * sizeof(vertex_t));
+  vertex_t *path = malloc(g->num_vertices * sizeof(vertex_t));
 
   clock_t start_time, end_time;
   printf("previous position  : %d\n", last_pos);
