@@ -40,7 +40,7 @@ const struct axial_t direec[7] = {
 
 char const *get_player_name() {
   srand(time(NULL));
-  char *names[] = {"3aaazi", "rafiq"};
+  char *names[] = {"Salah_X_Rafiq", "rafiq"};
   return names[0];
 }
 
