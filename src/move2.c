@@ -19,7 +19,7 @@ const struct axial_t direc[7] = {
     {-1, 0},  // SW
     {0, -1}   // W
 };
-// recois en entre ligne + colone et revoie la direction
+
 int direction_axial(int dl, int dc) {
   for (int d = 1; d < 7; ++d) {
     if (direc[d].l == dl && direc[d].c == dc)
@@ -28,24 +28,15 @@ int direction_axial(int dl, int dc) {
   return 0;
 }
 
-// Renvoie vrai si le déplacement est possible selon les règles
 int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t opponent_pos) {
-  // printf("DEBUG VALID_MOVE: from %u (last %u) to %u, opponent at %u\n",
-  // p->position, p->last_position, target, opponent_pos);
-
   if (p->position == target || opponent_pos == target)
-    return 0;  // Interdit de rester sur place
-
-  // Retrouver m
-  // int m = (int)((sqrt(4 * g->num_vertices + 1) + 1) / 3);
+    return 0;
 
   int               m          = 0;
   in_hexagon_func_t in_hexagon = NULL;
 
-  // Choix de la fonction selon le type
   resolve_graph_type_or_default(g, &m, &in_hexagon);
 
-  // Convertir les index en coordonnées axiales
   int l0 = 0;
   int c0 = 0;
   int l1 = 0;
@@ -56,8 +47,6 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
   int dl_prev = l1 - l0;
   int dc_prev = c1 - c0;
 
-  // Normalisation du vecteur direction afin qu'il soit reconnu par
-  // direction_axial par exemple dir (3, 0) devient (1, 0)
   int max_abs = fmax(abs(dl_prev), abs(dc_prev));
   if (max_abs != 0) {
     dl_prev /= max_abs;
@@ -65,27 +54,23 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
   }
   int prev_dir = direction_axial(dl_prev, dc_prev);
   if (dl_prev == 0 && dc_prev == 0) {
-    prev_dir = 0;  // Aucun déplacement précédent valide
+    prev_dir = 0;
   }
-  /*
-    if (prev_dir == 0)
-      return 0; // Aucun déplacement précédent valide
-  */
-  // Vérifier les directions possibles
+
   for (int dir = 1; dir < 7; ++dir) {
     int max_dist = 1;
     if (prev_dir == 0) {
-      max_dist = 1;  // Premier mouvement
+      max_dist = 1;
     } else {
       if (dir == prev_dir)
         max_dist = 3;
       else if ((dir == (prev_dir % 6) + 1) || (dir == (prev_dir + 4) % 6 + 1))
-        max_dist = 2;  // directions adjacentes (±30°)
+        max_dist = 2;
     }
     int l = l1;
     int c = c1;
 
-    vertex_t route[4] = {0};  // stock à chaque fois le parcours du joueur lors du saut
+    vertex_t route[4] = {0};
     int      count    = 0;
 
     for (int d = 1; d <= max_dist; ++d) {
@@ -104,19 +89,13 @@ int valid_move(struct graph_t *g, struct player_tt *p, vertex_t target, vertex_t
       if (exists == 0 || exists == 7)  // pas d’arête ou mur
         break;
       if (max_dist == 3 && d == 3) {
-        for (int i = 0; i < 4; ++i) {  // on verifie si l'adversaire est dans l'une des positions
-                                       // sur lesquelles il veut sauter
-          // printf("%d, ", route[i]);
+        for (int i = 0; i < 4; ++i) {
           if (route[i] == opponent_pos) {
             return 0;
           }
         }
       }
-      // printf("\n");
-      // route[0] = 0;
-      // route[1] = 0;
-      // route[2] = 0;
-      // route[3] = 0;
+
       if (to == target) {
         return d;  // Mouvement autorisé et on retourne la distance du saut
       }
@@ -185,7 +164,6 @@ void place_wall(struct graph_t *g, struct player_tt *p, struct move_t move) {
 
 int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move, vertex_t opp) {
   if (move.t == MOVE) {
-    // Deplacement du joueur
     vertex_t from = p->position;
     vertex_t to   = move.m;
 
@@ -199,22 +177,17 @@ int apply_move(struct graph_t *g, struct player_tt *p, struct move_t move, verte
     return 1;
 
   } else if (move.t == WALL) {
-    // Pose d’un mur
-
     if (!valid_wall(g, p, move)) {
-      return 0;  // Mur invalide
+      return 0;
     }
 
-    // Appliquer le mur
     place_wall(g, p, move);
     return 1;
   }
 
-  // Type de coup invalide
   return 0;
 }
 
-// make_move_move
 struct move_t make_move_moove(enum player_color_t color, vertex_t dest) {
   struct move_t move;
   move.t = MOVE;
@@ -239,10 +212,6 @@ struct move_t *make_wall_move(enum player_color_t color, vertex_t fr1, vertex_t 
   return move;
 }
 
-//
-
-// function int  a void take an array and return this array full with all
-// available moves that we could do and return the nuber of them
 int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_tt *p,
                     vertex_t opponent) {
   int nb_moves = 0;
@@ -255,38 +224,10 @@ int availableMovess(struct move_t moves[], struct graph_t *graph, struct player_
   return nb_moves;
 }
 
-/*int availableWalls(struct move_t moves[], struct graph_t *graph, struct
-player_tt *p ,vertex_t opponent) { int nb_moves = 0; (void) opponent; for
-(vertex_t i = 0; i < graph->num_vertices; i++) { for (vertex_t j = 0; j <
-graph->num_vertices; j++) { for (vertex_t z = 0; z < graph->num_vertices; z++) {
-        if (i == j || i == z || j == z) continue; // éviter les murs en
-diagonale
-
-      struct move_t wall_p = {
-        .t = WALL,
-        .c = p->c,
-        .e[0].fr = i,
-        .e[0].to = j,
-        .e[1].fr = i,
-        .e[1].to = z
-      };
-      if (valid_wall(graph, p, wall_p)) {
-
-        struct move_t move = *make_wall_move(p->c, i, j);
-        move.m = p->position;
-        moves[nb_moves++] = move;
-      }
-    }
-    }
-  }
-  return nb_moves;
-}*/
-
 int availableMoves(struct move_t moves[], struct graph_t *graph, struct player_tt *p,
                    vertex_t opponent) {
   int nb_moves = 0;
   nb_moves += availableMovess(moves, graph, p, opponent);
-  //  nb_moves += availableWalls(moves + nb_moves, graph, p, opponent);
   return nb_moves;
 }
 
@@ -299,7 +240,6 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
   int directions[6] = {1, 2, 3, 4, 5, 6};
 
   while (1) {
-    // Mélanger les directions
     for (int i = 5; i > 0; --i) {
       int j         = rand() % (i + 1);
       int tmp       = directions[i];
@@ -325,43 +265,3 @@ struct move_t generate_random_valid_move(struct graph_t *g, struct player_tt *p,
     }
   }
 }
-
-/*
-void  test_humping_over_opp(){
-  //test valid_move
-  struct graph_t *g = createGraph(6, TRIANGULAR);
-  g->num_objectives = 1 ;
-  g->objectives[0] = 29;
-  struct player_tt p;
-  p.position = 58;
-  p.last_position = 67;
-  p.c = 0;
-  vertex_t opponent_pos = 48;
-  vertex_t target = 29;
-  int *path = malloc(g->num_vertices * sizeof(int));
-  print_hex_grid(g);
-  int dist = shortest_path_length(g, p.position, target, opponent_pos, path,
-                                  p.last_position);
-
-  printf("Shortest path length from %u to %u: %d\n", p.position, target, dist);
-  printf("Path: ");
-  for (int i = 0; i < dist+1; ++i) {
-    printf("%u ", path[i]);
-  }
-  printf("\n");
-  int result = valid_move(g, &p, target, opponent_pos);
-  printf("Valid move from %u to %u: %d\n", p.position, target, result);
-  p.position = 58;
-  p.last_position = 67;
-  p.c = 0;
-
-  int result2 = valid_move(g, &p, 38, 48);
-  printf("Valid move from %u to %u: %d\n", p.position, 30, result2);
-}
-
-int main() {
-  srand(time(NULL));
-  test_humping_over_opp();
-  return 0;
-}
-*/
