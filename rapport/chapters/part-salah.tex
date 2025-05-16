@@ -151,5 +151,25 @@ struct player_t {
     vertex_t pos_actuel;
 };
 \end{lstlisting}
+\paragraph{Justification de la structure \texttt{player\_t} et de l'utilisation des pointeurs de fonction :}
 
-Une fonction \texttt{load\_player()} a pour unique rôle de charger, au démarrage de la partie, les deux bibliothèques dynamiques correspondant aux stratégies des joueurs. En appelant successivement \texttt{dlopen()} puis \texttt{dlsym()} pour chaque fonction standard des joueurs.
+La structure \texttt{player\_t} a été conçue pour encapsuler l'ensemble du comportement d'un joueur dans une architecture \textbf{modulaire}, \textbf{extensible} et \textbf{interchangeable}. Elle contient :
+
+\vspace{0.3cm}
+
+\noindent Ce choix d’architecture offre plusieurs avantages majeurs :
+
+\begin{enumerate}
+  \item \textbf{Découplage total du moteur et des stratégies} : le serveur n’a pas besoin de connaître l’implémentation interne des stratégies. Il invoque uniquement des fonctions via leurs pointeurs.
+
+  \item \textbf{Interopérabilité dynamique} : chaque stratégie est compilée dans une bibliothèque partagée (\texttt{.so}). Il suffit de changer le nom du fichier passé au serveur pour tester une autre stratégie — sans recompilation.
+
+  \item \textbf{Extensibilité garantie} : toute nouvelle stratégie qui respecte l’interface standard peut être intégrée immédiatement. Cela respecte le principe de conception \textit{Open/Closed} (ouvert à l’extension, fermé à la modification).
+
+  \item \textbf{Plugin léger et propre} : les pointeurs de fonction remplacent les grandes structures conditionnelles ou les appels multiples. Cette architecture facilite l’ajout ou la modification de composants sans toucher au reste du code.
+\end{enumerate}
+
+\vspace{0.4cm}
+
+
+Cela permet au serveur de fonctionner avec n’importe quelle stratégie conforme à l’interface standard, tout en conservant une architecture \textbf{souple}, \textbf{testable} et \textbf{maintenable}.
