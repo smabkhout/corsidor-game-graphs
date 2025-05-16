@@ -355,6 +355,7 @@ int shortest_path_player(vertex_t start, vertex_t objective, vertex_t opponent_p
   return shortest_path_length(g, start, objective, opponent_pos, path, last_pos);
 }
 
+
 int evaluate(struct game_state *state, int color) {
   return shortest_path_player(state->previous_moves[color].m, state->graph->objectives[0],
                               state->previous_moves[1 - color].m, state->graph,
