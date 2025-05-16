@@ -34,7 +34,7 @@ libPlayer3.so: player2.o move2.o strategies.o board.o graph.o
 libPlayer2.so: player3.o move2.o strategie3.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@ 
 
-libPlayer4.so: neg_player.o move2.o strategies.o board.o graph.o
+libPlayer4.so: drare_player.o move2.o strategies.o board.o graph.o
 	gcc -shared -fPIC $^ -o $@ 
 
 server: server.o graph.o move2.o board.o
