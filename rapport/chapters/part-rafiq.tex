@@ -31,7 +31,10 @@ on se trouve donc vers  :
 \end{itemize}
 
 
-\subsection{Strategies }
+\subsection{Strategies}
+
+Cette partie vise à explorer les différentes stratégies de jeu mises en œuvre dans le cadre de ce projet. Nous allons examiner les algorithmes de pathfinding utilisés pour déterminer le chemin optimal à chaque instant, ainsi que les stratégies adoptées par les joueurs pour atteindre leurs objectifs tout en tenant compte des actions de l’adversaire.
+
 \subsubsection{Path finding }
  Plusieurs algorithmes de pathfinding peuvent être envisagés pour déterminer le chemin optimal à chaque instant : BFS, Dijkstra et A* .Le BFS (Breadth-First Search), bien que très simple et rapide, est peu adapté ici car il explore uniformément tous les nœuds à distance croissante sans tenir compte des coûts, ce qui le rend inefficace dans un graphe où certains chemins peuvent être bien plus longs que d'autres. Le Dijkstra, lui, est une généralisation de BFS qui prend en compte les coûts des arêtes ; il est donc plus pertinent pour calculer des distances exactes dans un graphe pondéré. Toutefois, il reste coûteux en temps car il explore uniformément toutes les options, même les moins prometteuses. En revanche, A* se démarque en utilisant une heuristique (dans notre cas, la distance euclidienne entre la position courante et l'objectif) pour orienter la recherche vers la solution la plus probable. Cela permet de réduire considérablement le nombre de nœuds explorés, tout en garantissant l’optimalité si l’heuristique est admissible. Ainsi, dans un environnement dynamique où le graphe change fréquemment à cause des murs placés par les joueurs, A* est généralement le meilleur choix. Il combine la rigueur de Dijkstra avec l'efficacité d'une approche guidée, ce qui permet de recalculer rapidement des chemins pertinents à chaque tour, sans trop sacrifier la performance.
 
@@ -264,7 +267,7 @@ La stratégie de ce joueur repose sur un contrôle dynamique de l'avantage spati
 \end{center}
 \end{minipage}
 
-\vspace
+\vspace{1cm}
 
 \subsubsection{Strategies avancees }
 La stratégie de base repose sur un équilibre entre l'\textbf{attaque} (avancer vers l'objectif) et la \textbf{défense} (ralentir l'adversaire à l'aide des murs). Bien qu'elle soit intuitive, cette approche souffre de \textbf{limites importantes} :
@@ -277,7 +280,7 @@ La stratégie de base repose sur un équilibre entre l'\textbf{attaque} (avancer
 
 Pour dépasser ces limites, nous pouvons modéliser le jeu comme un \textbf{problème de recherche adversariale}, à travers la construction d’un \textbf{arbre de jeu}. Ce cadre est utilisé dans des jeux comme Quoridor ou les échecs, et introduit des notions avancées comme l’algorithme \textbf{MinMax}.
 
-\paragraph{Principe de MinMax} \\
+\paragraph{Principe de MinMax}
 
 L’idée du MinMax est d'explorer récursivement les actions possibles jusqu’à une certaine profondeur (appelée \textit{profondeur de recherche}, en nombre de coups ou \textit{plies}), en considérant que :
 

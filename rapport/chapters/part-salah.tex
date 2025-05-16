@@ -129,7 +129,7 @@ Cela permet de générer dynamiquement plusieurs types de plateaux selon les bes
 
 \subsection{Chargement dynamique des stratégies}
 
-Le fichier \texttt{server.c} accepte deux bibliothèques dynamiques (\texttt{.so}) passées en argument à l’exécution. Le serveur ouvre chacune d’elles avec \texttt{dlopen()} et récupère les fonctions standard (\texttt{get\_player\_name}, \texttt{initialize}, \texttt{play}, \texttt{finalize}) via \texttt{dlsym()}, sans qu’il soit nécessaire de modifier ou de recompiler le code du serveur.
+Le fichier \texttt{server.c} accepte deux bibliothèques dynamiques (\texttt{.so}) passées en argument à l’exécution.
 
 \begin{itemize}
   \item \textbf{Flexibilité} : au lancement, on change simplement les noms des bibliothèques passées en paramètre de l’exécutable pour tester différentes stratégies.
